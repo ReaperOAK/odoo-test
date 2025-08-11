@@ -17,6 +17,7 @@
     "test:focused": "node scripts/focused-test.js"
   },
   "dependencies": {
+    "@polar-sh/sdk": "^0.34.10",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "colors": "^1.4.0",
@@ -32,7 +33,7 @@
     "mongoose": "^8.0.3",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
-    "razorpay": "^2.9.2",
+    "node-fetch": "^3.3.2",
     "winston": "^3.11.0"
   },
   "devDependencies": {

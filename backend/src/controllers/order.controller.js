@@ -4,7 +4,7 @@ const Payment = require('../models/Payment');
 const User = require('../models/User');
 const Listing = require('../models/Listing');
 const ReservationService = require('../services/reservation.service');
-const RazorpayService = require('../services/razorpay.service');
+const PolarService = require('../services/polar.service');
 const { AppError } = require('../utils/errors');
 const logger = require('../utils/logger');
 const mongoose = require('mongoose');
@@ -198,7 +198,7 @@ const getUserOrders = async (req, res, next) => {
 const initiatePayment = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { paymentMethod = 'razorpay' } = req.body;
+    const { paymentMethod = 'polar' } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new AppError('Invalid order ID', 400));
@@ -224,19 +224,18 @@ const initiatePayment = async (req, res, next) => {
       return next(new AppError('Order is not in quote status', 400));
     }
 
-    // Create payment intent
-    const paymentData = await RazorpayService.createOrder({
-      amount: order.totalAmount,
-      currency: 'INR',
+    // Create checkout session
+    const checkoutData = await PolarService.createCheckoutSession({
       orderId: order._id.toString(),
-      customerInfo: {
-        name: order.renterId.name,
-        email: order.renterId.email
-      }
+      customerId: req.user.id,
+      customerEmail: order.renterId.email,
+      listingId: order.lines[0]?.listingId,
+      productName: `Order ${order._id}`,
+      total: order.totalAmount
     });
 
-    // Update order with payment ID
-    order.razorpayOrderId = paymentData.razorpayOrderId;
+    // Update order with session ID
+    order.polarSessionId = checkoutData.id;
     await order.save();
 
     // Create payment record
@@ -244,7 +243,7 @@ const initiatePayment = async (req, res, next) => {
       orderId: order._id,
       amount: order.totalAmount,
       method: paymentMethod,
-      razorpayOrderId: paymentData.razorpayOrderId,
+      polarSessionId: checkoutData.id,
       status: 'initiated'
     });
     await payment.save();
@@ -252,17 +251,17 @@ const initiatePayment = async (req, res, next) => {
     logger.info(`Initiated payment for order ${id}`, {
       userId: req.user.id,
       amount: order.totalAmount,
-      razorpayOrderId: paymentData.razorpayOrderId
+      sessionId: checkoutData.id
     });
 
     res.json({
       success: true,
       data: {
         paymentId: payment._id,
-        razorpayOrderId: paymentData.razorpayOrderId,
+        sessionId: checkoutData.id,
+        checkoutUrl: checkoutData.url,
         amount: order.totalAmount,
-        currency: 'INR',
-        key: process.env.RAZORPAY_KEY_ID
+        currency: checkoutData.currency
       }
     });
   } catch (error) {
@@ -272,12 +271,12 @@ const initiatePayment = async (req, res, next) => {
 };
 
 /**
- * Confirm payment (called after successful Razorpay payment)
+ * Confirm payment (called after successful Polar payment)
  */
 const confirmPayment = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { razorpayPaymentId, razorpaySignature } = req.body;
+    const { sessionId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return next(new AppError('Invalid order ID', 400));
@@ -293,14 +292,10 @@ const confirmPayment = async (req, res, next) => {
       return next(new AppError('Not authorized to confirm payment for this order', 403));
     }
 
-    // Verify payment with Razorpay
-    const isValidPayment = await RazorpayService.verifyPayment({
-      razorpayOrderId: order.razorpayOrderId,
-      razorpayPaymentId,
-      razorpaySignature
-    });
+    // Verify payment with Polar
+    const sessionData = await PolarService.verifyCheckoutSession(sessionId);
 
-    if (!isValidPayment) {
+    if (!sessionData || sessionData.status !== 'completed') {
       return next(new AppError('Payment verification failed', 400));
     }
 
@@ -317,13 +312,13 @@ const confirmPayment = async (req, res, next) => {
         // Update payment record
         const payment = await Payment.findOne({ 
           orderId: id, 
-          razorpayOrderId: order.razorpayOrderId 
+          polarSessionId: sessionId 
         }).session(session);
         
         if (payment) {
           payment.status = 'success';
-          payment.razorpayPaymentId = razorpayPaymentId;
-          payment.raw = { razorpaySignature };
+          payment.polarPaymentId = sessionData.id;
+          payment.raw = sessionData;
           await payment.save({ session });
         }
 
@@ -345,7 +340,7 @@ const confirmPayment = async (req, res, next) => {
 
       logger.info(`Payment confirmed for order ${id}`, {
         userId: req.user.id,
-        razorpayPaymentId,
+        sessionId,
         amount: order.totalAmount
       });
 
