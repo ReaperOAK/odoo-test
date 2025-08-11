@@ -1,28 +1,32 @@
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { listingsAPI, ordersAPI } from '../lib/api';
-import { useAuth } from '../contexts/AuthContext';
-import { Calendar, MapPin, User, Package, Shield, Clock } from 'lucide-react';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
+import { useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { listingsAPI, ordersAPI } from "../lib/api";
+import { useAuth } from "../contexts/AuthContext";
+import { Calendar, MapPin, User, Package, Shield, Clock } from "lucide-react";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
 
 const ListingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  
+
   const [bookingData, setBookingData] = useState({
-    startDate: '',
-    endDate: '',
+    startDate: "",
+    endDate: "",
     quantity: 1,
-    paymentOption: 'deposit'
+    paymentOption: "deposit",
   });
   const [availabilityData, setAvailabilityData] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
 
-  const { data: listing, isLoading, error } = useQuery({
-    queryKey: ['listing', id],
+  const {
+    data: listing,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["listing", id],
     queryFn: () => listingsAPI.getById(id),
     select: (data) => data.data.listing,
   });
@@ -33,21 +37,22 @@ const ListingDetail = () => {
       navigate(`/checkout/${data.data.order._id}`);
     },
     onError: (error) => {
-      alert(error.response?.data?.message || 'Failed to create order');
-    }
+      alert(error.response?.data?.message || "Failed to create order");
+    },
   });
 
   const checkAvailabilityMutation = useMutation({
-    mutationFn: ({ start, end, qty }) => listingsAPI.checkAvailability(id, { start, end, qty }),
+    mutationFn: ({ start, end, qty }) =>
+      listingsAPI.checkAvailability(id, { start, end, qty }),
     onSuccess: (data) => {
       setAvailabilityData(data.data);
-    }
+    },
   });
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(price);
   };
 
@@ -63,33 +68,36 @@ const ListingDetail = () => {
   const calculateTotalPrice = () => {
     const duration = calculateDuration();
     const subtotal = listing?.basePrice * duration * bookingData.quantity;
-    const deposit = listing?.depositType === 'percent' 
-      ? subtotal * (listing?.depositValue / 100)
-      : listing?.depositValue * bookingData.quantity;
-    
+    const deposit =
+      listing?.depositType === "percent"
+        ? subtotal * (listing?.depositValue / 100)
+        : listing?.depositValue * bookingData.quantity;
+
     return {
       subtotal,
       deposit,
-      duration
+      duration,
     };
   };
 
   const handleBookingSubmit = () => {
     if (!isAuthenticated) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
 
     const { subtotal, deposit } = calculateTotalPrice();
-    
+
     const orderData = {
-      lines: [{
-        listingId: id,
-        qty: bookingData.quantity,
-        start: new Date(bookingData.startDate).toISOString(),
-        end: new Date(bookingData.endDate).toISOString()
-      }],
-      paymentOption: bookingData.paymentOption
+      lines: [
+        {
+          listingId: id,
+          qty: bookingData.quantity,
+          start: new Date(bookingData.startDate).toISOString(),
+          end: new Date(bookingData.endDate).toISOString(),
+        },
+      ],
+      paymentOption: bookingData.paymentOption,
     };
 
     createOrderMutation.mutate(orderData);
@@ -100,7 +108,7 @@ const ListingDetail = () => {
       checkAvailabilityMutation.mutate({
         start: bookingData.startDate,
         end: bookingData.endDate,
-        qty: bookingData.quantity
+        qty: bookingData.quantity,
       });
     }
   };
@@ -124,8 +132,12 @@ const ListingDetail = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Listing Not Found</h1>
-          <p className="text-gray-600">The listing you're looking for doesn't exist.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Listing Not Found
+          </h1>
+          <p className="text-gray-600">
+            The listing you're looking for doesn't exist.
+          </p>
         </div>
       </div>
     );
@@ -142,7 +154,7 @@ const ListingDetail = () => {
           {/* Image Gallery */}
           <div className="mb-6">
             <img
-              src={listing?.images?.[0] || '/placeholder-image.jpg'}
+              src={listing?.images?.[0] || "/placeholder-image.jpg"}
               alt={listing?.title}
               className="w-full h-96 object-cover rounded-lg"
             />
@@ -164,12 +176,15 @@ const ListingDetail = () => {
           <div className="space-y-6">
             <div>
               <div className="flex items-center justify-between mb-2">
-                <h1 className="text-3xl font-bold text-gray-900">{listing?.title}</h1>
+                <h1 className="text-3xl font-bold text-gray-900">
+                  {listing?.title}
+                </h1>
                 <span className="bg-gray-100 text-gray-800 text-sm px-3 py-1 rounded-full">
-                  {listing?.category?.charAt(0).toUpperCase() + listing?.category?.slice(1)}
+                  {listing?.category?.charAt(0).toUpperCase() +
+                    listing?.category?.slice(1)}
                 </span>
               </div>
-              
+
               <div className="flex items-center space-x-4 text-gray-600">
                 <div className="flex items-center">
                   <MapPin className="h-4 w-4 mr-1" />
@@ -198,12 +213,14 @@ const ListingDetail = () => {
                     <div>
                       <h4 className="font-semibold">{listing.ownerId.name}</h4>
                       <p className="text-sm text-gray-600">
-                        {listing.ownerId.hostProfile?.displayName || 'Host'}
+                        {listing.ownerId.hostProfile?.displayName || "Host"}
                       </p>
                       {listing.ownerId.hostProfile?.verified && (
                         <div className="flex items-center mt-1">
                           <Shield className="h-4 w-4 text-green-500 mr-1" />
-                          <span className="text-sm text-green-600">Verified Host</span>
+                          <span className="text-sm text-green-600">
+                            Verified Host
+                          </span>
                         </div>
                       )}
                     </div>
@@ -226,8 +243,10 @@ const ListingDetail = () => {
                   </span>
                 </div>
                 <div className="text-sm text-gray-600">
-                  {listing?.depositType === 'percent' && `${listing?.depositValue}% deposit required`}
-                  {listing?.depositType === 'flat' && `${formatPrice(listing?.depositValue)} deposit required`}
+                  {listing?.depositType === "percent" &&
+                    `${listing?.depositValue}% deposit required`}
+                  {listing?.depositType === "flat" &&
+                    `${formatPrice(listing?.depositValue)} deposit required`}
                 </div>
               </div>
 
@@ -241,8 +260,13 @@ const ListingDetail = () => {
                       <input
                         type="date"
                         value={bookingData.startDate}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={(e) => setBookingData({...bookingData, startDate: e.target.value})}
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={(e) =>
+                          setBookingData({
+                            ...bookingData,
+                            startDate: e.target.value,
+                          })
+                        }
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
@@ -253,8 +277,16 @@ const ListingDetail = () => {
                       <input
                         type="date"
                         value={bookingData.endDate}
-                        min={bookingData.startDate || new Date().toISOString().split('T')[0]}
-                        onChange={(e) => setBookingData({...bookingData, endDate: e.target.value})}
+                        min={
+                          bookingData.startDate ||
+                          new Date().toISOString().split("T")[0]
+                        }
+                        onChange={(e) =>
+                          setBookingData({
+                            ...bookingData,
+                            endDate: e.target.value,
+                          })
+                        }
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
@@ -266,14 +298,21 @@ const ListingDetail = () => {
                     </label>
                     <select
                       value={bookingData.quantity}
-                      onChange={(e) => setBookingData({...bookingData, quantity: parseInt(e.target.value)})}
+                      onChange={(e) =>
+                        setBookingData({
+                          ...bookingData,
+                          quantity: parseInt(e.target.value),
+                        })
+                      }
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                     >
-                      {[...Array(Math.min(listing?.totalQuantity || 1, 5))].map((_, i) => (
-                        <option key={i + 1} value={i + 1}>
-                          {i + 1}
-                        </option>
-                      ))}
+                      {[...Array(Math.min(listing?.totalQuantity || 1, 5))].map(
+                        (_, i) => (
+                          <option key={i + 1} value={i + 1}>
+                            {i + 1}
+                          </option>
+                        )
+                      )}
                     </select>
                   </div>
 
@@ -281,7 +320,9 @@ const ListingDetail = () => {
                     <div className="bg-gray-50 p-3 rounded-md space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Duration:</span>
-                        <span>{priceInfo.duration} {listing?.unitType}(s)</span>
+                        <span>
+                          {priceInfo.duration} {listing?.unitType}(s)
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span>Subtotal:</span>
@@ -309,8 +350,13 @@ const ListingDetail = () => {
                           type="radio"
                           name="paymentOption"
                           value="deposit"
-                          checked={bookingData.paymentOption === 'deposit'}
-                          onChange={(e) => setBookingData({...bookingData, paymentOption: e.target.value})}
+                          checked={bookingData.paymentOption === "deposit"}
+                          onChange={(e) =>
+                            setBookingData({
+                              ...bookingData,
+                              paymentOption: e.target.value,
+                            })
+                          }
                           className="mr-2"
                         />
                         <span className="text-sm">Pay deposit now</span>
@@ -320,8 +366,13 @@ const ListingDetail = () => {
                           type="radio"
                           name="paymentOption"
                           value="full"
-                          checked={bookingData.paymentOption === 'full'}
-                          onChange={(e) => setBookingData({...bookingData, paymentOption: e.target.value})}
+                          checked={bookingData.paymentOption === "full"}
+                          onChange={(e) =>
+                            setBookingData({
+                              ...bookingData,
+                              paymentOption: e.target.value,
+                            })
+                          }
                           className="mr-2"
                         />
                         <span className="text-sm">Pay full amount now</span>
@@ -330,10 +381,18 @@ const ListingDetail = () => {
                   </div>
 
                   {availabilityData && (
-                    <div className={`p-3 rounded-md ${availabilityData.available ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`}>
+                    <div
+                      className={`p-3 rounded-md ${
+                        availabilityData.available
+                          ? "bg-green-50 text-green-800"
+                          : "bg-red-50 text-red-800"
+                      }`}
+                    >
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2" />
-                        {availabilityData.available ? 'Available for selected dates' : 'Not available for selected dates'}
+                        {availabilityData.available
+                          ? "Available for selected dates"
+                          : "Not available for selected dates"}
                       </div>
                     </div>
                   )}
@@ -350,16 +409,26 @@ const ListingDetail = () => {
                     <Button
                       onClick={handleBookingSubmit}
                       className="w-full"
-                      disabled={!bookingData.startDate || !bookingData.endDate || createOrderMutation.isPending}
+                      disabled={
+                        !bookingData.startDate ||
+                        !bookingData.endDate ||
+                        createOrderMutation.isPending
+                      }
                     >
-                      {createOrderMutation.isPending ? 'Creating Order...' : 'Book Now'}
+                      {createOrderMutation.isPending
+                        ? "Creating Order..."
+                        : "Book Now"}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-4">
                   <p className="text-gray-600">This is your listing</p>
-                  <Button variant="outline" className="mt-2" onClick={() => navigate('/host/dashboard')}>
+                  <Button
+                    variant="outline"
+                    className="mt-2"
+                    onClick={() => navigate("/host/dashboard")}
+                  >
                     Manage Listing
                   </Button>
                 </div>

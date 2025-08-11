@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import { MapPin, Star, User } from 'lucide-react';
-import Card from '../ui/Card';
+import { Link } from "react-router-dom";
+import { MapPin, Star, User } from "lucide-react";
+import Card from "../ui/Card";
 
 const ListingCard = ({ listing }) => {
   const {
@@ -14,24 +14,24 @@ const ListingCard = ({ listing }) => {
     totalQuantity,
     category,
     depositType,
-    depositValue
+    depositValue,
   } = listing;
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
     }).format(price);
   };
 
   const getUnitLabel = (type) => {
     const labels = {
-      hour: '/hour',
-      day: '/day',
-      week: '/week',
-      month: '/month',
+      hour: "/hour",
+      day: "/day",
+      week: "/week",
+      month: "/month",
     };
-    return labels[type] || '/day';
+    return labels[type] || "/day";
   };
 
   return (
@@ -39,7 +39,7 @@ const ListingCard = ({ listing }) => {
       <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer">
         <div className="relative">
           <img
-            src={images?.[0] || '/placeholder-image.jpg'}
+            src={images?.[0] || "/placeholder-image.jpg"}
             alt={title}
             className="w-full h-48 object-cover rounded-t-lg"
           />
@@ -56,20 +56,20 @@ const ListingCard = ({ listing }) => {
             </div>
           )}
         </div>
-        
+
         <Card.Content className="p-4">
           <div className="space-y-2">
             <h3 className="font-semibold text-lg text-gray-900 group-hover:text-primary-600 transition-colors">
               {title}
             </h3>
-            
+
             {location && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin className="h-4 w-4 mr-1" />
                 {location}
               </div>
             )}
-            
+
             <div className="flex items-center justify-between">
               <div className="text-lg font-bold text-gray-900">
                 {formatPrice(basePrice)}
@@ -77,19 +77,19 @@ const ListingCard = ({ listing }) => {
                   {getUnitLabel(unitType)}
                 </span>
               </div>
-              
+
               <div className="text-sm text-gray-600">
-                {depositType === 'percent' && `${depositValue}% deposit`}
-                {depositType === 'flat' && `₹${depositValue} deposit`}
+                {depositType === "percent" && `${depositValue}% deposit`}
+                {depositType === "flat" && `₹${depositValue} deposit`}
               </div>
             </div>
-            
+
             {ownerId && (
               <div className="flex items-center text-sm text-gray-600 pt-2 border-t">
                 <div className="bg-gray-200 rounded-full p-1 mr-2">
                   <User className="h-3 w-3" />
                 </div>
-                <span>{ownerId.name || 'Host'}</span>
+                <span>{ownerId.name || "Host"}</span>
                 {ownerId.hostProfile?.verified && (
                   <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
                     Verified Host

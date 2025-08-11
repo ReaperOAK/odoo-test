@@ -34,7 +34,7 @@ api.interceptors.response.use(
       status: error.response?.status,
       data: error.response?.data
     });
-    
+
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       // Only redirect if not already on login page
