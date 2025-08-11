@@ -125,24 +125,8 @@ class ReservationService {
       if (!lines.every(line => line.hostId.toString() === hostId.toString())) {
         throw new Error('All items must be from the same host');
       }
-      
-      // Create reservations
-      const reservations = [];
-      for (const line of lines) {
-        const reservation = new Reservation({
-          listingId: line.listingId,
-          qty: line.qty,
-          start: new Date(line.start),
-          end: new Date(line.end),
-          status: 'reserved'
-        });
-        
-        await reservation.save({ session: sessionLocal });
-        reservations.push(reservation);
-        line.reservationId = reservation._id;
-      }
-      
-      // Calculate order totals
+
+      // Calculate order totals first
       const subtotal = lines.reduce((sum, line) => sum + line.lineTotal, 0);
       const platformCommission = Math.round(subtotal * (process.env.PLATFORM_COMMISSION_PERCENT || 10) / 100);
       
@@ -155,11 +139,11 @@ class ReservationService {
       const totalAmount = paymentOption === 'full' ? subtotal : depositAmount;
       const remainingAmount = paymentOption === 'full' ? 0 : subtotal - depositAmount;
       
-      // Create order
+      // Create order first
       const order = new Order({
         renterId,
         hostId,
-        lines,
+        lines, // Pass the complete lines data
         subtotal,
         depositAmount,
         platformCommission,
@@ -171,13 +155,27 @@ class ReservationService {
       });
       
       await order.save({ session: sessionLocal });
+
+      // Create reservations with the order ID
+      const reservations = [];
+      for (const line of lines) {
+        const reservation = new Reservation({
+          listingId: line.listingId,
+          orderId: order._id, // Now we have the order ID
+          qty: line.qty,
+          start: new Date(line.start),
+          end: new Date(line.end),
+          status: 'reserved'
+        });
+        
+        await reservation.save({ session: sessionLocal });
+        reservations.push(reservation);
+        line.reservationId = reservation._id;
+      }
       
-      // Update reservations with order ID
-      await Reservation.updateMany(
-        { _id: { $in: reservations.map(r => r._id) } },
-        { $set: { orderId: order._id } },
-        { session: sessionLocal }
-      );
+      // Update order with reservation IDs
+      order.lines = lines;
+      await order.save({ session: sessionLocal });
       
       // Add initial timeline entry
       order.addTimelineEntry('order_created', renterId, 'Order created');

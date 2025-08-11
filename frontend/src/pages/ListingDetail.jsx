@@ -44,8 +44,11 @@ const ListingDetail = () => {
     },
     onError: (error) => {
       console.error('Order creation error:', error);
+      console.error('Error response:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      console.error('Error headers:', error.response?.headers);
       const errorMessage = error.response?.data?.message || error.message || "Failed to create order";
-      alert(errorMessage);
+      alert(`Order creation failed: ${errorMessage}`);
     },
   });
 
@@ -172,6 +175,14 @@ const ListingDetail = () => {
 
   const isOwner = user?._id === listing?.ownerId?._id;
   const priceInfo = calculateTotalPrice();
+
+  // Debug auth state
+  console.log('Auth Debug:', {
+    user,
+    isAuthenticated,
+    token: !!localStorage.getItem('token'),
+    isOwner
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
