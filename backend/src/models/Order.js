@@ -75,7 +75,7 @@ const OrderSchema = new mongoose.Schema({
     enum: ['quote', 'confirmed', 'in_progress', 'completed', 'cancelled', 'disputed'],
     default: 'quote'
   },
-  razorpayOrderId: {
+  polarSessionId: {
     type: String
   },
   paymentOption: {
@@ -151,7 +151,7 @@ const OrderSchema = new mongoose.Schema({
 OrderSchema.index({ renterId: 1, createdAt: -1 });
 OrderSchema.index({ hostId: 1, createdAt: -1 });
 OrderSchema.index({ paymentStatus: 1, orderStatus: 1 });
-OrderSchema.index({ razorpayOrderId: 1 }, { sparse: true });
+OrderSchema.index({ polarSessionId: 1 }, { sparse: true });
 OrderSchema.index({ createdAt: -1 });
 
 // Virtual for order number (formatted)

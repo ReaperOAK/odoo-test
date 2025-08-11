@@ -2,47 +2,56 @@ const Payment = require('../models/Payment');
 const Order = require('../models/Order');
 const User = require('../models/User');
 const Reservation = require('../models/Reservation');
-const RazorpayService = require('../services/razorpay.service');
+const PolarService = require('../services/polar.service');
 const { AppError } = require('../utils/errors');
 const logger = require('../utils/logger');
 const crypto = require('crypto');
 const mongoose = require('mongoose');
 
 /**
- * Handle Razorpay webhook
+ * Handle Polar webhook
  */
-const handleRazorpayWebhook = async (req, res, next) => {
+const handlePolarWebhook = async (req, res, next) => {
   try {
-    const webhookSignature = req.headers['x-razorpay-signature'];
+    const webhookSignature = req.headers['x-polar-signature'];
     const webhookBody = JSON.stringify(req.body);
 
     // Verify webhook signature
-    const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET)
-      .update(webhookBody)
-      .digest('hex');
+    const isValidSignature = PolarService.validateWebhookSignature(
+      webhookBody,
+      webhookSignature,
+      process.env.POLAR_WEBHOOK_SECRET
+    );
 
-    if (webhookSignature !== expectedSignature) {
+    if (!isValidSignature && process.env.PAYMENT_MODE !== 'mock') {
       logger.warn('Invalid webhook signature', { signature: webhookSignature });
       return next(new AppError('Invalid webhook signature', 400));
     }
 
-    const { event, payload } = req.body;
+    const event = req.body;
 
-    logger.info('Received Razorpay webhook', { event, paymentId: payload.payment?.entity?.id });
+    logger.info('Received Polar webhook', { 
+      type: event.type, 
+      sessionId: event.data?.id 
+    });
 
-    switch (event) {
-      case 'payment.captured':
-        await handlePaymentCaptured(payload.payment.entity);
+    const result = await PolarService.processWebhookEvent(event);
+
+    switch (result.type) {
+      case 'checkout_completed':
+        await handleCheckoutCompleted(result);
         break;
-      case 'payment.failed':
-        await handlePaymentFailed(payload.payment.entity);
+      case 'payment_succeeded':
+        await handlePaymentSucceeded(result);
         break;
-      case 'order.paid':
-        await handleOrderPaid(payload.order.entity);
+      case 'payment_failed':
+        await handlePaymentFailed(result);
+        break;
+      case 'refund_created':
+        await handleRefundCreated(result);
         break;
       default:
-        logger.info('Unhandled webhook event', { event });
+        logger.info('Unhandled webhook event', { type: result.type });
     }
 
     res.json({ success: true });
@@ -53,27 +62,27 @@ const handleRazorpayWebhook = async (req, res, next) => {
 };
 
 /**
- * Handle successful payment capture
+ * Handle successful checkout completion
  */
-const handlePaymentCaptured = async (paymentEntity) => {
+const handleCheckoutCompleted = async (result) => {
   const session = await mongoose.startSession();
   
   try {
     await session.withTransaction(async () => {
       // Find payment record
       const payment = await Payment.findOne({
-        razorpayOrderId: paymentEntity.order_id
+        polarSessionId: result.sessionId
       }).session(session);
 
       if (!payment) {
-        logger.warn('Payment record not found for webhook', { orderId: paymentEntity.order_id });
+        logger.warn('Payment record not found for webhook', { sessionId: result.sessionId });
         return;
       }
 
       // Update payment status
       payment.status = 'success';
-      payment.razorpayPaymentId = paymentEntity.id;
-      payment.raw = paymentEntity;
+      payment.polarPaymentId = result.sessionId;
+      payment.raw = result;
       await payment.save({ session });
 
       // Find and update order
@@ -96,7 +105,6 @@ const handlePaymentCaptured = async (paymentEntity) => {
         await host.save({ session });
       }
 
-      // Update reservation statuses
       await Reservation.updateMany(
         { orderId: order._id },
         { status: 'reserved' },
@@ -110,7 +118,7 @@ const handlePaymentCaptured = async (paymentEntity) => {
       });
     });
   } catch (error) {
-    logger.error('Error processing payment capture:', error);
+    logger.error('Error processing checkout completion:', error);
     throw error;
   } finally {
     await session.endSession();
@@ -118,24 +126,64 @@ const handlePaymentCaptured = async (paymentEntity) => {
 };
 
 /**
- * Handle failed payment
+ * Handle successful payment
  */
-const handlePaymentFailed = async (paymentEntity) => {
+const handlePaymentSucceeded = async (result) => {
   try {
     // Find payment record
     const payment = await Payment.findOne({
-      razorpayOrderId: paymentEntity.order_id
+      polarSessionId: result.sessionId || result.paymentId
     });
 
     if (!payment) {
-      logger.warn('Payment record not found for failed payment', { orderId: paymentEntity.order_id });
+      logger.warn('Payment record not found for succeeded payment', { 
+        sessionId: result.sessionId,
+        paymentId: result.paymentId 
+      });
+      return;
+    }
+
+    // Update payment status if not already succeeded
+    if (payment.status !== 'success') {
+      payment.status = 'success';
+      payment.polarPaymentId = result.paymentId;
+      payment.raw = result;
+      await payment.save();
+
+      logger.info('Payment success processed via webhook', {
+        orderId: payment.orderId,
+        paymentId: payment._id,
+        amount: payment.amount
+      });
+    }
+  } catch (error) {
+    logger.error('Error processing payment success:', error);
+    throw error;
+  }
+};
+
+/**
+ * Handle failed payment
+ */
+const handlePaymentFailed = async (result) => {
+  try {
+    // Find payment record
+    const payment = await Payment.findOne({
+      polarSessionId: result.sessionId || result.paymentId
+    });
+
+    if (!payment) {
+      logger.warn('Payment record not found for failed payment', { 
+        sessionId: result.sessionId,
+        paymentId: result.paymentId 
+      });
       return;
     }
 
     // Update payment status
     payment.status = 'failed';
-    payment.razorpayPaymentId = paymentEntity.id;
-    payment.raw = paymentEntity;
+    payment.polarPaymentId = result.paymentId;
+    payment.raw = result;
     await payment.save();
 
     // Find and update order
@@ -148,7 +196,7 @@ const handlePaymentFailed = async (paymentEntity) => {
     logger.info('Payment failure processed via webhook', {
       orderId: order?._id,
       paymentId: payment._id,
-      errorDescription: paymentEntity.error_description
+      error: result.error
     });
   } catch (error) {
     logger.error('Error processing payment failure:', error);
@@ -157,26 +205,34 @@ const handlePaymentFailed = async (paymentEntity) => {
 };
 
 /**
- * Handle order paid event
+ * Handle refund created event
  */
-const handleOrderPaid = async (orderEntity) => {
+const handleRefundCreated = async (result) => {
   try {
-    const order = await Order.findOne({ razorpayOrderId: orderEntity.id });
-    if (!order) {
-      logger.warn('Order not found for paid event', { razorpayOrderId: orderEntity.id });
+    // Find payment record
+    const payment = await Payment.findOne({
+      polarPaymentId: result.paymentId
+    });
+
+    if (!payment) {
+      logger.warn('Payment record not found for refund', { paymentId: result.paymentId });
       return;
     }
 
-    // This is usually already handled by payment.captured, but adding for completeness
-    if (order.paymentStatus !== 'paid') {
-      order.paymentStatus = 'paid';
-      order.orderStatus = 'confirmed';
-      await order.save();
-    }
+    // Create refund record or update existing one
+    payment.refundId = result.refundId;
+    payment.refundAmount = result.amount / 100; // Convert from cents
+    payment.refundStatus = result.status;
+    await payment.save();
 
-    logger.info('Order paid event processed', { orderId: order._id });
+    logger.info('Refund processed via webhook', {
+      orderId: payment.orderId,
+      paymentId: payment._id,
+      refundId: result.refundId,
+      amount: result.amount
+    });
   } catch (error) {
-    logger.error('Error processing order paid event:', error);
+    logger.error('Error processing refund:', error);
     throw error;
   }
 };
@@ -301,14 +357,13 @@ const retryPayment = async (req, res, next) => {
     }
 
     // Create new payment attempt
-    const paymentData = await RazorpayService.createOrder({
-      amount: payment.amount,
-      currency: 'INR',
+    const checkoutData = await PolarService.createCheckoutSession({
       orderId: payment.orderId._id.toString(),
-      customerInfo: {
-        name: req.user.name,
-        email: req.user.email
-      }
+      customerId: req.user.id,
+      customerEmail: req.user.email,
+      listingId: payment.orderId.lines[0]?.listingId,
+      productName: `Retry Payment - Order ${payment.orderId._id}`,
+      total: payment.amount
     });
 
     // Create new payment record
@@ -316,13 +371,13 @@ const retryPayment = async (req, res, next) => {
       orderId: payment.orderId._id,
       amount: payment.amount,
       method: payment.method,
-      razorpayOrderId: paymentData.razorpayOrderId,
+      polarSessionId: checkoutData.id,
       status: 'initiated'
     });
     await newPayment.save();
 
-    // Update order with new Razorpay order ID
-    payment.orderId.razorpayOrderId = paymentData.razorpayOrderId;
+    // Update order with new Polar session ID
+    payment.orderId.polarSessionId = checkoutData.id;
     await payment.orderId.save();
 
     logger.info(`Created retry payment for order ${payment.orderId._id}`, {
@@ -335,10 +390,10 @@ const retryPayment = async (req, res, next) => {
       success: true,
       data: {
         paymentId: newPayment._id,
-        razorpayOrderId: paymentData.razorpayOrderId,
+        sessionId: checkoutData.id,
+        checkoutUrl: checkoutData.url,
         amount: payment.amount,
-        currency: 'INR',
-        key: process.env.RAZORPAY_KEY_ID
+        currency: checkoutData.currency
       }
     });
   } catch (error) {
@@ -395,13 +450,13 @@ const mockPaymentSuccess = async (req, res, next) => {
         }
 
         payment.status = 'success';
-        payment.razorpayPaymentId = mockPaymentId;
+        payment.polarPaymentId = mockPaymentId;
         await payment.save({ session });
 
         // Update order
         order.paymentStatus = 'paid';
         order.orderStatus = 'confirmed';
-        order.razorpayOrderId = mockOrderId;
+        order.polarSessionId = mockOrderId;
         await order.save({ session });
 
         // Update host wallet
@@ -444,7 +499,7 @@ const mockPaymentSuccess = async (req, res, next) => {
 };
 
 module.exports = {
-  handleRazorpayWebhook,
+  handlePolarWebhook,
   getOrderPayments,
   getPayment,
   retryPayment,

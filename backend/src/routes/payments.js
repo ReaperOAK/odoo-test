@@ -6,7 +6,7 @@ const { authenticate } = require('../middleware/auth');
 const router = express.Router();
 
 // Webhook route (no auth needed - verified by signature)
-router.post('/webhook/razorpay', paymentController.handleRazorpayWebhook);
+router.post('/webhook/polar', paymentController.handlePolarWebhook);
 
 // Protected routes
 router.use(authenticate);

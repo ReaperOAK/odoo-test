@@ -13,21 +13,21 @@ const PaymentSchema = new mongoose.Schema({
   },
   currency: {
     type: String,
-    default: 'INR',
+    default: 'USD',
     uppercase: true
   },
   method: {
     type: String,
     required: [true, 'Payment method is required'],
-    enum: ['razorpay', 'mock', 'manual']
+    enum: ['polar', 'mock', 'manual']
   },
-  razorpayPaymentId: {
+  polarPaymentId: {
     type: String
   },
-  razorpayOrderId: {
+  polarSessionId: {
     type: String
   },
-  razorpaySignature: {
+  polarSignature: {
     type: String,
     sparse: true
   },
@@ -38,7 +38,7 @@ const PaymentSchema = new mongoose.Schema({
   },
   gateway: {
     type: String,
-    enum: ['razorpay', 'mock'],
+    enum: ['polar', 'mock'],
     default: 'mock'
   },
   gatewayResponse: {
@@ -109,22 +109,22 @@ const PaymentSchema = new mongoose.Schema({
 
 // Indexes for performance
 PaymentSchema.index({ orderId: 1 });
-PaymentSchema.index({ razorpayOrderId: 1 }, { sparse: true });
-PaymentSchema.index({ razorpayPaymentId: 1 }, { sparse: true });
+PaymentSchema.index({ polarSessionId: 1 }, { sparse: true });
+PaymentSchema.index({ polarPaymentId: 1 }, { sparse: true });
 PaymentSchema.index({ status: 1, createdAt: -1 });
 PaymentSchema.index({ method: 1, status: 1 });
 
 // Virtual for payment reference
 PaymentSchema.virtual('paymentReference').get(function() {
-  if (this.method === 'razorpay' && this.razorpayPaymentId) {
-    return this.razorpayPaymentId;
+  if (this.method === 'polar' && this.polarPaymentId) {
+    return this.polarPaymentId;
   }
   return `PAY-${this._id.toString().slice(-8).toUpperCase()}`;
 });
 
 // Virtual for display amount (formatted)
 PaymentSchema.virtual('displayAmount').get(function() {
-  return `₹${this.amount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+  return `$${this.amount.toLocaleString('en-US', { maximumFractionDigits: 2 })}`;
 });
 
 // Method to check if payment is successful

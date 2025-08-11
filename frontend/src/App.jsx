@@ -11,6 +11,9 @@ import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ListingDetail from './pages/ListingDetail';
 import Checkout from './pages/Checkout';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+import CheckoutCancel from './pages/CheckoutCancel';
+import MockCheckout from './pages/MockCheckout';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
 import HostDashboard from './pages/host/Dashboard';
@@ -30,6 +33,9 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/listings/:id" element={<ListingDetail />} />
                 <Route path="/checkout/:orderId" element={<Checkout />} />
+                <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+                <Route path="/checkout/mock" element={<MockCheckout />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/host/dashboard" element={<HostDashboard />} />

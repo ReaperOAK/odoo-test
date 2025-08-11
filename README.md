@@ -260,6 +260,76 @@ curl -X POST http://localhost:5000/api/orders \
 
 ## 🧪 Testing
 
+### Automated API Testing
+
+The project includes comprehensive test scripts to validate all API endpoints:
+
+#### Quick Test
+```bash
+# Basic connectivity and health check
+npm run test:quick
+```
+
+#### Full API Test Suite
+```bash
+# Comprehensive testing of all endpoints
+npm run test
+# or
+npm run test:api
+```
+
+#### Load Testing
+```bash
+# Performance and stress testing
+npm run test:load
+```
+
+#### Complete Test Suite
+```bash
+# Run all tests (excluding load tests)
+npm run test:all
+
+# Run all tests including load testing
+npm run test:full
+```
+
+### Test Features
+
+✅ **All API Endpoints**: Tests every endpoint in the API
+✅ **Authentication Flow**: User registration, login, profile management
+✅ **Role-Based Access**: Customer, Host, and Admin permissions
+✅ **Error Handling**: Validates proper error responses
+✅ **Rate Limiting**: Tests API protection mechanisms
+✅ **Load Testing**: Performance under concurrent users
+✅ **Cleanup**: Automatic test data cleanup
+
+### Test Configuration
+
+Set environment variables in `backend/scripts/.env.test`:
+```bash
+API_BASE_URL=http://localhost:5000/api
+ADMIN_EMAIL=admin@example.com  # Optional for admin tests
+ADMIN_PASSWORD=admin123
+CONCURRENT_USERS=10            # For load testing
+REQUESTS_PER_USER=20
+```
+
+### Test Output Example
+```
+🚀 Starting API Tests for http://localhost:5000/api
+
+🔹 Authentication Endpoints
+✅ POST /auth/register - PASSED Status: 201
+✅ POST /auth/login - PASSED Status: 200
+✅ GET /auth/me - PASSED Status: 200
+
+📊 Test Results:
+   Total Tests: 45
+   Passed: 43
+   Failed: 2
+   Success Rate: 95.6%
+```
+
 ### Using Postman
 
 1. Import the [Postman collection](docs/P2P_Marketplace_API.postman_collection.json)
