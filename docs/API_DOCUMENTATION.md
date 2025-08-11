@@ -9,7 +9,7 @@ This is a comprehensive REST API for a peer-to-peer marketplace platform where u
 ## Table of Contents
 
 1. [Authentication](#authentication)
-2. [User Management](#user-management)  
+2. [User Management](#user-management)
 3. [Listings](#listings)
 4. [Orders](#orders)
 5. [Payments](#payments)
@@ -33,6 +33,7 @@ Authorization: Bearer <your-jwt-token>
 Register a new user account.
 
 **Request Body:**
+
 ```json
 {
   "name": "John Doe",
@@ -49,6 +50,7 @@ Register a new user account.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -73,6 +75,7 @@ Register a new user account.
 Authenticate user and receive JWT token.
 
 **Request Body:**
+
 ```json
 {
   "email": "john@example.com",
@@ -81,6 +84,7 @@ Authenticate user and receive JWT token.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -107,6 +111,7 @@ Get current user's profile information.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -132,6 +137,7 @@ Update user profile information.
 **Headers:** Authorization required
 
 **Request Body:**
+
 ```json
 {
   "firstName": "John",
@@ -156,6 +162,7 @@ Change user password.
 **Headers:** Authorization required
 
 **Request Body:**
+
 ```json
 {
   "currentPassword": "oldpassword",
@@ -173,6 +180,7 @@ Upgrade user account to host status.
 **Headers:** Authorization required
 
 **Request Body:**
+
 ```json
 {
   "businessName": "John's Rentals",
@@ -189,6 +197,7 @@ Upgrade user account to host status.
 ## User Management
 
 ### Authentication Status
+
 All user management endpoints require authentication unless specified otherwise.
 
 ## Listings
@@ -200,6 +209,7 @@ All user management endpoints require authentication unless specified otherwise.
 Retrieve all published listings with optional filters.
 
 **Query Parameters:**
+
 - `page` (number): Page number (default: 1)
 - `limit` (number): Items per page (default: 12)
 - `search` (string): Search in title and description
@@ -212,6 +222,7 @@ Retrieve all published listings with optional filters.
 - `qty` (number): Required quantity (default: 1)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -254,6 +265,7 @@ Retrieve all published listings with optional filters.
 Get detailed information about a specific listing.
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -292,11 +304,13 @@ Get detailed information about a specific listing.
 Check if a listing is available for specific dates and quantity.
 
 **Query Parameters:**
+
 - `start` (date, required): Start date
-- `end` (date, required): End date  
+- `end` (date, required): End date
 - `qty` (number, required): Required quantity
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -318,6 +332,7 @@ Create a new listing.
 **Headers:** Authorization required, Host role required
 
 **Request Body:**
+
 ```json
 {
   "title": "Professional Camera Kit",
@@ -364,6 +379,7 @@ Create a new rental order.
 **Headers:** Authorization required
 
 **Request Body:**
+
 ```json
 {
   "lines": [
@@ -379,6 +395,7 @@ Create a new rental order.
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -418,11 +435,13 @@ Get current user's orders.
 **Headers:** Authorization required
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `status` (string): Filter by order status
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -467,6 +486,7 @@ Get detailed information about a specific order.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -530,6 +550,7 @@ Cancel an order.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -553,6 +574,7 @@ Update order status.
 **Headers:** Authorization required, Host role required
 
 **Request Body:**
+
 ```json
 {
   "status": "confirmed",
@@ -571,6 +593,7 @@ Get all payments for a specific order.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -600,6 +623,7 @@ Get details of a specific payment.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -631,6 +655,7 @@ Retry a failed payment.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -657,6 +682,7 @@ Simulate successful payment for demo purposes.
 **Headers:** Authorization required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -689,6 +715,7 @@ Get host dashboard statistics.
 **Headers:** Authorization required, Host role required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -736,11 +763,13 @@ Get all listings owned by the host.
 **Headers:** Authorization required, Host role required
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `status` (string): Filter by status
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -777,6 +806,7 @@ Get all orders for host's listings.
 **Headers:** Authorization required, Host role required
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `status` (string): Filter by order status
@@ -790,10 +820,12 @@ Get calendar view of host's bookings.
 **Headers:** Authorization required, Host role required
 
 **Query Parameters:**
+
 - `start` (date): Calendar start date
 - `end` (date): Calendar end date
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -822,6 +854,7 @@ Get host's wallet transaction history.
 **Headers:** Authorization required, Host role required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -850,6 +883,7 @@ Mark order as picked up by renter.
 **Headers:** Authorization required, Host role required
 
 **Request Body:**
+
 ```json
 {
   "notes": "Item handed over to renter",
@@ -866,6 +900,7 @@ Mark order as returned by renter.
 **Headers:** Authorization required, Host role required
 
 **Request Body:**
+
 ```json
 {
   "notes": "Item returned in good condition",
@@ -887,6 +922,7 @@ Get comprehensive platform statistics.
 **Headers:** Authorization required, Admin role required
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -934,6 +970,7 @@ Get detailed platform analytics.
 **Headers:** Authorization required, Admin role required
 
 **Query Parameters:**
+
 - `period` (string): Time period (week, month, quarter, year)
 - `category` (string): Filter by category
 
@@ -946,12 +983,14 @@ Get all platform users.
 **Headers:** Authorization required, Admin role required
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `role` (string): Filter by role
 - `status` (string): Filter by status
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -988,6 +1027,7 @@ Update user information.
 **Headers:** Authorization required, Admin role required
 
 **Request Body:**
+
 ```json
 {
   "role": "admin",
@@ -1005,6 +1045,7 @@ Get all platform orders.
 **Headers:** Authorization required, Admin role required
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `status` (string): Filter by status
@@ -1019,6 +1060,7 @@ Resolve order dispute.
 **Headers:** Authorization required, Admin role required
 
 **Request Body:**
+
 ```json
 {
   "resolution": "refund_renter",
@@ -1037,6 +1079,7 @@ Get all platform payouts.
 **Headers:** Authorization required, Admin role required
 
 **Query Parameters:**
+
 - `page` (number): Page number
 - `limit` (number): Items per page
 - `status` (string): Filter by status
@@ -1050,6 +1093,7 @@ Create a new payout for a host.
 **Headers:** Authorization required, Admin role required
 
 **Request Body:**
+
 ```json
 {
   "hostId": "host_id",
@@ -1074,6 +1118,7 @@ Process a pending payout.
 **Headers:** Authorization required, Admin role required
 
 **Request Body:**
+
 ```json
 {
   "transactionId": "txn_123456789",
@@ -1115,6 +1160,7 @@ The API returns consistent error responses:
 ### Common Error Types
 
 #### Validation Errors (400)
+
 ```json
 {
   "success": false,
@@ -1133,6 +1179,7 @@ The API returns consistent error responses:
 ```
 
 #### Authentication Errors (401)
+
 ```json
 {
   "success": false,
@@ -1141,6 +1188,7 @@ The API returns consistent error responses:
 ```
 
 #### Authorization Errors (403)
+
 ```json
 {
   "success": false,
@@ -1149,6 +1197,7 @@ The API returns consistent error responses:
 ```
 
 #### Not Found Errors (404)
+
 ```json
 {
   "success": false,
@@ -1161,20 +1210,24 @@ The API returns consistent error responses:
 The API implements rate limiting to prevent abuse:
 
 ### Auth Routes
+
 - **Limit:** 5 requests per 15 minutes per IP
 - **Applies to:** `/auth/register`, `/auth/login`
 
 ### Order Creation
+
 - **Limit:** 10 orders per hour per user
 - **Applies to:** `POST /orders`
 
 ### General API
+
 - **Limit:** 100 requests per 15 minutes per IP
 - **Applies to:** All other endpoints
 
 ### Rate Limit Headers
 
 When rate limited, the API returns these headers:
+
 ```
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 0
@@ -1183,6 +1236,7 @@ Retry-After: 900
 ```
 
 ### Rate Limit Error Response
+
 ```json
 {
   "success": false,
@@ -1193,16 +1247,19 @@ Retry-After: 900
 ## Authentication Flow
 
 ### 1. User Registration/Login
+
 1. User registers or logs in via `/auth/register` or `/auth/login`
 2. API returns user data and JWT token
 3. Client stores token securely
 
 ### 2. Making Authenticated Requests
+
 1. Include token in Authorization header: `Bearer <token>`
 2. API validates token and extracts user information
 3. API processes request with user context
 
 ### 3. Token Expiration
+
 1. Tokens expire after configured time (default: 7 days)
 2. Client receives 401 error for expired tokens
 3. Client should prompt user to log in again
@@ -1210,6 +1267,7 @@ Retry-After: 900
 ## Data Models
 
 ### User Model
+
 ```json
 {
   "_id": "ObjectId",
@@ -1231,6 +1289,7 @@ Retry-After: 900
 ```
 
 ### Listing Model
+
 ```json
 {
   "_id": "ObjectId",
@@ -1253,21 +1312,24 @@ Retry-After: 900
 ```
 
 ### Order Model
+
 ```json
 {
   "_id": "ObjectId",
   "orderNumber": "string",
   "renterId": "ObjectId",
   "hostId": "ObjectId",
-  "lines": [{
-    "listingId": "ObjectId",
-    "qty": "number",
-    "start": "Date",
-    "end": "Date",
-    "unitPrice": "number",
-    "lineTotal": "number",
-    "reservationId": "ObjectId"
-  }],
+  "lines": [
+    {
+      "listingId": "ObjectId",
+      "qty": "number",
+      "start": "Date",
+      "end": "Date",
+      "unitPrice": "number",
+      "lineTotal": "number",
+      "reservationId": "ObjectId"
+    }
+  ],
   "subtotal": "number",
   "depositAmount": "number",
   "platformCommission": "number",
@@ -1280,6 +1342,7 @@ Retry-After: 900
 ```
 
 ### Payment Model
+
 ```json
 {
   "_id": "ObjectId",

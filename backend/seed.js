@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 // Set seeding mode to allow past dates in reservations
@@ -36,23 +35,20 @@ const createSeedData = async () => {
     }
 
     // Create admin user
-    const adminPassword = await bcrypt.hash('admin123', 12);
     const admin = await User.create({
       name: 'Admin User',
       email: 'admin@marketplace.com',
-      passwordHash: adminPassword,
+      passwordHash: 'admin123', // Let the model hash this
       role: 'admin',
       isHost: false
     });
     logger.info('Created admin user');
 
     // Create hosts
-    const hostPassword = await bcrypt.hash('host123', 12);
-    
     const host1 = await User.create({
       name: 'John Electronics',
       email: 'john@electronics.com',
-      passwordHash: hostPassword,
+      passwordHash: 'host123', // Let the model hash this
       isHost: true,
       role: 'host',
       hostProfile: {
@@ -68,7 +64,7 @@ const createSeedData = async () => {
     const host2 = await User.create({
       name: 'Sarah sports',
       email: 'sarah@sports.com',
-      passwordHash: hostPassword,
+      passwordHash: 'host123', // Let the model hash this
       isHost: true,
       role: 'host',
       hostProfile: {
@@ -84,7 +80,7 @@ const createSeedData = async () => {
     const host3 = await User.create({
       name: 'Mike music',
       email: 'mike@music.com',
-      passwordHash: hostPassword,
+      passwordHash: 'host123', // Let the model hash this
       isHost: true,
       role: 'host',
       hostProfile: {
@@ -99,41 +95,39 @@ const createSeedData = async () => {
     logger.info('Created host users');
 
     // Create customers
-    const customerPassword = await bcrypt.hash('customer123', 12);
-    
     const customers = await User.create([
       {
         name: 'Alice Johnson',
         email: 'alice@customer.com',
-        passwordHash: customerPassword,
+        passwordHash: 'customer123', // Let the model hash this
         isHost: false,
         role: 'user'
       },
       {
         name: 'Bob Smith',
         email: 'bob@customer.com',
-        passwordHash: customerPassword,
+        passwordHash: 'customer123', // Let the model hash this
         isHost: false,
         role: 'user'
       },
       {
         name: 'Carol Wilson',
         email: 'carol@customer.com',
-        passwordHash: customerPassword,
+        passwordHash: 'customer123', // Let the model hash this
         isHost: false,
         role: 'user'
       },
       {
         name: 'David Brown',
         email: 'david@customer.com',
-        passwordHash: customerPassword,
+        passwordHash: 'customer123', // Let the model hash this
         isHost: false,
         role: 'user'
       },
       {
         name: 'Eva Davis',
         email: 'eva@customer.com',
-        passwordHash: customerPassword,
+        passwordHash: 'customer123', // Let the model hash this
         isHost: false,
         role: 'user'
       }
@@ -326,7 +320,7 @@ const createSeedData = async () => {
         start: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000), // 5 days ago
         end: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
         unitPrice: 2500,
-        lineTotal: 7500 // 3 days
+        lineTotal: 7500 // 3 days * 2500 * 1
       }],
       subtotal: 7500,
       depositAmount: 2250, // 30%
@@ -403,8 +397,8 @@ const createSeedData = async () => {
         qty: 1,
         start: tomorrow,
         end: dayAfterTomorrow,
-        unitPrice: 5000,
-        lineTotal: 6000 // 2 days
+        unitPrice: 3000,
+        lineTotal: 6000 // 2 days * 3000 * 1
       }],
       subtotal: 6000,
       depositAmount: 1500, // 25%

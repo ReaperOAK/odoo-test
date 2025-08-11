@@ -1,39 +1,37 @@
-import { useState } from 'react';
-import { Filter, X } from 'lucide-react';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
+import { useState } from "react";
+import { Filter, X } from "lucide-react";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
 
 const SearchFilters = ({ filters, setFilters }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   const categories = [
-    'Electronics',
-    'Sports & Recreation',
-    'Tools & Equipment',
-    'Photography',
-    'Music & Audio',
-    'Party & Events',
-    'Home & Garden',
-    'Transportation',
-    'Other'
+    "electronics",
+    "sports",
+    "tools",
+    "music",
+    "furniture",
+    "vehicles",
+    "other",
   ];
 
   const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const clearFilters = () => {
     setFilters({
-      search: '',
-      category: '',
-      priceMin: '',
-      priceMax: '',
-      startDate: '',
-      endDate: '',
+      search: "",
+      category: "",
+      priceMin: "",
+      priceMax: "",
+      startDate: "",
+      endDate: "",
     });
   };
 
-  const hasActiveFilters = Object.values(filters).some(value => value !== '');
+  const hasActiveFilters = Object.values(filters).some((value) => value !== "");
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -47,11 +45,11 @@ const SearchFilters = ({ filters, setFilters }) => {
           Filters
           {hasActiveFilters && (
             <span className="ml-2 bg-primary-500 text-white text-xs rounded-full px-2 py-0.5">
-              {Object.values(filters).filter(value => value !== '').length}
+              {Object.values(filters).filter((value) => value !== "").length}
             </span>
           )}
         </Button>
-        
+
         {hasActiveFilters && (
           <Button variant="ghost" onClick={clearFilters} className="text-sm">
             <X className="h-4 w-4 mr-1" />
@@ -68,13 +66,13 @@ const SearchFilters = ({ filters, setFilters }) => {
             </label>
             <select
               value={filters.category}
-              onChange={(e) => handleFilterChange('category', e.target.value)}
+              onChange={(e) => handleFilterChange("category", e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
                 </option>
               ))}
             </select>
@@ -87,7 +85,7 @@ const SearchFilters = ({ filters, setFilters }) => {
             <input
               type="date"
               value={filters.startDate}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
+              onChange={(e) => handleFilterChange("startDate", e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
@@ -99,7 +97,7 @@ const SearchFilters = ({ filters, setFilters }) => {
             <input
               type="date"
               value={filters.endDate}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
+              onChange={(e) => handleFilterChange("endDate", e.target.value)}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
@@ -113,14 +111,14 @@ const SearchFilters = ({ filters, setFilters }) => {
                 type="number"
                 placeholder="Min"
                 value={filters.priceMin}
-                onChange={(e) => handleFilterChange('priceMin', e.target.value)}
+                onChange={(e) => handleFilterChange("priceMin", e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
               <input
                 type="number"
                 placeholder="Max"
                 value={filters.priceMax}
-                onChange={(e) => handleFilterChange('priceMax', e.target.value)}
+                onChange={(e) => handleFilterChange("priceMax", e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
               />
             </div>
