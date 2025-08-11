@@ -1,0 +1,842 @@
+openapi: 3.0.3
+info:
+  title: P2P Marketplace API
+  description: |
+    A comprehensive REST API for a peer-to-peer marketplace platform where users can rent out items to each other.
+    
+    ## Features
+    - User authentication and authorization
+    - Listing management for hosts
+    - Order processing and management
+    - Integrated payment system with Razorpay
+    - Host and admin dashboards
+    - Real-time availability checking
+    
+    ## Authentication
+    This API uses JWT (JSON Web Tokens) for authentication. Include the token in the Authorization header:
+    `Authorization: Bearer <your-jwt-token>`
+    
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@p2pmarketplace.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://api.p2pmarketplace.com
+    description: Production server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Authentication endpoints
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register new user
+      description: Create a new user account with optional host profile
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistration'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login user
+      description: Authenticate user and receive JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogin'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /auth/me:
+    get:
+      tags:
+        - Authentication
+      summary: Get user profile
+      description: Get current user's profile information
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          user:
+                            $ref: '#/components/schemas/User'
+
+  # Listings endpoints
+  /listings:
+    get:
+      tags:
+        - Listings
+      summary: Get all listings
+      description: Retrieve all published listings with optional filters
+      security: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 12
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            $ref: '#/components/schemas/Category'
+        - name: location
+          in: query
+          schema:
+            type: string
+        - name: minPrice
+          in: query
+          schema:
+            type: number
+        - name: maxPrice
+          in: query
+          schema:
+            type: number
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: qty
+          in: query
+          schema:
+            type: integer
+            default: 1
+      responses:
+        '200':
+          description: Listings retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          listings:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Listing'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+
+    post:
+      tags:
+        - Listings
+      summary: Create listing
+      description: Create a new listing (host only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListingCreate'
+      responses:
+        '201':
+          description: Listing created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          listing:
+                            $ref: '#/components/schemas/Listing'
+
+  /listings/{id}:
+    get:
+      tags:
+        - Listings
+      summary: Get single listing
+      description: Get detailed information about a specific listing
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Listing retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          listing:
+                            $ref: '#/components/schemas/ListingDetail'
+
+  # Orders endpoints
+  /orders:
+    post:
+      tags:
+        - Orders
+      summary: Create order
+      description: Create a new rental order
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderCreate'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          order:
+                            $ref: '#/components/schemas/Order'
+
+  /orders/my-orders:
+    get:
+      tags:
+        - Orders
+      summary: Get user orders
+      description: Get current user's orders
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/OrderStatus'
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          orders:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Order'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+
+  # Host dashboard endpoints
+  /host/dashboard:
+    get:
+      tags:
+        - Host Dashboard
+      summary: Get host dashboard
+      description: Get host dashboard statistics
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/HostDashboard'
+
+  # Admin endpoints
+  /admin/dashboard:
+    get:
+      tags:
+        - Admin Panel
+      summary: Get admin dashboard
+      description: Get comprehensive platform statistics
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AdminDashboard'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Base response schemas
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation successful"
+
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error description"
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 100
+        pages:
+          type: integer
+          example: 10
+
+    # User schemas
+    UserRegistration:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 100
+          example: "John Doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          minLength: 6
+          example: "password123"
+        isHost:
+          type: boolean
+          default: false
+        hostProfile:
+          type: object
+          properties:
+            displayName:
+              type: string
+              example: "John's Rentals"
+            phone:
+              type: string
+              example: "+1234567890"
+            address:
+              type: string
+              example: "123 Main St, City, State"
+            bio:
+              type: string
+              example: "I rent out electronics and tools"
+
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        password:
+          type: string
+          example: "password123"
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        name:
+          type: string
+          example: "John Doe"
+        email:
+          type: string
+          example: "john@example.com"
+        isHost:
+          type: boolean
+          example: false
+        role:
+          type: string
+          enum: [customer, host, admin]
+          example: "customer"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AuthResponse:
+      allOf:
+        - $ref: '#/components/schemas/SuccessResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                user:
+                  $ref: '#/components/schemas/User'
+                token:
+                  type: string
+                  example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+    # Listing schemas
+    Category:
+      type: string
+      enum: [electronics, vehicles, sports, music, tools, furniture, other]
+
+    UnitType:
+      type: string
+      enum: [hour, day, week]
+
+    ListingStatus:
+      type: string
+      enum: [draft, published, paused, archived]
+
+    ListingCreate:
+      type: object
+      required:
+        - title
+        - description
+        - category
+        - basePrice
+        - totalQuantity
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          example: "Professional Camera Kit"
+        description:
+          type: string
+          maxLength: 2000
+          example: "High-quality DSLR camera with lenses"
+        category:
+          $ref: '#/components/schemas/Category'
+        basePrice:
+          type: number
+          minimum: 1
+          example: 50
+        unitType:
+          $ref: '#/components/schemas/UnitType'
+          default: day
+        location:
+          type: string
+          example: "New York, NY"
+        images:
+          type: array
+          items:
+            type: string
+          example: ["image1.jpg", "image2.jpg"]
+        totalQuantity:
+          type: integer
+          minimum: 1
+          example: 3
+        depositType:
+          type: string
+          enum: [flat, percent]
+          default: percent
+        depositValue:
+          type: number
+          minimum: 0
+          example: 20
+
+    Listing:
+      allOf:
+        - $ref: '#/components/schemas/ListingCreate'
+        - type: object
+          properties:
+            _id:
+              type: string
+              example: "507f1f77bcf86cd799439011"
+            ownerId:
+              type: string
+              example: "507f1f77bcf86cd799439012"
+            status:
+              $ref: '#/components/schemas/ListingStatus'
+            availableQuantity:
+              type: integer
+              example: 2
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    ListingDetail:
+      allOf:
+        - $ref: '#/components/schemas/Listing'
+        - type: object
+          properties:
+            owner:
+              type: object
+              properties:
+                _id:
+                  type: string
+                name:
+                  type: string
+                hostProfile:
+                  type: object
+                  properties:
+                    displayName:
+                      type: string
+                    verified:
+                      type: boolean
+
+    # Order schemas
+    OrderStatus:
+      type: string
+      enum: [pending, confirmed, in_progress, completed, cancelled, disputed]
+
+    PaymentStatus:
+      type: string
+      enum: [pending, partial, paid, refunded]
+
+    OrderLine:
+      type: object
+      required:
+        - listingId
+        - qty
+        - start
+        - end
+      properties:
+        listingId:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        qty:
+          type: integer
+          minimum: 1
+          example: 1
+        start:
+          type: string
+          format: date-time
+          example: "2023-12-01T00:00:00.000Z"
+        end:
+          type: string
+          format: date-time
+          example: "2023-12-03T00:00:00.000Z"
+
+    OrderCreate:
+      type: object
+      required:
+        - lines
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        paymentOption:
+          type: string
+          enum: [deposit, full]
+          default: deposit
+
+    Order:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        orderNumber:
+          type: string
+          example: "ORD-20231201-001"
+        renterId:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+        hostId:
+          type: string
+          example: "507f1f77bcf86cd799439013"
+        lines:
+          type: array
+          items:
+            allOf:
+              - $ref: '#/components/schemas/OrderLine'
+              - type: object
+                properties:
+                  unitPrice:
+                    type: number
+                  lineTotal:
+                    type: number
+        subtotal:
+          type: number
+          example: 100
+        depositAmount:
+          type: number
+          example: 20
+        platformCommission:
+          type: number
+          example: 5
+        total:
+          type: number
+          example: 125
+        orderStatus:
+          $ref: '#/components/schemas/OrderStatus'
+        paymentStatus:
+          $ref: '#/components/schemas/PaymentStatus'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    # Dashboard schemas
+    HostDashboard:
+      type: object
+      properties:
+        stats:
+          type: object
+          properties:
+            totalListings:
+              type: integer
+              example: 5
+            activeListings:
+              type: integer
+              example: 4
+            totalOrders:
+              type: integer
+              example: 25
+            pendingPickups:
+              type: integer
+              example: 2
+            activeRentals:
+              type: integer
+              example: 3
+            thisMonthRevenue:
+              type: number
+              example: 1250
+            thisWeekOrders:
+              type: integer
+              example: 4
+            walletBalance:
+              type: number
+              example: 850
+        recentOrders:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+        popularListings:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              title:
+                type: string
+              orderCount:
+                type: integer
+              revenue:
+                type: number
+
+    AdminDashboard:
+      type: object
+      properties:
+        stats:
+          type: object
+          properties:
+            totalUsers:
+              type: integer
+              example: 150
+            totalHosts:
+              type: integer
+              example: 25
+            totalListings:
+              type: integer
+              example: 100
+            activeListings:
+              type: integer
+              example: 85
+            totalOrders:
+              type: integer
+              example: 500
+            completedOrders:
+              type: integer
+              example: 450
+            totalRevenue:
+              type: number
+              example: 5000
+            monthlyRevenue:
+              type: number
+              example: 800
+            disputedOrders:
+              type: integer
+              example: 2
+
+  responses:
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Validation failed"
+            errors:
+              - field: "email"
+                message: "Email is required"
+
+    UnauthorizedError:
+      description: Authentication error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Access token is required"
+
+    ForbiddenError:
+      description: Authorization error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Insufficient permissions"
+
+    NotFoundError:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Resource not found"
+
+    RateLimitError:
+      description: Rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            success: false
+            message: "Too many requests, please try again later"
+
+tags:
+  - name: Authentication
+    description: User authentication and profile management
+  - name: Listings
+    description: Item listing management
+  - name: Orders
+    description: Order creation and management
+  - name: Payments
+    description: Payment processing and management
+  - name: Host Dashboard
+    description: Host-specific functionality
+  - name: Admin Panel
+    description: Administrative functions
