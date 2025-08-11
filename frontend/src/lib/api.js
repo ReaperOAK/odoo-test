@@ -73,6 +73,8 @@ export const ordersAPI = {
   getById: (id) => api.get(`/orders/${id}`),
   updateStatus: (id, data) => api.patch(`/orders/${id}/status`, data),
   cancel: (id) => api.post(`/orders/${id}/cancel`),
+  initiatePayment: (id, data) => api.post(`/orders/${id}/initiate-payment`, data),
+  confirmPayment: (id, data) => api.post(`/orders/${id}/confirm-payment`, data),
 };
 
 // Payments API calls

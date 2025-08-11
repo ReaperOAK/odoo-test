@@ -11,7 +11,7 @@ const Checkout = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [paymentMethod, setPaymentMethod] = useState("mock");
+  const [paymentMethod, setPaymentMethod] = useState("polar");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const {
@@ -38,14 +38,14 @@ const Checkout = () => {
   });
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("en-IN", {
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "INR",
+      currency: "USD",
     }).format(price);
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString("en-IN", {
+    return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -53,12 +53,30 @@ const Checkout = () => {
   };
 
   const handlePayment = async () => {
+    setIsProcessing(true);
+    
     if (paymentMethod === "mock") {
-      setIsProcessing(true);
       // Simulate payment processing delay
       setTimeout(() => {
         mockPaymentMutation.mutate();
       }, 2000);
+    } else if (paymentMethod === "polar") {
+      try {
+        // Initiate payment with Polar
+        const response = await ordersAPI.initiatePayment(orderId, {
+          paymentMethod: "polar"
+        });
+        
+        if (response.data.checkoutUrl) {
+          // Redirect to Polar checkout
+          window.location.href = response.data.checkoutUrl;
+        } else {
+          throw new Error("No checkout URL received");
+        }
+      } catch (error) {
+        setIsProcessing(false);
+        alert(error.response?.data?.message || "Failed to initiate payment");
+      }
     }
   };
 
@@ -242,6 +260,24 @@ const Checkout = () => {
               <div className="mb-6">
                 <h3 className="font-medium mb-3">Payment Method</h3>
                 <div className="space-y-2">
+                  <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
+                    <input
+                      type="radio"
+                      name="paymentMethod"
+                      value="polar"
+                      checked={paymentMethod === "polar"}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="mr-3"
+                    />
+                    <CreditCard className="h-5 w-5 mr-2 text-gray-600" />
+                    <div>
+                      <div className="font-medium">Polar.sh Payment</div>
+                      <div className="text-sm text-gray-600">
+                        Secure payment processing via Polar.sh
+                      </div>
+                    </div>
+                  </label>
+                  
                   <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       type="radio"
