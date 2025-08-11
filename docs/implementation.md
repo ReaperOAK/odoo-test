@@ -23,7 +23,7 @@ Any user can list items such as equipment, bikes, speakers.
 Browses, requests booking, and pays.
 
 ### Platform
-Handles payments, holds funds (escrow or platform wallet), optionally charges commission, and processes payouts to hosts (via Razorpay payouts or manually).
+Handles payments, holds funds (escrow or platform wallet), optionally charges commission, and processes payouts to hosts (via Polar.sh payouts or manually).
 
 ### Reservation & Fulfillment
 Follows the original mockup: pickup/delivery, return, inspections, invoices — now per host listing.
@@ -34,7 +34,7 @@ Follows the original mockup: pickup/delivery, return, inspections, invoices — 
 - ✅ Multi-owner inventory (each listing owned by one host)
 - ✅ Dispute flow & damage hold
 - ✅ Atomic reservation system preventing conflicts
-- ✅ Complete payment integration with Razorpay
+- ✅ Complete payment integration with Polar.sh
 
 ## ✅ Completed Features (MVP + Bonus)
 
@@ -43,7 +43,7 @@ Follows the original mockup: pickup/delivery, return, inspections, invoices — 
 2. **Host Listing Creation** - Full CRUD with image support
 3. **Catalog & Search** - Advanced filtering and availability
 4. **Booking Request Flow** - Atomic reservation system
-5. **Payment Handling** - Razorpay integration + mock mode
+5. **Payment Handling** - Polar integration + mock mode
 6. **Fund Holding** - Platform wallet with payout tracking
 7. **Pickup/Return Status Updates** - Complete order lifecycle
 8. **Calendar View** - Host booking management
@@ -51,7 +51,7 @@ Follows the original mockup: pickup/delivery, return, inspections, invoices — 
 10. **Local Demo** - Working with `PAYMENT_MODE=mock`
 
 ### ✅ Bonus Features Completed
-- ✅ Host wallet & payout via Razorpay Payouts
+- ✅ Host wallet & payout via Polar Payouts
 - ✅ Comprehensive API testing suite (100% coverage)
 - ✅ Complete documentation (4 formats)
 - ✅ Docker containerization
@@ -92,13 +92,13 @@ Follows the original mockup: pickup/delivery, return, inspections, invoices — 
 - Build Product grid, Listing detail skeleton, booking form (dates qty).
 - Wire API client `api.js`.
 
-#### T4.5–T7.5 — Orders & Razorpay Integration (3 hrs) (Dev A)
-- Implement `POST /orders` that runs reservation transaction + creates order and Razorpay order (or mock).
-- Implement webhook `POST /webhook/razorpay` to verify signature and mark payment.
+#### T4.5–T7.5 — Orders & Polar Integration (3 hrs) (Dev A)
+- Implement `POST /orders` that runs reservation transaction + creates order and Polar order (or mock).
+- Implement webhook `POST /webhook/polar` to verify signature and mark payment.
 - Add PAYMENT_MODE env fallback to create fake payment & emit event.
 
 #### T4.5–T7.5 — Booking UX + Checkout (3 hrs) (Dev B)
-- Implement booking flow: select dates → check availability → create order → call backend to create Razorpay order → open Razorpay checkout (or mock modal) → on success call backend confirm payment endpoint.
+- Implement booking flow: select dates → check availability → create order → call backend to create Polar order → open Polar checkout (or mock modal) → on success call backend confirm payment endpoint.
 - Show clear deposit vs full payment UI. Default: take 30% deposit.
 
 #### T7.5–T10.5 — Host Dashboard + Calendar (3 hrs) (Dev B)
@@ -107,7 +107,7 @@ Follows the original mockup: pickup/delivery, return, inspections, invoices — 
 
 #### T7.5–T10.5 — Admin & Payouts Mock (3 hrs) (Dev A)
 - Simple admin endpoint to view unpaid host balances.
-- Implement mocked payout: mark payout processed (no Razorpay Payouts needed for demo).
+- Implement mocked payout: mark payout processed (no Polar Payouts needed for demo).
 
 #### T10.5–T13.5 — Polish + Seed Data + Tests (3 hrs) (Both)
 - Seed 3 hosts, 5 listings, 5 customers.
@@ -293,9 +293,9 @@ OrderSchema.index({ renterId: 1, hostId: 1, createdAt: -1 });
 const PaymentSchema = new Schema({
   orderId: { type: ObjectId, ref: 'Order' },
   amount: Number,
-  method: String, // 'razorpay' or 'mock'
-  razorpayPaymentId: String,
-  razorpayOrderId: String,
+  method: String, // 'polar' or 'mock'
+  polarOrderId: String,
+  polarPaymentId: String,
   status: { type: String, enum: ['initiated','success','failed'], default: 'initiated' },
   raw: Schema.Types.Mixed,
   createdAt: { type: Date, default: Date.now }
@@ -388,18 +388,17 @@ async function createOrderAndReserve({ renterId, lines, paymentMode }, session) 
 
 ---
 
-## Razorpay Flow
+## Polar Flow
 
 ### Steps
-1. Renter pays platform via Razorpay Order.
+1. Renter pays platform via Polar Order.
 2. On successful payment:
    - Create Payment record.
-   - Update Order payment status to `paid`.
    - Increase host wallet balance.
 3. Admin triggers payout mock.
 
 ### Security
-- Verify webhook signature with HMAC using `RAZORPAY_SECRET`.
+- Verify webhook signature with HMAC using `POLAR_WEBHOOK_SECRET`.
 
 ---
 
@@ -427,7 +426,7 @@ async function createOrderAndReserve({ renterId, lines, paymentMode }, session) 
 - `POST /api/orders/:id/return`
 
 ### Payments/Webhook
-- `POST /api/webhooks/razorpay`
+- `POST /api/webhooks/polar`
 
 ### Admin/Payouts
 - `GET /api/admin/payouts`

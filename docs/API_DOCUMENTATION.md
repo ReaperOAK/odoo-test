@@ -618,9 +618,9 @@ Get all payments for a specific order.
         "orderId": "order_id",
         "amount": 125,
         "type": "deposit",
-        "method": "razorpay",
+        "method": "polar",
         "status": "completed",
-        "gatewayPaymentId": "pay_razorpay_id",
+        "gatewayPaymentId": "pay_polar_id",
         "createdAt": "2023-11-25T00:00:00.000Z"
       }
     ]
@@ -647,12 +647,12 @@ Get details of a specific payment.
       "orderId": "order_id",
       "amount": 125,
       "type": "deposit",
-      "method": "razorpay",
+      "method": "polar",
       "status": "completed",
-      "gatewayPaymentId": "pay_razorpay_id",
+      "gatewayPaymentId": "pay_polar_id",
       "gatewayResponse": {
-        "payment_id": "pay_razorpay_id",
-        "order_id": "order_razorpay_id"
+        "payment_id": "pay_polar_id",
+        "order_id": "order_polar_id"
       },
       "createdAt": "2023-11-25T00:00:00.000Z"
     }
@@ -674,8 +674,8 @@ Retry a failed payment.
 {
   "success": true,
   "data": {
-    "razorpayOrder": {
-      "id": "order_razorpay_id",
+    "polarOrder": {
+      "id": "order_polar_id",
       "currency": "INR",
       "amount": 12500
     },
@@ -710,11 +710,11 @@ Simulate successful payment for demo purposes.
 }
 ```
 
-### Razorpay Webhook
+### Polar Webhook
 
-**POST** `/payments/webhook/razorpay`
+**POST** `/payments/webhook/polar`
 
-Handle Razorpay payment webhooks (no authentication required).
+Handle Polar payment webhooks (no authentication required).
 
 ## Host Dashboard
 
@@ -1363,7 +1363,7 @@ Retry-After: 900
   "orderId": "ObjectId",
   "amount": "number",
   "type": "deposit|full|refund",
-  "method": "razorpay|manual|wallet",
+  "method": "polar|manual|wallet",
   "status": "pending|processing|completed|failed|cancelled",
   "gatewayPaymentId": "string",
   "gatewayOrderId": "string",
@@ -1385,10 +1385,10 @@ MONGODB_URI=mongodb://localhost:27017/p2p-marketplace
 JWT_SECRET=your-secret-key
 JWT_EXPIRES_IN=7d
 
-# Razorpay
-RAZORPAY_KEY_ID=your-razorpay-key-id
-RAZORPAY_KEY_SECRET=your-razorpay-key-secret
-RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
+# Polar.sh
+POLAR_ACCESS_TOKEN=your-polar-access-token
+POLAR_WEBHOOK_SECRET=your-polar-webhook-secret
+POLAR_BASE_URL=https://api.polar.sh
 
 # Server
 PORT=5000

@@ -52,7 +52,7 @@ A fully functional peer-to-peer rental platform where users can:
 - Notes and metadata tracking
 
 ### ✅ **Payment Integration**
-- Razorpay payment gateway integration
+- Polar.sh payment gateway integration
 - Mock payment mode for development
 - Deposit and full payment options
 - Webhook handling for payment confirmations
