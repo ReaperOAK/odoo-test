@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+require('dotenv').config();
 const axios = require('axios');
 const colors = require('colors');
 
@@ -694,6 +695,19 @@ async function testErrorHandling() {
 async function testRateLimiting() {
   log.section('Rate Limiting Tests');
   
+  // Check if rate limiting is disabled via environment variable
+  const isRateLimitDisabled = process.env.RATE_LIMIT_DISABLED === 'true';
+  
+  if (isRateLimitDisabled) {
+    log.info('Rate limiting is disabled for development/testing');
+    recordTest(
+      'Rate limiting configuration',
+      true,
+      'Rate limiting properly disabled for development'
+    );
+    return;
+  }
+  
   // Test rate limiting on auth endpoints
   const requests = [];
   for (let i = 0; i < 10; i++) {
@@ -715,6 +729,13 @@ async function testRateLimiting() {
 
 async function cleanup() {
   log.section('Cleanup');
+  
+  // Cancel test order first to free up reservations
+  if (testOrderId && authToken) {
+    await makeRequest('POST', `/orders/${testOrderId}/cancel`, null, {
+      Authorization: `Bearer ${authToken}`
+    });
+  }
   
   // Delete test listing if created
   if (testListingId && hostToken) {

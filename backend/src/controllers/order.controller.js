@@ -486,6 +486,7 @@ const updateOrderStatus = async (req, res, next) => {
 
     // Validate status transitions
     const validTransitions = {
+      'quote': ['confirmed', 'cancelled'],
       'confirmed': ['in_progress', 'cancelled'],
       'in_progress': ['completed', 'disputed'],
       'disputed': ['completed', 'cancelled']

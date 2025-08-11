@@ -9,7 +9,7 @@ const ReservationSchema = new mongoose.Schema({
   orderId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Order',
-    required: [true, 'Order ID is required']
+    required: false // Optional during creation, set after order is saved
   },
   qty: {
     type: Number,
