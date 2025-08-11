@@ -283,3 +283,4 @@
 {"level":"info","limit":12,"message":"Fetched 10 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:38:52.333Z"}
 {"level":"info","message":"User logged in successfully: john@electronics.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:39:01.276Z"}
 {"level":"info","message":"User logged in successfully: alice@customer.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:39:07.524Z"}
+{"level":"info","limit":12,"message":"Fetched 10 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:39:42.383Z"}
