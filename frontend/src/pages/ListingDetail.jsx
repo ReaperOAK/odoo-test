@@ -28,25 +28,38 @@ const ListingDetail = () => {
   } = useQuery({
     queryKey: ["listing", id],
     queryFn: () => listingsAPI.getById(id),
-    select: (data) => data.data.listing,
+    select: (response) => response.data.data?.listing || response.data.listing,
   });
 
   const createOrderMutation = useMutation({
     mutationFn: ordersAPI.create,
-    onSuccess: (data) => {
-      navigate(`/checkout/${data.data.order._id}`);
+    onSuccess: (response) => {
+      console.log('Order creation success:', response);
+      const orderId = response.data.data?.order?._id || response.data.order?._id;
+      if (orderId) {
+        navigate(`/checkout/${orderId}`);
+      } else {
+        alert('Order created but no ID returned');
+      }
     },
     onError: (error) => {
-      alert(error.response?.data?.message || "Failed to create order");
+      console.error('Order creation error:', error);
+      const errorMessage = error.response?.data?.message || error.message || "Failed to create order";
+      alert(errorMessage);
     },
   });
 
   const checkAvailabilityMutation = useMutation({
     mutationFn: ({ start, end, qty }) =>
       listingsAPI.checkAvailability(id, { start, end, qty }),
-    onSuccess: (data) => {
-      setAvailabilityData(data.data);
+    onSuccess: (response) => {
+      console.log('Availability response:', response);
+      setAvailabilityData(response.data.data || response.data);
     },
+    onError: (error) => {
+      console.error('Availability check error:', error);
+      setAvailabilityData({ available: false });
+    }
   });
 
   const formatPrice = (price) => {
@@ -67,11 +80,15 @@ const ListingDetail = () => {
 
   const calculateTotalPrice = () => {
     const duration = calculateDuration();
-    const subtotal = listing?.basePrice * duration * bookingData.quantity;
+    if (!listing?.basePrice || duration <= 0) {
+      return { subtotal: 0, deposit: 0, duration: 0 };
+    }
+    
+    const subtotal = listing.basePrice * duration * bookingData.quantity;
     const deposit =
-      listing?.depositType === "percent"
-        ? subtotal * (listing?.depositValue / 100)
-        : listing?.depositValue * bookingData.quantity;
+      listing.depositType === "percent"
+        ? subtotal * (listing.depositValue / 100)
+        : listing.depositValue * bookingData.quantity;
 
     return {
       subtotal,
@@ -81,8 +98,16 @@ const ListingDetail = () => {
   };
 
   const handleBookingSubmit = () => {
+    console.log('Auth state:', { user, isAuthenticated });
+    
     if (!isAuthenticated) {
+      console.log('User not authenticated, redirecting to login');
       navigate("/login");
+      return;
+    }
+
+    if (!bookingData.startDate || !bookingData.endDate) {
+      alert('Please select start and end dates');
       return;
     }
 
@@ -100,6 +125,8 @@ const ListingDetail = () => {
       paymentOption: bookingData.paymentOption,
     };
 
+    console.log('Creating order with data:', orderData);
+    console.log('User token exists:', !!localStorage.getItem('token'));
     createOrderMutation.mutate(orderData);
   };
 
@@ -237,16 +264,16 @@ const ListingDetail = () => {
             <Card.Content className="p-6">
               <div className="mb-4">
                 <div className="text-2xl font-bold text-gray-900">
-                  {formatPrice(listing?.basePrice)}
+                  {listing?.basePrice ? formatPrice(listing.basePrice) : 'Price not available'}
                   <span className="text-base font-normal text-gray-600">
-                    /{listing?.unitType}
+                    /{listing?.unitType || 'day'}
                   </span>
                 </div>
                 <div className="text-sm text-gray-600">
                   {listing?.depositType === "percent" &&
-                    `${listing?.depositValue}% deposit required`}
+                    `${listing?.depositValue || 0}% deposit required`}
                   {listing?.depositType === "flat" &&
-                    `${formatPrice(listing?.depositValue)} deposit required`}
+                    `${listing?.depositValue ? formatPrice(listing.depositValue) : 'No deposit'} deposit required`}
                 </div>
               </div>
 
@@ -316,7 +343,7 @@ const ListingDetail = () => {
                     </select>
                   </div>
 
-                  {bookingData.startDate && bookingData.endDate && (
+                  {bookingData.startDate && bookingData.endDate && priceInfo.duration > 0 && (
                     <div className="bg-gray-50 p-3 rounded-md space-y-2">
                       <div className="flex justify-between text-sm">
                         <span>Duration:</span>
@@ -335,7 +362,7 @@ const ListingDetail = () => {
                       <hr />
                       <div className="flex justify-between font-semibold">
                         <span>Total to pay now:</span>
-                        <span>{formatPrice(priceInfo.deposit)}</span>
+                        <span>{formatPrice(bookingData.paymentOption === 'full' ? priceInfo.subtotal : priceInfo.deposit)}</span>
                       </div>
                     </div>
                   )}

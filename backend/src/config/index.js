@@ -25,7 +25,7 @@ module.exports = {
   
   // Rate limiting
   RATE_LIMIT_WINDOW_MS: 15 * 60 * 1000, // 15 minutes
-  RATE_LIMIT_MAX_REQUESTS: 100,
+  RATE_LIMIT_MAX_REQUESTS: process.env.NODE_ENV === 'development' ? 1000 : 100, // Higher limit for dev
   
   // File upload
   MAX_FILE_SIZE: 5 * 1024 * 1024, // 5MB
