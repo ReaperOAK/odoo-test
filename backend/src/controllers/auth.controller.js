@@ -1,0 +1,381 @@
+const jwt = require('jsonwebtoken');
+const User = require('../models/User');
+const config = require('../config');
+const { logger } = require('../config/database');
+
+class AuthController {
+  /**
+   * Register new user
+   */
+  static async register(req, res) {
+    try {
+      const { name, email, password, isHost, hostProfile } = req.body;
+      
+      // Check if user already exists
+      const existingUser = await User.findByEmail(email);
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User with this email already exists'
+        });
+      }
+      
+      // Create user
+      const userData = {
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        passwordHash: password,
+        isHost: Boolean(isHost)
+      };
+      
+      // Add host profile if user is registering as host
+      if (isHost && hostProfile) {
+        userData.hostProfile = {
+          displayName: hostProfile.displayName?.trim(),
+          phone: hostProfile.phone?.trim(),
+          address: hostProfile.address?.trim(),
+          bio: hostProfile.bio?.trim(),
+          verified: false // Always start as unverified
+        };
+        userData.role = 'host';
+      }
+      
+      const user = new User(userData);
+      await user.save();
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          userId: user._id,
+          email: user.email,
+          role: user.role
+        },
+        config.JWT_SECRET,
+        { expiresIn: config.JWT_EXPIRES_IN }
+      );
+      
+      logger.info(`User registered successfully: ${user.email}`);
+      
+      res.status(201).json({
+        success: true,
+        message: 'User registered successfully',
+        data: {
+          user: user.getPublicProfile(),
+          token
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Registration error:', error);
+      
+      if (error.code === 11000) {
+        return res.status(400).json({
+          success: false,
+          message: 'Email already exists'
+        });
+      }
+      
+      if (error.name === 'ValidationError') {
+        const errors = Object.values(error.errors).map(err => ({
+          field: err.path,
+          message: err.message
+        }));
+        
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: 'Registration failed. Please try again.'
+      });
+    }
+  }
+  
+  /**
+   * Login user
+   */
+  static async login(req, res) {
+    try {
+      const { email, password } = req.body;
+      
+      // Find user by email
+      const user = await User.findByEmail(email);
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid email or password'
+        });
+      }
+      
+      // Check if account is active
+      if (!user.isActive) {
+        return res.status(401).json({
+          success: false,
+          message: 'Account is deactivated. Please contact support.'
+        });
+      }
+      
+      // Verify password
+      const isPasswordValid = await user.comparePassword(password);
+      if (!isPasswordValid) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid email or password'
+        });
+      }
+      
+      // Update last login
+      user.lastLogin = new Date();
+      await user.save();
+      
+      // Generate JWT token
+      const token = jwt.sign(
+        { 
+          userId: user._id,
+          email: user.email,
+          role: user.role
+        },
+        config.JWT_SECRET,
+        { expiresIn: config.JWT_EXPIRES_IN }
+      );
+      
+      logger.info(`User logged in successfully: ${user.email}`);
+      
+      res.json({
+        success: true,
+        message: 'Login successful',
+        data: {
+          user: user.getPublicProfile(),
+          token
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Login error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Login failed. Please try again.'
+      });
+    }
+  }
+  
+  /**
+   * Get current user profile
+   */
+  static async getProfile(req, res) {
+    try {
+      res.json({
+        success: true,
+        data: {
+          user: req.user.getPublicProfile()
+        }
+      });
+    } catch (error) {
+      logger.error('Get profile error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve profile'
+      });
+    }
+  }
+  
+  /**
+   * Update user profile
+   */
+  static async updateProfile(req, res) {
+    try {
+      const { name, hostProfile } = req.body;
+      const user = req.user;
+      
+      // Update basic info
+      if (name) {
+        user.name = name.trim();
+      }
+      
+      // Update host profile if user is a host
+      if (user.isHost && hostProfile) {
+        user.hostProfile = {
+          ...user.hostProfile,
+          displayName: hostProfile.displayName?.trim() || user.hostProfile?.displayName,
+          phone: hostProfile.phone?.trim() || user.hostProfile?.phone,
+          address: hostProfile.address?.trim() || user.hostProfile?.address,
+          bio: hostProfile.bio?.trim() || user.hostProfile?.bio
+          // Note: verified status can only be changed by admin
+        };
+      }
+      
+      await user.save();
+      
+      logger.info(`Profile updated for user: ${user.email}`);
+      
+      res.json({
+        success: true,
+        message: 'Profile updated successfully',
+        data: {
+          user: user.getPublicProfile()
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Update profile error:', error);
+      
+      if (error.name === 'ValidationError') {
+        const errors = Object.values(error.errors).map(err => ({
+          field: err.path,
+          message: err.message
+        }));
+        
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update profile'
+      });
+    }
+  }
+  
+  /**
+   * Become a host (upgrade regular user to host)
+   */
+  static async becomeHost(req, res) {
+    try {
+      const { hostProfile } = req.body;
+      const user = req.user;
+      
+      if (user.isHost) {
+        return res.status(400).json({
+          success: false,
+          message: 'User is already a host'
+        });
+      }
+      
+      // Update user to host
+      user.isHost = true;
+      user.role = 'host';
+      user.hostProfile = {
+        displayName: hostProfile?.displayName?.trim() || user.name,
+        phone: hostProfile?.phone?.trim(),
+        address: hostProfile?.address?.trim(),
+        bio: hostProfile?.bio?.trim(),
+        verified: false
+      };
+      
+      await user.save();
+      
+      logger.info(`User upgraded to host: ${user.email}`);
+      
+      res.json({
+        success: true,
+        message: 'Successfully upgraded to host account',
+        data: {
+          user: user.getPublicProfile()
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Become host error:', error);
+      
+      if (error.name === 'ValidationError') {
+        const errors = Object.values(error.errors).map(err => ({
+          field: err.path,
+          message: err.message
+        }));
+        
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors
+        });
+      }
+      
+      res.status(500).json({
+        success: false,
+        message: 'Failed to upgrade to host account'
+      });
+    }
+  }
+  
+  /**
+   * Change password
+   */
+  static async changePassword(req, res) {
+    try {
+      const { currentPassword, newPassword } = req.body;
+      const user = req.user;
+      
+      // Verify current password
+      const isCurrentPasswordValid = await user.comparePassword(currentPassword);
+      if (!isCurrentPasswordValid) {
+        return res.status(400).json({
+          success: false,
+          message: 'Current password is incorrect'
+        });
+      }
+      
+      // Update password
+      user.passwordHash = newPassword;
+      await user.save();
+      
+      logger.info(`Password changed for user: ${user.email}`);
+      
+      res.json({
+        success: true,
+        message: 'Password changed successfully'
+      });
+      
+    } catch (error) {
+      logger.error('Change password error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to change password'
+      });
+    }
+  }
+  
+  /**
+   * Refresh JWT token
+   */
+  static async refreshToken(req, res) {
+    try {
+      const user = req.user;
+      
+      // Generate new JWT token
+      const token = jwt.sign(
+        { 
+          userId: user._id,
+          email: user.email,
+          role: user.role
+        },
+        config.JWT_SECRET,
+        { expiresIn: config.JWT_EXPIRES_IN }
+      );
+      
+      res.json({
+        success: true,
+        message: 'Token refreshed successfully',
+        data: {
+          token,
+          user: user.getPublicProfile()
+        }
+      });
+      
+    } catch (error) {
+      logger.error('Refresh token error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to refresh token'
+      });
+    }
+  }
+}
+
+module.exports = AuthController;
