@@ -451,24 +451,23 @@ async function testPaymentEndpoints() {
     `Status: ${mockPaymentResponse.status}`
   );
   
-  // Test Razorpay webhook (no auth required)
+  // Test Polar webhook (no auth required)
   const webhookData = {
-    event: 'payment.captured',
-    payload: {
-      payment: {
-        entity: {
-          id: 'pay_test_123',
-          order_id: 'order_test_123',
-          status: 'captured',
-          amount: 5000
-        }
+    type: 'checkout.updated',
+    data: {
+      id: 'checkout_test_123',
+      status: 'completed',
+      amount: 5000,
+      currency: 'USD',
+      metadata: {
+        orderId: 'order_test_123'
       }
     }
   };
   
-  const webhookResponse = await makeRequest('POST', '/payments/webhook/razorpay', webhookData);
+  const webhookResponse = await makeRequest('POST', '/payments/webhook/polar', webhookData);
   recordTest(
-    'POST /payments/webhook/razorpay',
+    'POST /payments/webhook/polar',
     webhookResponse.status === 200 || webhookResponse.status === 400, // 400 for invalid signature is acceptable
     `Status: ${webhookResponse.status}`
   );

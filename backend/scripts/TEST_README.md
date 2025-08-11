@@ -99,7 +99,7 @@ The test suite covers all API endpoints:
 - GET /payments/:id
 - POST /payments/:id/retry
 - POST /payments/mock/:orderId/success
-- POST /payments/webhook/razorpay
+- POST /payments/webhook/polar
 
 ### ✅ Host Dashboard Endpoints
 - GET /host/dashboard
