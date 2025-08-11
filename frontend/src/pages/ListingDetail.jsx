@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { listingsAPI, ordersAPI } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
-import { Calendar, MapPin, User, Package, Shield, Clock } from "lucide-react";
+import { Calendar, MapPin, User, Package, Shield, Clock, Star, Tag } from "lucide-react";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 
@@ -236,11 +236,41 @@ const ListingDetail = () => {
             </div>
 
             <div className="prose max-w-none">
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
+              <h3 className="text-lg font-semibold mb-2">About This Item</h3>
               <p className="text-gray-600">{listing?.description}</p>
             </div>
 
-            {/* Host Info */}
+            {/* Features */}
+            {listing?.features?.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Key Features</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {listing.features.map((feature, index) => (
+                    <div key={index} className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-500 mr-2" />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Rental Rules */}
+            {listing?.rules?.length > 0 && (
+              <div>
+                <h3 className="text-lg font-semibold mb-3">Rental Rules</h3>
+                <div className="space-y-2">
+                  {listing.rules.map((rule, index) => (
+                    <div key={index} className="flex items-center">
+                      <Shield className="h-4 w-4 text-blue-500 mr-2" />
+                      <span className="text-sm text-gray-700">{rule}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Owner Info */}
             {listing?.ownerId && (
               <Card>
                 <Card.Content className="p-4">
@@ -250,14 +280,12 @@ const ListingDetail = () => {
                     </div>
                     <div>
                       <h4 className="font-semibold">{listing.ownerId.name}</h4>
-                      <p className="text-sm text-gray-600">
-                        {listing.ownerId.hostProfile?.displayName || "Host"}
-                      </p>
+                      <p className="text-sm text-gray-600">Item Owner</p>
                       {listing.ownerId.hostProfile?.verified && (
                         <div className="flex items-center mt-1">
                           <Shield className="h-4 w-4 text-green-500 mr-1" />
                           <span className="text-sm text-green-600">
-                            Verified Host
+                            Verified Owner
                           </span>
                         </div>
                       )}
@@ -269,7 +297,7 @@ const ListingDetail = () => {
           </div>
         </div>
 
-        {/* Booking Card */}
+        {/* Rental Card */}
         <div className="lg:col-span-1">
           <Card className="sticky top-4">
             <Card.Content className="p-6">
@@ -282,9 +310,9 @@ const ListingDetail = () => {
                 </div>
                 <div className="text-sm text-gray-600">
                   {listing?.depositType === "percent" &&
-                    `${listing?.depositValue || 0}% deposit required`}
+                    `${listing?.depositValue || 0}% security deposit required`}
                   {listing?.depositType === "flat" &&
-                    `${listing?.depositValue ? formatPrice(listing.depositValue) : 'No deposit'} deposit required`}
+                    `${listing?.depositValue ? formatPrice(listing.depositValue) : 'No deposit'} security deposit required`}
                 </div>
               </div>
 
@@ -293,7 +321,7 @@ const ListingDetail = () => {
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Start Date
+                        Rental Start
                       </label>
                       <input
                         type="date"
@@ -310,7 +338,7 @@ const ListingDetail = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        End Date
+                        Rental End
                       </label>
                       <input
                         type="date"
@@ -332,7 +360,7 @@ const ListingDetail = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Quantity
+                      Quantity Needed
                     </label>
                     <select
                       value={bookingData.quantity}
@@ -397,7 +425,7 @@ const ListingDetail = () => {
                           }
                           className="mr-2"
                         />
-                        <span className="text-sm">Pay deposit now</span>
+                        <span className="text-sm">Pay security deposit now</span>
                       </label>
                       <label className="flex items-center">
                         <input
@@ -413,7 +441,7 @@ const ListingDetail = () => {
                           }
                           className="mr-2"
                         />
-                        <span className="text-sm">Pay full amount now</span>
+                        <span className="text-sm">Pay full rental amount now</span>
                       </label>
                     </div>
                   </div>
@@ -454,20 +482,20 @@ const ListingDetail = () => {
                       }
                     >
                       {createOrderMutation.isPending
-                        ? "Creating Order..."
-                        : "Book Now"}
+                        ? "Creating Rental Order..."
+                        : "Rent Now"}
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-gray-600">This is your listing</p>
+                  <p className="text-gray-600">This is your item listing</p>
                   <Button
                     variant="outline"
                     className="mt-2"
                     onClick={() => navigate("/host/dashboard")}
                   >
-                    Manage Listing
+                    Manage Item
                   </Button>
                 </div>
               )}

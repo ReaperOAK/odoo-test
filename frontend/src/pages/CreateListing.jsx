@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useListings } from '../contexts/ListingsContext';
 import { listingsAPI } from '../lib/api';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -10,7 +11,11 @@ import Card from '../components/ui/Card';
 const CreateListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { refreshListings, addListingOptimistic } = useListings();
+
+  // Debug user info
+  console.log('Current user in CreateListing:', user);
+  console.log('User isHost:', user?.isHost);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -31,14 +36,28 @@ const CreateListing = () => {
 
   const createListingMutation = useMutation({
     mutationFn: listingsAPI.create,
-    onSuccess: (response) => {
+    onSuccess: async (response) => {
       console.log('Listing created successfully:', response);
-      queryClient.invalidateQueries({ queryKey: ['hostListings'] });
+      
+      // Add optimistic update first for immediate UI feedback
+      if (response.data?.listing) {
+        addListingOptimistic(response.data.listing);
+      }
+      
+      // Then refresh all data to ensure consistency
+      await refreshListings();
+      
+      // Navigate to dashboard
       navigate('/host/dashboard');
     },
     onError: (error) => {
       console.error('Error creating listing:', error);
-      setErrors({ submit: error.response?.data?.message || 'Failed to create listing' });
+      console.error('Error response data:', error.response?.data);
+      console.error('Error status:', error.response?.status);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to create listing';
+      const validationErrors = error.response?.data?.errors || [];
+      console.error('Validation errors:', validationErrors);
+      setErrors({ submit: errorMessage });
     }
   });
 
@@ -63,11 +82,41 @@ const CreateListing = () => {
 
     // Basic validation
     const newErrors = {};
-    if (!formData.title.trim()) newErrors.title = 'Title is required';
-    if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (!formData.location.trim()) newErrors.location = 'Location is required';
-    if (!formData.basePrice || formData.basePrice <= 0) newErrors.basePrice = 'Valid price is required';
-    if (!formData.totalQuantity || formData.totalQuantity <= 0) newErrors.totalQuantity = 'Quantity must be at least 1';
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required';
+    } else if (formData.title.trim().length < 5) {
+      newErrors.title = 'Title must be at least 5 characters';
+    } else if (formData.title.trim().length > 200) {
+      newErrors.title = 'Title cannot exceed 200 characters';
+    }
+    
+    if (!formData.description.trim()) {
+      newErrors.description = 'Description is required';
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description = 'Description must be at least 10 characters';
+    } else if (formData.description.trim().length > 2000) {
+      newErrors.description = 'Description cannot exceed 2000 characters';
+    }
+    
+    if (!formData.location.trim()) {
+      newErrors.location = 'Location is required';
+    } else if (formData.location.trim().length < 2) {
+      newErrors.location = 'Location must be at least 2 characters';
+    } else if (formData.location.trim().length > 200) {
+      newErrors.location = 'Location cannot exceed 200 characters';
+    }
+    
+    if (!formData.basePrice || formData.basePrice <= 0) {
+      newErrors.basePrice = 'Valid price is required';
+    } else if (formData.basePrice > 1000000) {
+      newErrors.basePrice = 'Price cannot exceed ₹10,00,000';
+    }
+    
+    if (!formData.totalQuantity || formData.totalQuantity <= 0) {
+      newErrors.totalQuantity = 'Quantity must be at least 1';
+    } else if (formData.totalQuantity > 1000) {
+      newErrors.totalQuantity = 'Quantity cannot exceed 1000';
+    }
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -85,11 +134,12 @@ const CreateListing = () => {
       images: formData.images ? formData.images.split(',').map(img => img.trim()).filter(img => img) : []
     };
 
+    console.log('Submitting listing data:', submitData);
     createListingMutation.mutate(submitData);
   };
 
   // Redirect if not a host
-  if (user && user.role !== 'host') {
+  if (user && !user.isHost) {
     navigate('/');
     return null;
   }

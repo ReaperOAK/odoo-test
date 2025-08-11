@@ -33,6 +33,9 @@ const Header = () => {
             <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
               Browse
             </Link>
+            <Link to="/state-comparison" className="text-gray-600 hover:text-gray-900 font-medium">
+              State Demo
+            </Link>
             {isAuthenticated && (
               <Link to="/my-bookings" className="text-gray-600 hover:text-gray-900 font-medium">
                 My Bookings
@@ -40,7 +43,7 @@ const Header = () => {
             )}
             {isHost && (
               <Link to="/host/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
-                Host Dashboard
+                Owner Dashboard
               </Link>
             )}
             {isAdmin && (
@@ -78,14 +81,24 @@ const Header = () => {
                         Profile
                       </Link>
                       {isHost && (
-                        <Link
-                          to="/host/dashboard"
-                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                          onClick={() => setIsUserMenuOpen(false)}
-                        >
-                          <Calendar className="h-4 w-4 mr-2" />
-                          Host Dashboard
-                        </Link>
+                        <>
+                          <Link
+                            to="/host/dashboard"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Owner Dashboard (TanStack)
+                          </Link>
+                          <Link
+                            to="/host/dashboard-context"
+                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                            onClick={() => setIsUserMenuOpen(false)}
+                          >
+                            <Calendar className="h-4 w-4 mr-2" />
+                            Owner Dashboard (Context)
+                          </Link>
+                        </>
                       )}
                       <button
                         onClick={handleLogout}
@@ -145,7 +158,7 @@ const Header = () => {
                   className="px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Host Dashboard
+                  Owner Dashboard
                 </Link>
               )}
               {isAdmin && (

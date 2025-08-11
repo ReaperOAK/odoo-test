@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Filter, X } from "lucide-react";
+import { Filter, X, Search } from "lucide-react";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 
@@ -7,13 +7,13 @@ const SearchFilters = ({ filters, setFilters }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   const categories = [
-    "electronics",
-    "sports",
-    "tools",
-    "music",
-    "furniture",
-    "vehicles",
-    "other",
+    { value: "electronics", label: "Electronics" },
+    { value: "vehicles", label: "Vehicles" },
+    { value: "sports", label: "Sports & Recreation" },
+    { value: "music", label: "Music & Audio" },
+    { value: "tools", label: "Tools & Equipment" },
+    { value: "furniture", label: "Furniture" },
+    { value: "other", label: "Other" },
   ];
 
   const handleFilterChange = (key, value) => {
@@ -71,8 +71,8 @@ const SearchFilters = ({ filters, setFilters }) => {
             >
               <option value="">All Categories</option>
               {categories.map((category) => (
-                <option key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                <option key={category.value} value={category.value}>
+                  {category.label}
                 </option>
               ))}
             </select>
@@ -80,24 +80,26 @@ const SearchFilters = ({ filters, setFilters }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Start Date
+              Rental Start
             </label>
             <input
               type="date"
               value={filters.startDate}
               onChange={(e) => handleFilterChange("startDate", e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              End Date
+              Rental End
             </label>
             <input
               type="date"
               value={filters.endDate}
               onChange={(e) => handleFilterChange("endDate", e.target.value)}
+              min={filters.startDate || new Date().toISOString().split("T")[0]}
               className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
