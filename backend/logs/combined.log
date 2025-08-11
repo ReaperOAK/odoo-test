@@ -208,3 +208,5 @@
 {"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-02.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T21:52:15.390Z"}
 {"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T21:52:15.397Z"}
 {"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T21:52:15.399Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T21:52:41.482Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T21:52:45.188Z"}
