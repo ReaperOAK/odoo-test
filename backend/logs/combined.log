@@ -284,3 +284,30 @@
 {"level":"info","message":"User logged in successfully: john@electronics.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:39:01.276Z"}
 {"level":"info","message":"User logged in successfully: alice@customer.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:39:07.524Z"}
 {"level":"info","limit":12,"message":"Fetched 10 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:39:42.383Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:44:01.768Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:44:07.962Z"}
+{"level":"info","limit":12,"message":"Fetched 2 listings","page":1,"query":{"$text":{"$search":"camera"},"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:44:36.629Z"}
+{"level":"info","limit":12,"message":"Fetched 3 listings","page":1,"query":{"category":"sports","status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:44:42.454Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:45:03.431Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:45:12.414Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:45:13.047Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:45:15.739Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:45:16.864Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:45:20.528Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:46:59.893Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:48:08.442Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:48:16.957Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:49:53.560Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:49:55.186Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:49:55.881Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:49:56.628Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:49:56.769Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:50:06.570Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:50:11.373Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:50:12.611Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:50:15.049Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:50:22.319Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:50:29.241Z"}
+{"level":"info","limit":12,"message":"Fetched 12 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:53:24.007Z"}
+{"level":"info","message":"Fetched listing 689a72ef00726d3af536880a","service":"p2p-marketplace","timestamp":"2025-08-11T22:54:18.019Z"}
+{"available":true,"availableQty":5,"end":"2025-08-26T00:00:00.000Z","level":"info","message":"Checked availability for listing 689a72ef00726d3af536880a","qty":1,"service":"p2p-marketplace","start":"2025-08-21T00:00:00.000Z","timestamp":"2025-08-11T22:54:46.822Z"}

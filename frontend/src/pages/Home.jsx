@@ -15,18 +15,28 @@ const Home = () => {
     endDate: "",
   });
 
+  // Transform filters to match backend API expectations
+  const apiFilters = {
+    search: filters.search,
+    category: filters.category,
+    minPrice: filters.priceMin,
+    maxPrice: filters.priceMax,
+    from: filters.startDate,
+    to: filters.endDate,
+  };
+
   const {
     data: listingsData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["listings", filters],
-    queryFn: () => listingsAPI.getAll(filters),
-    select: (data) => data.data,
+    queryKey: ["listings", apiFilters],
+    queryFn: () => listingsAPI.getAll(apiFilters),
+    select: (response) => response.data,
   });
 
-  const listings = listingsData?.listings || [];
-  const pagination = listingsData?.pagination || {};
+  const listings = listingsData?.data?.listings || [];
+  const pagination = listingsData?.data?.pagination || {};
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
