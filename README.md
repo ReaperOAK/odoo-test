@@ -38,12 +38,14 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 ## 📚 Documentation
 
 ### API Documentation
+
 - **[Complete API Documentation](docs/API_DOCUMENTATION.md)** - Comprehensive API guide with examples
 - **[API Quick Reference](docs/API_QUICK_REFERENCE.md)** - Quick reference for all endpoints
 - **[OpenAPI Specification](docs/openapi.yaml)** - Machine-readable API specification
 - **[Postman Collection](docs/P2P_Marketplace_API.postman_collection.json)** - Ready-to-use Postman collection
 
 ### Additional Documentation
+
 - **[Implementation Guide](docs/implementation.md)** - Implementation details and architecture
 - **[Backend TODO](docs/TODO-BACKEND.md)** - Backend development roadmap
 - **[Frontend TODO](docs/TODO-FRONTEND.md)** - Frontend development roadmap
@@ -52,6 +54,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 ## 🛠️ Tech Stack
 
 ### Backend
+
 - **Node.js** - Runtime environment
 - **Express.js** - Web framework
 - **MongoDB** - Database with Mongoose ODM
@@ -62,6 +65,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 - **Bcrypt** - Password hashing
 
 ### Frontend
+
 - **React.js** - UI library
 - **Vite** - Build tool
 - **TailwindCSS** - Utility-first CSS framework
@@ -69,6 +73,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 - **React Router** - Client-side routing
 
 ### DevOps
+
 - **Docker** - Containerization
 - **Docker Compose** - Multi-container orchestration
 - **MongoDB** - Database server
@@ -76,6 +81,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js (v16 or higher)
 - MongoDB (local or cloud)
 - Git
@@ -83,18 +89,20 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone <repository-url>
    cd odoo-test
    ```
 
 2. **Set up environment variables**
+
    ```bash
    # Backend
    cd backend
    cp .env.example .env
    # Edit .env with your configuration
-   
+
    # Frontend
    cd ../frontend
    cp .env.example .env
@@ -102,33 +110,37 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
    ```
 
 3. **Install dependencies**
+
    ```bash
    # Backend
    cd backend
    npm install
-   
+
    # Frontend
    cd ../frontend
    npm install
    ```
 
 4. **Start MongoDB** (if running locally)
+
    ```bash
    mongod
    ```
 
 5. **Seed the database** (optional)
+
    ```bash
    cd backend
    npm run seed
    ```
 
 6. **Start the development servers**
+
    ```bash
    # Backend (Terminal 1)
    cd backend
    npm run dev
-   
+
    # Frontend (Terminal 2)
    cd frontend
    npm run dev
@@ -143,8 +155,9 @@ docker-compose up -d
 ```
 
 This will start:
+
 - MongoDB database
-- Backend API server on port 3000
+- Backend API server on port 5000
 - Frontend development server on port 5173
 
 ## 🔧 Configuration
@@ -152,6 +165,7 @@ This will start:
 ### Environment Variables
 
 #### Backend (.env)
+
 ```env
 # Database
 MONGODB_URI=mongodb://localhost:27017/p2p-marketplace
@@ -166,13 +180,14 @@ RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
 
 # Server
-PORT=3000
+PORT=5000
 NODE_ENV=development
 ```
 
 #### Frontend (.env)
+
 ```env
-VITE_API_URL=http://localhost:3000/api
+VITE_API_URL=http://localhost:5000/api
 VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 ```
 
@@ -181,8 +196,9 @@ VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 ### Authentication Flow
 
 1. **Register a new user**
+
    ```bash
-   curl -X POST http://localhost:3000/api/auth/register \
+   curl -X POST http://localhost:5000/api/auth/register \
      -H "Content-Type: application/json" \
      -d '{
        "name": "John Doe",
@@ -192,8 +208,9 @@ VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
    ```
 
 2. **Login and get token**
+
    ```bash
-   curl -X POST http://localhost:3000/api/auth/login \
+   curl -X POST http://localhost:5000/api/auth/login \
      -H "Content-Type: application/json" \
      -d '{
        "email": "john@example.com",
@@ -204,13 +221,13 @@ VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 3. **Use token for authenticated requests**
    ```bash
    curl -H "Authorization: Bearer <your-jwt-token>" \
-     http://localhost:3000/api/auth/me
+     http://localhost:5000/api/auth/me
    ```
 
 ### Creating a Listing (Host)
 
 ```bash
-curl -X POST http://localhost:3000/api/listings \
+curl -X POST http://localhost:5000/api/listings \
   -H "Authorization: Bearer <your-jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -227,7 +244,7 @@ curl -X POST http://localhost:3000/api/listings \
 ### Creating an Order
 
 ```bash
-curl -X POST http://localhost:3000/api/orders \
+curl -X POST http://localhost:5000/api/orders \
   -H "Authorization: Bearer <your-jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -246,7 +263,7 @@ curl -X POST http://localhost:3000/api/orders \
 ### Using Postman
 
 1. Import the [Postman collection](docs/P2P_Marketplace_API.postman_collection.json)
-2. Set the `baseUrl` variable to `http://localhost:3000/api`
+2. Set the `baseUrl` variable to `http://localhost:5000/api`
 3. Register/login to get an auth token
 4. The token will be automatically set for authenticated requests
 
@@ -267,12 +284,14 @@ All API endpoints can be tested using curl, Postman, or any HTTP client. See the
 ## 📊 User Roles
 
 ### Customer (Default)
+
 - Browse and search listings
 - Create orders and make payments
 - View order history
 - Update profile
 
 ### Host
+
 - All customer permissions
 - Create and manage listings
 - View host dashboard
@@ -280,6 +299,7 @@ All API endpoints can be tested using curl, Postman, or any HTTP client. See the
 - Handle pickups and returns
 
 ### Admin
+
 - All permissions
 - Manage all users and listings
 - View platform analytics
@@ -291,18 +311,21 @@ All API endpoints can be tested using curl, Postman, or any HTTP client. See the
 ### Production Checklist
 
 1. **Environment Setup**
+
    - Set `NODE_ENV=production`
    - Configure production database
    - Set up proper JWT secrets
    - Configure Razorpay production keys
 
 2. **Security**
+
    - Enable HTTPS
    - Configure proper CORS origins
    - Set up rate limiting
    - Configure logging
 
 3. **Database**
+
    - Set up MongoDB replica set
    - Configure backups
    - Set up monitoring
@@ -327,6 +350,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Support
 
 For support and questions:
+
 - Create an issue in the repository
 - Email: support@p2pmarketplace.com
 - Documentation: [docs/](docs/)

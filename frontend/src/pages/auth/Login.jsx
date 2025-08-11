@@ -5,6 +5,22 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Card from '../../components/ui/Card';
 
+// Demo credentials from seed data
+const DEMO_CREDENTIALS = {
+  admin: {
+    email: 'admin@marketplace.com',
+    password: 'admin123'
+  },
+  host: {
+    email: 'john@electronics.com',
+    password: 'host123'
+  },
+  customer: {
+    email: 'alice@customer.com',
+    password: 'customer123'
+  }
+};
+
 const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -27,20 +43,37 @@ const Login = () => {
     }
   };
 
+  const fillDemoCredentials = (type) => {
+    setFormData(DEMO_CREDENTIALS[type]);
+    setErrors({});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!formData.email || !formData.password) {
+      setErrors({ general: 'Please fill in all fields' });
+      return;
+    }
+
     setLoading(true);
     setErrors({});
 
-    const result = await login(formData);
-    
-    if (result.success) {
-      navigate(from, { replace: true });
-    } else {
-      setErrors({ general: result.error });
+    try {
+      const result = await login(formData);
+      
+      if (result.success) {
+        navigate(from, { replace: true });
+      } else {
+        setErrors({ general: result.error });
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setErrors({ general: 'An unexpected error occurred. Please try again.' });
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
   return (
@@ -63,6 +96,34 @@ const Login = () => {
         
         <Card>
           <Card.Content className="p-6">
+            {/* Demo Credentials Section */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="text-sm font-semibold text-blue-900 mb-3">Quick Demo Access</h3>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => fillDemoCredentials('admin')}
+                  className="px-3 py-1 bg-purple-100 text-purple-700 text-xs rounded-full hover:bg-purple-200 transition-colors"
+                >
+                  Admin User
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillDemoCredentials('host')}
+                  className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full hover:bg-green-200 transition-colors"
+                >
+                  Host User
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillDemoCredentials('customer')}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-full hover:bg-blue-200 transition-colors"
+                >
+                  Customer User
+                </button>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {errors.general && (
                 <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">

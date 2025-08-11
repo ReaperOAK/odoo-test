@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const response = await authAPI.getProfile();
-          setUser(response.data.user);
+          setUser(response.data.data.user);
         } catch (error) {
           localStorage.removeItem('token');
         }
@@ -34,12 +34,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (credentials) => {
     try {
+      console.log('Attempting login with:', { email: credentials.email, passwordLength: credentials.password?.length });
       const response = await authAPI.login(credentials);
-      const { token, user } = response.data;
+      console.log('API Response:', response.data);
+      
+      // The API returns data in response.data.data format
+      const { token, user } = response.data.data;
       localStorage.setItem('token', token);
       setUser(user);
+      console.log('Login successful:', { user: user?.email, role: user?.role });
       return { success: true, user };
     } catch (error) {
+      console.error('Login failed:', error.response?.data || error.message);
       return { 
         success: false, 
         error: error.response?.data?.message || 'Login failed' 
@@ -50,7 +56,7 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const response = await authAPI.register(userData);
-      const { token, user } = response.data;
+      const { token, user } = response.data.data;
       localStorage.setItem('token', token);
       setUser(user);
       return { success: true, user };

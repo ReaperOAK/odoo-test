@@ -9,17 +9,18 @@ const ListingCard = ({ listing }) => {
     images,
     basePrice,
     unitType,
-    owner,
+    ownerId,
     location,
-    rating,
     totalQuantity,
-    category
+    category,
+    depositType,
+    depositValue
   } = listing;
 
   const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
     }).format(price);
   };
 
@@ -65,7 +66,7 @@ const ListingCard = ({ listing }) => {
             {location && (
               <div className="flex items-center text-sm text-gray-600">
                 <MapPin className="h-4 w-4 mr-1" />
-                {location.city}, {location.state}
+                {location}
               </div>
             )}
             
@@ -77,23 +78,21 @@ const ListingCard = ({ listing }) => {
                 </span>
               </div>
               
-              {rating && (
-                <div className="flex items-center text-sm text-gray-600">
-                  <Star className="h-4 w-4 text-yellow-400 mr-1" />
-                  {rating.toFixed(1)}
-                </div>
-              )}
+              <div className="text-sm text-gray-600">
+                {depositType === 'percent' && `${depositValue}% deposit`}
+                {depositType === 'flat' && `₹${depositValue} deposit`}
+              </div>
             </div>
             
-            {owner && (
+            {ownerId && (
               <div className="flex items-center text-sm text-gray-600 pt-2 border-t">
                 <div className="bg-gray-200 rounded-full p-1 mr-2">
                   <User className="h-3 w-3" />
                 </div>
-                <span>{owner.name}</span>
-                {owner.verified && (
+                <span>{ownerId.name || 'Host'}</span>
+                {ownerId.hostProfile?.verified && (
                   <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
-                    Verified
+                    Verified Host
                   </span>
                 )}
               </div>

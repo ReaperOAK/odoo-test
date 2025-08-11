@@ -27,9 +27,20 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Log error for debugging
+    console.error('API Error:', {
+      url: error.config?.url,
+      method: error.config?.method,
+      status: error.response?.status,
+      data: error.response?.data
+    });
+    
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      // Only redirect if not already on login page
+      if (!window.location.pathname.includes('/login')) {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -39,9 +50,10 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (userData) => api.post('/auth/register', userData),
   login: (credentials) => api.post('/auth/login', credentials),
-  getProfile: () => api.get('/auth/profile'),
+  getProfile: () => api.get('/auth/me'),
   updateProfile: (data) => api.patch('/auth/profile', data),
-  upgradeToHost: () => api.patch('/auth/upgrade-to-host'),
+  becomeHost: (data) => api.post('/auth/become-host', data),
+  changePassword: (data) => api.post('/auth/change-password', data),
 };
 
 // Listings API calls
@@ -57,33 +69,42 @@ export const listingsAPI = {
 // Orders API calls
 export const ordersAPI = {
   create: (data) => api.post('/orders', data),
-  getAll: (params) => api.get('/orders', { params }),
+  getMyOrders: (params) => api.get('/orders/my-orders', { params }),
   getById: (id) => api.get(`/orders/${id}`),
-  updateStatus: (id, status) => api.patch(`/orders/${id}/status`, { status }),
+  updateStatus: (id, data) => api.patch(`/orders/${id}/status`, data),
+  cancel: (id) => api.post(`/orders/${id}/cancel`),
 };
 
 // Payments API calls
 export const paymentsAPI = {
-  createOrder: (data) => api.post('/payments/create-order', data),
-  verifyPayment: (data) => api.post('/payments/verify', data),
-  mockPayment: (orderId) => api.post(`/payments/mock/${orderId}`),
+  getOrderPayments: (orderId) => api.get(`/payments/orders/${orderId}/payments`),
+  getPaymentDetails: (id) => api.get(`/payments/${id}`),
+  retryPayment: (id) => api.post(`/payments/${id}/retry`),
+  mockPaymentSuccess: (orderId) => api.post(`/payments/mock/${orderId}/success`),
 };
 
 // Host API calls
 export const hostAPI = {
   getDashboard: () => api.get('/host/dashboard'),
-  getEarnings: (params) => api.get('/host/earnings', { params }),
-  getReservations: (params) => api.get('/host/reservations', { params }),
-  updateReservationStatus: (id, status) => api.patch(`/host/reservations/${id}/status`, { status }),
+  getListings: (params) => api.get('/host/listings', { params }),
+  getOrders: (params) => api.get('/host/orders', { params }),
+  getCalendar: (params) => api.get('/host/calendar', { params }),
+  getWalletTransactions: (params) => api.get('/host/wallet/transactions', { params }),
+  markPickup: (orderId, data) => api.post(`/host/orders/${orderId}/pickup`, data),
+  markReturn: (orderId, data) => api.post(`/host/orders/${orderId}/return`, data),
 };
 
 // Admin API calls
 export const adminAPI = {
   getDashboard: () => api.get('/admin/dashboard'),
+  getAnalytics: () => api.get('/admin/analytics'),
   getUsers: (params) => api.get('/admin/users', { params }),
+  updateUser: (id, data) => api.patch(`/admin/users/${id}`, data),
   getOrders: (params) => api.get('/admin/orders', { params }),
-  updateUserStatus: (id, status) => api.patch(`/admin/users/${id}/status`, { status }),
-  resolveDispute: (id, resolution) => api.post(`/admin/disputes/${id}/resolve`, resolution),
+  resolveDispute: (orderId, data) => api.post(`/admin/orders/${orderId}/resolve-dispute`, data),
+  getPayouts: (params) => api.get('/admin/payouts', { params }),
+  createPayout: (data) => api.post('/admin/payouts', data),
+  processPayout: (id, data) => api.post(`/admin/payouts/${id}/process`, data),
 };
 
 export default api;

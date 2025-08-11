@@ -210,3 +210,76 @@
 {"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T21:52:15.399Z"}
 {"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T21:52:41.482Z"}
 {"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T21:52:45.188Z"}
+{"level":"info","message":"Connected to MongoDB for seeding","service":"p2p-marketplace","timestamp":"2025-08-11T22:10:44.909Z"}
+{"code":11000,"errorLabelSet":{},"errorResponse":{"code":11000,"errmsg":"E11000 duplicate key error collection: test.users index: email_1 dup key: { email: \"admin@marketplace.com\" }","index":0,"keyPattern":{"email":1},"keyValue":{"email":"admin@marketplace.com"}},"index":0,"keyPattern":{"email":1},"keyValue":{"email":"admin@marketplace.com"},"level":"error","message":"Error seeding database: E11000 duplicate key error collection: test.users index: email_1 dup key: { email: \"admin@marketplace.com\" }","service":"p2p-marketplace","stack":"MongoServerError: E11000 duplicate key error collection: test.users index: email_1 dup key: { email: \"admin@marketplace.com\" }\n    at InsertOneOperation.execute (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\mongodb\\lib\\operations\\insert.js:51:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async tryOperation (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:207:20)\n    at async executeOperation (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\mongodb\\lib\\operations\\execute_operation.js:75:16)\n    at async Collection.insertOne (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\mongodb\\lib\\collection.js:157:16)","timestamp":"2025-08-11T22:10:45.631Z"}
+{"level":"info","message":"Connected to MongoDB for seeding","service":"p2p-marketplace","timestamp":"2025-08-11T22:11:11.904Z"}
+{"level":"info","message":"Cleared existing data","service":"p2p-marketplace","timestamp":"2025-08-11T22:11:12.426Z"}
+{"level":"info","message":"Created admin user","service":"p2p-marketplace","timestamp":"2025-08-11T22:11:13.028Z"}
+{"level":"info","message":"Created host users","service":"p2p-marketplace","timestamp":"2025-08-11T22:11:14.183Z"}
+{"level":"info","message":"Created customer users","service":"p2p-marketplace","timestamp":"2025-08-11T22:11:15.880Z"}
+{"level":"info","message":"Created listings","service":"p2p-marketplace","timestamp":"2025-08-11T22:11:16.104Z"}
+{"level":"error","message":"Error seeding database: Line total does not match unit price × quantity × duration. Expected: 10000, got: 6000","service":"p2p-marketplace","stack":"Error: Line total does not match unit price × quantity × duration. Expected: 10000, got: 6000\n    at C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\src\\models\\Order.js:306:21\n    at Proxy.forEach (<anonymous>)\n    at model.<anonymous> (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\src\\models\\Order.js:298:16)\n    at callMiddlewareFunction (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\kareem\\index.js:628:27)\n    at model.next (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\kareem\\index.js:93:7)\n    at _next (C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\kareem\\index.js:146:10)\n    at C:\\sujal web devlopment\\REACT\\try-3\\odoo-test\\backend\\node_modules\\kareem\\index.js:653:30\n    at process.processTicksAndRejections (node:internal/process/task_queues:85:11)","timestamp":"2025-08-11T22:11:16.369Z"}
+{"level":"info","message":"Connected to MongoDB for seeding","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:00.673Z"}
+{"level":"info","message":"Cleared existing data","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:01.134Z"}
+{"level":"info","message":"Created admin user","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:01.730Z"}
+{"level":"info","message":"Created host users","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:02.875Z"}
+{"level":"info","message":"Created customer users","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:04.477Z"}
+{"level":"info","message":"Created listings","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:04.693Z"}
+{"level":"info","message":"Created sample orders and reservations","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:05.089Z"}
+{"level":"info","message":"Created sample payouts","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:05.141Z"}
+{"level":"info","message":"Razorpay service initialized in MOCK mode","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:24.090Z"}
+{"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-02.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:24.534Z"}
+{"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:24.541Z"}
+{"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T22:12:24.542Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:13:05.240Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:14:26.492Z"}
+{"level":"info","message":"Razorpay service initialized in MOCK mode","service":"p2p-marketplace","timestamp":"2025-08-11T22:23:54.316Z"}
+{"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-02.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T22:23:55.104Z"}
+{"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T22:23:55.109Z"}
+{"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T22:23:55.111Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:23:55.555Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:24:52.826Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","service":"p2p-marketplace","timestamp":"2025-08-11T22:27:15.161Z"}
+{"level":"info","message":"Razorpay service initialized in MOCK mode","service":"p2p-marketplace","timestamp":"2025-08-11T22:27:19.655Z"}
+{"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-02.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T22:27:20.383Z"}
+{"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T22:27:20.387Z"}
+{"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T22:27:20.389Z"}
+{"level":"info","message":"Razorpay service initialized in MOCK mode","service":"p2p-marketplace","timestamp":"2025-08-11T22:29:31.637Z"}
+{"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-01.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T22:29:32.256Z"}
+{"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T22:29:32.260Z"}
+{"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T22:29:32.262Z"}
+{"level":"info","limit":12,"message":"Fetched 8 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:30:21.441Z"}
+{"level":"info","message":"Connected to MongoDB for seeding","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:12.954Z"}
+{"level":"info","message":"Cleared existing data","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:13.384Z"}
+{"level":"info","message":"Created admin user","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:13.995Z"}
+{"level":"info","message":"Created host users","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:15.144Z"}
+{"level":"info","message":"Created customer users","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:16.773Z"}
+{"level":"info","message":"Created listings","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:17.021Z"}
+{"level":"info","message":"Created sample orders and reservations","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:17.409Z"}
+{"level":"info","message":"Created sample payouts","service":"p2p-marketplace","timestamp":"2025-08-11T22:32:17.458Z"}
+{"level":"info","message":"Connected to MongoDB for seeding","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:32.537Z"}
+{"level":"info","message":"Cleared existing data","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:33.049Z"}
+{"level":"info","message":"Created admin user","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:33.377Z"}
+{"level":"info","message":"Created host users","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:34.259Z"}
+{"level":"info","message":"Created customer users","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:35.607Z"}
+{"level":"info","message":"Created listings","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:35.861Z"}
+{"level":"info","message":"Created sample orders and reservations","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:36.239Z"}
+{"level":"info","message":"Created sample payouts","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:36.298Z"}
+{"level":"info","message":"User logged in successfully: admin@marketplace.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:33:44.224Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","service":"p2p-marketplace","timestamp":"2025-08-11T22:34:55.397Z"}
+{"level":"info","message":"Razorpay service initialized in MOCK mode","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:05.465Z"}
+{"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-00.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:06.083Z"}
+{"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:06.087Z"}
+{"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:06.088Z"}
+{"level":"info","message":"User logged in successfully: admin@marketplace.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:25.994Z"}
+{"level":"info","message":"User logged in successfully: john@electronics.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:28.743Z"}
+{"level":"info","message":"User logged in successfully: alice@customer.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:30.931Z"}
+{"level":"info","message":"User logged in successfully: john@electronics.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:35:50.050Z"}
+{"level":"info","message":"Razorpay service initialized in MOCK mode","service":"p2p-marketplace","timestamp":"2025-08-11T22:37:48.200Z"}
+{"level":"info","message":"MongoDB Connected: ac-s9wa81m-shard-00-02.fnbpkxu.mongodb.net","service":"p2p-marketplace","timestamp":"2025-08-11T22:37:49.011Z"}
+{"level":"info","message":"Server running in development mode on port 5000","service":"p2p-marketplace","timestamp":"2025-08-11T22:37:49.015Z"}
+{"jwtSecret":"Set","level":"info","message":"Configuration:","mongoUri":"Set","nodeEnv":"development","paymentMode":"mock","port":"5000","razorpayKey":"Set","service":"p2p-marketplace","timestamp":"2025-08-11T22:37:49.017Z"}
+{"level":"info","message":"User logged in successfully: admin@marketplace.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:38:52.205Z"}
+{"level":"info","limit":12,"message":"Fetched 10 listings","page":1,"query":{"status":"published"},"service":"p2p-marketplace","timestamp":"2025-08-11T22:38:52.333Z"}
+{"level":"info","message":"User logged in successfully: john@electronics.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:39:01.276Z"}
+{"level":"info","message":"User logged in successfully: alice@customer.com","service":"p2p-marketplace","timestamp":"2025-08-11T22:39:07.524Z"}

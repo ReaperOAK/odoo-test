@@ -3,7 +3,7 @@ info:
   title: P2P Marketplace API
   description: |
     A comprehensive REST API for a peer-to-peer marketplace platform where users can rent out items to each other.
-    
+
     ## Features
     - User authentication and authorization
     - Listing management for hosts
@@ -11,11 +11,11 @@ info:
     - Integrated payment system with Razorpay
     - Host and admin dashboards
     - Real-time availability checking
-    
+
     ## Authentication
     This API uses JWT (JSON Web Tokens) for authentication. Include the token in the Authorization header:
     `Authorization: Bearer <your-jwt-token>`
-    
+
   version: 1.0.0
   contact:
     name: API Support
@@ -25,7 +25,7 @@ info:
     url: https://opensource.org/licenses/MIT
 
 servers:
-  - url: http://localhost:3000/api
+  - url: http://localhost:5000/api
     description: Development server
   - url: https://api.p2pmarketplace.com
     description: Production server
@@ -47,16 +47,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserRegistration'
+              $ref: "#/components/schemas/UserRegistration"
       responses:
-        '201':
+        "201":
           description: User registered successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '400':
-          $ref: '#/components/responses/ValidationError'
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
 
   /auth/login:
     post:
@@ -70,16 +70,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLogin'
+              $ref: "#/components/schemas/UserLogin"
       responses:
-        '200':
+        "200":
           description: Login successful
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
 
   /auth/me:
     get:
@@ -88,20 +88,20 @@ paths:
       summary: Get user profile
       description: Get current user's profile information
       responses:
-        '200':
+        "200":
           description: User profile retrieved successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
                         type: object
                         properties:
                           user:
-                            $ref: '#/components/schemas/User'
+                            $ref: "#/components/schemas/User"
 
   # Listings endpoints
   /listings:
@@ -129,7 +129,7 @@ paths:
         - name: category
           in: query
           schema:
-            $ref: '#/components/schemas/Category'
+            $ref: "#/components/schemas/Category"
         - name: location
           in: query
           schema:
@@ -158,13 +158,13 @@ paths:
             type: integer
             default: 1
       responses:
-        '200':
+        "200":
           description: Listings retrieved successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
@@ -173,9 +173,9 @@ paths:
                           listings:
                             type: array
                             items:
-                              $ref: '#/components/schemas/Listing'
+                              $ref: "#/components/schemas/Listing"
                           pagination:
-                            $ref: '#/components/schemas/Pagination'
+                            $ref: "#/components/schemas/Pagination"
 
     post:
       tags:
@@ -187,22 +187,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ListingCreate'
+              $ref: "#/components/schemas/ListingCreate"
       responses:
-        '201':
+        "201":
           description: Listing created successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
                         type: object
                         properties:
                           listing:
-                            $ref: '#/components/schemas/Listing'
+                            $ref: "#/components/schemas/Listing"
 
   /listings/{id}:
     get:
@@ -218,20 +218,20 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Listing retrieved successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
                         type: object
                         properties:
                           listing:
-                            $ref: '#/components/schemas/ListingDetail'
+                            $ref: "#/components/schemas/ListingDetail"
 
   # Orders endpoints
   /orders:
@@ -245,22 +245,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderCreate'
+              $ref: "#/components/schemas/OrderCreate"
       responses:
-        '201':
+        "201":
           description: Order created successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
                         type: object
                         properties:
                           order:
-                            $ref: '#/components/schemas/Order'
+                            $ref: "#/components/schemas/Order"
 
   /orders/my-orders:
     get:
@@ -282,15 +282,15 @@ paths:
         - name: status
           in: query
           schema:
-            $ref: '#/components/schemas/OrderStatus'
+            $ref: "#/components/schemas/OrderStatus"
       responses:
-        '200':
+        "200":
           description: Orders retrieved successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
@@ -299,9 +299,9 @@ paths:
                           orders:
                             type: array
                             items:
-                              $ref: '#/components/schemas/Order'
+                              $ref: "#/components/schemas/Order"
                           pagination:
-                            $ref: '#/components/schemas/Pagination'
+                            $ref: "#/components/schemas/Pagination"
 
   # Host dashboard endpoints
   /host/dashboard:
@@ -311,17 +311,17 @@ paths:
       summary: Get host dashboard
       description: Get host dashboard statistics
       responses:
-        '200':
+        "200":
           description: Dashboard data retrieved successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/HostDashboard'
+                        $ref: "#/components/schemas/HostDashboard"
 
   # Admin endpoints
   /admin/dashboard:
@@ -331,17 +331,17 @@ paths:
       summary: Get admin dashboard
       description: Get comprehensive platform statistics
       responses:
-        '200':
+        "200":
           description: Dashboard data retrieved successfully
           content:
             application/json:
               schema:
                 allOf:
-                  - $ref: '#/components/schemas/SuccessResponse'
+                  - $ref: "#/components/schemas/SuccessResponse"
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/AdminDashboard'
+                        $ref: "#/components/schemas/AdminDashboard"
 
 components:
   securitySchemes:
@@ -479,14 +479,14 @@ components:
 
     AuthResponse:
       allOf:
-        - $ref: '#/components/schemas/SuccessResponse'
+        - $ref: "#/components/schemas/SuccessResponse"
         - type: object
           properties:
             data:
               type: object
               properties:
                 user:
-                  $ref: '#/components/schemas/User'
+                  $ref: "#/components/schemas/User"
                 token:
                   type: string
                   example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -522,13 +522,13 @@ components:
           maxLength: 2000
           example: "High-quality DSLR camera with lenses"
         category:
-          $ref: '#/components/schemas/Category'
+          $ref: "#/components/schemas/Category"
         basePrice:
           type: number
           minimum: 1
           example: 50
         unitType:
-          $ref: '#/components/schemas/UnitType'
+          $ref: "#/components/schemas/UnitType"
           default: day
         location:
           type: string
@@ -553,7 +553,7 @@ components:
 
     Listing:
       allOf:
-        - $ref: '#/components/schemas/ListingCreate'
+        - $ref: "#/components/schemas/ListingCreate"
         - type: object
           properties:
             _id:
@@ -563,7 +563,7 @@ components:
               type: string
               example: "507f1f77bcf86cd799439012"
             status:
-              $ref: '#/components/schemas/ListingStatus'
+              $ref: "#/components/schemas/ListingStatus"
             availableQuantity:
               type: integer
               example: 2
@@ -576,7 +576,7 @@ components:
 
     ListingDetail:
       allOf:
-        - $ref: '#/components/schemas/Listing'
+        - $ref: "#/components/schemas/Listing"
         - type: object
           properties:
             owner:
@@ -635,7 +635,7 @@ components:
         lines:
           type: array
           items:
-            $ref: '#/components/schemas/OrderLine'
+            $ref: "#/components/schemas/OrderLine"
         paymentOption:
           type: string
           enum: [deposit, full]
@@ -660,7 +660,7 @@ components:
           type: array
           items:
             allOf:
-              - $ref: '#/components/schemas/OrderLine'
+              - $ref: "#/components/schemas/OrderLine"
               - type: object
                 properties:
                   unitPrice:
@@ -680,9 +680,9 @@ components:
           type: number
           example: 125
         orderStatus:
-          $ref: '#/components/schemas/OrderStatus'
+          $ref: "#/components/schemas/OrderStatus"
         paymentStatus:
-          $ref: '#/components/schemas/PaymentStatus'
+          $ref: "#/components/schemas/PaymentStatus"
         createdAt:
           type: string
           format: date-time
@@ -724,7 +724,7 @@ components:
         recentOrders:
           type: array
           items:
-            $ref: '#/components/schemas/Order'
+            $ref: "#/components/schemas/Order"
         popularListings:
           type: array
           items:
@@ -779,7 +779,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             success: false
             message: "Validation failed"
@@ -792,7 +792,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             success: false
             message: "Access token is required"
@@ -802,7 +802,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             success: false
             message: "Insufficient permissions"
@@ -812,7 +812,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             success: false
             message: "Resource not found"
@@ -822,7 +822,7 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/ErrorResponse'
+            $ref: "#/components/schemas/ErrorResponse"
           example:
             success: false
             message: "Too many requests, please try again later"

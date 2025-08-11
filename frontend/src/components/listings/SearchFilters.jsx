@@ -7,15 +7,13 @@ const SearchFilters = ({ filters, setFilters }) => {
   const [showFilters, setShowFilters] = useState(false);
 
   const categories = [
-    'Electronics',
-    'Sports & Recreation',
-    'Tools & Equipment',
-    'Photography',
-    'Music & Audio',
-    'Party & Events',
-    'Home & Garden',
-    'Transportation',
-    'Other'
+    'electronics',
+    'sports',
+    'tools',
+    'music',
+    'furniture',
+    'vehicles',
+    'other'
   ];
 
   const handleFilterChange = (key, value) => {
@@ -74,7 +72,7 @@ const SearchFilters = ({ filters, setFilters }) => {
               <option value="">All Categories</option>
               {categories.map((category) => (
                 <option key={category} value={category}>
-                  {category}
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
                 </option>
               ))}
             </select>

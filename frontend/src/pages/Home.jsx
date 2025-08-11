@@ -15,11 +15,14 @@ const Home = () => {
     endDate: '',
   });
 
-  const { data: listings, isLoading, error } = useQuery({
+  const { data: listingsData, isLoading, error } = useQuery({
     queryKey: ['listings', filters],
     queryFn: () => listingsAPI.getAll(filters),
-    select: (data) => data.data.listings,
+    select: (data) => data.data,
   });
+
+  const listings = listingsData?.listings || [];
+  const pagination = listingsData?.pagination || {};
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
