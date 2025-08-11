@@ -4,7 +4,7 @@
 
 This is a comprehensive REST API for a peer-to-peer marketplace platform where users can rent out items to each other. The API supports user authentication, listing management, order processing, payments, and administrative functions.
 
-**Base URL:** `http://localhost:3000/api`
+**Base URL:** `http://localhost:5000/api`
 
 ## Table of Contents
 
@@ -904,7 +904,7 @@ Get comprehensive platform statistics.
       "activeRentals": 30,
       "disputedOrders": 2,
       "pendingPayouts": 5,
-      "totalPayouts": 3000
+      "totalPayouts": 5000
     },
     "recentActivity": [
       {
@@ -1314,7 +1314,7 @@ RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
 
 # Server
-PORT=3000
+PORT=5000
 NODE_ENV=development
 
 # Logging
@@ -1338,20 +1338,20 @@ Use tools like Postman, Insomnia, or curl to test the API endpoints.
 
 ```bash
 # Register user
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:5000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"name":"John Doe","email":"john@example.com","password":"password123"}'
 
 # Login
-curl -X POST http://localhost:3000/api/auth/login \
+curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"john@example.com","password":"password123"}'
 
 # Get listings
-curl http://localhost:3000/api/listings
+curl http://localhost:5000/api/listings
 
 # Create order (with auth token)
-curl -X POST http://localhost:3000/api/orders \
+curl -X POST http://localhost:5000/api/orders \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer your-jwt-token" \
   -d '{"lines":[{"listingId":"listing_id","qty":1,"start":"2023-12-01","end":"2023-12-03"}]}'

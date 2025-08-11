@@ -3,9 +3,16 @@ const { logger } = require('../config/database');
 const config = require('../config');
 
 /**
+ * No-op middleware for when rate limiting is disabled
+ */
+const noLimitMiddleware = (req, res, next) => {
+  next();
+};
+
+/**
  * General API rate limiting
  */
-const apiLimiter = rateLimit({
+const apiLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: config.RATE_LIMIT_WINDOW_MS, // 15 minutes
   max: config.RATE_LIMIT_MAX_REQUESTS, // limit each IP to 100 requests per windowMs
   message: {
@@ -28,7 +35,7 @@ const apiLimiter = rateLimit({
 /**
  * Strict rate limiting for authentication endpoints
  */
-const authLimiter = rateLimit({
+const authLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // limit each IP to 5 auth requests per windowMs
   message: {
@@ -50,7 +57,7 @@ const authLimiter = rateLimit({
 /**
  * Rate limiting for order creation (prevent spam orders)
  */
-const orderCreationLimiter = rateLimit({
+const orderCreationLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: 5 * 60 * 1000, // 5 minutes
   max: 3, // limit each IP to 3 order creation requests per 5 minutes
   message: {
@@ -76,7 +83,7 @@ const orderCreationLimiter = rateLimit({
 /**
  * Rate limiting for payment attempts
  */
-const paymentLimiter = rateLimit({
+const paymentLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: 10 * 60 * 1000, // 10 minutes
   max: 5, // limit each user to 5 payment attempts per 10 minutes
   message: {
@@ -101,7 +108,7 @@ const paymentLimiter = rateLimit({
 /**
  * Rate limiting for listing creation (prevent spam listings)
  */
-const listingCreationLimiter = rateLimit({
+const listingCreationLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 10, // limit each user to 10 listing creations per hour
   message: {
@@ -126,7 +133,7 @@ const listingCreationLimiter = rateLimit({
 /**
  * Rate limiting for search/browse endpoints
  */
-const searchLimiter = rateLimit({
+const searchLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 30, // limit each IP to 30 search requests per minute
   message: {
@@ -147,7 +154,7 @@ const searchLimiter = rateLimit({
 /**
  * Rate limiting for admin actions
  */
-const adminActionLimiter = rateLimit({
+const adminActionLimiter = config.RATE_LIMIT_DISABLED ? noLimitMiddleware : rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 20, // limit admin users to 20 actions per minute
   message: {

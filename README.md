@@ -144,7 +144,7 @@ docker-compose up -d
 
 This will start:
 - MongoDB database
-- Backend API server on port 3000
+- Backend API server on port 5000
 - Frontend development server on port 5173
 
 ## 🔧 Configuration
@@ -166,13 +166,13 @@ RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
 
 # Server
-PORT=3000
+PORT=5000
 NODE_ENV=development
 ```
 
 #### Frontend (.env)
 ```env
-VITE_API_URL=http://localhost:3000/api
+VITE_API_URL=http://localhost:5000/api
 VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 ```
 
@@ -182,7 +182,7 @@ VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 
 1. **Register a new user**
    ```bash
-   curl -X POST http://localhost:3000/api/auth/register \
+   curl -X POST http://localhost:5000/api/auth/register \
      -H "Content-Type: application/json" \
      -d '{
        "name": "John Doe",
@@ -193,7 +193,7 @@ VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 
 2. **Login and get token**
    ```bash
-   curl -X POST http://localhost:3000/api/auth/login \
+   curl -X POST http://localhost:5000/api/auth/login \
      -H "Content-Type: application/json" \
      -d '{
        "email": "john@example.com",
@@ -204,13 +204,13 @@ VITE_RAZORPAY_KEY_ID=your-razorpay-key-id
 3. **Use token for authenticated requests**
    ```bash
    curl -H "Authorization: Bearer <your-jwt-token>" \
-     http://localhost:3000/api/auth/me
+     http://localhost:5000/api/auth/me
    ```
 
 ### Creating a Listing (Host)
 
 ```bash
-curl -X POST http://localhost:3000/api/listings \
+curl -X POST http://localhost:5000/api/listings \
   -H "Authorization: Bearer <your-jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -227,7 +227,7 @@ curl -X POST http://localhost:3000/api/listings \
 ### Creating an Order
 
 ```bash
-curl -X POST http://localhost:3000/api/orders \
+curl -X POST http://localhost:5000/api/orders \
   -H "Authorization: Bearer <your-jwt-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -243,10 +243,80 @@ curl -X POST http://localhost:3000/api/orders \
 
 ## 🧪 Testing
 
+### Automated API Testing
+
+The project includes comprehensive test scripts to validate all API endpoints:
+
+#### Quick Test
+```bash
+# Basic connectivity and health check
+npm run test:quick
+```
+
+#### Full API Test Suite
+```bash
+# Comprehensive testing of all endpoints
+npm run test
+# or
+npm run test:api
+```
+
+#### Load Testing
+```bash
+# Performance and stress testing
+npm run test:load
+```
+
+#### Complete Test Suite
+```bash
+# Run all tests (excluding load tests)
+npm run test:all
+
+# Run all tests including load testing
+npm run test:full
+```
+
+### Test Features
+
+✅ **All API Endpoints**: Tests every endpoint in the API
+✅ **Authentication Flow**: User registration, login, profile management
+✅ **Role-Based Access**: Customer, Host, and Admin permissions
+✅ **Error Handling**: Validates proper error responses
+✅ **Rate Limiting**: Tests API protection mechanisms
+✅ **Load Testing**: Performance under concurrent users
+✅ **Cleanup**: Automatic test data cleanup
+
+### Test Configuration
+
+Set environment variables in `backend/scripts/.env.test`:
+```bash
+API_BASE_URL=http://localhost:5000/api
+ADMIN_EMAIL=admin@example.com  # Optional for admin tests
+ADMIN_PASSWORD=admin123
+CONCURRENT_USERS=10            # For load testing
+REQUESTS_PER_USER=20
+```
+
+### Test Output Example
+```
+🚀 Starting API Tests for http://localhost:5000/api
+
+🔹 Authentication Endpoints
+✅ POST /auth/register - PASSED Status: 201
+✅ POST /auth/login - PASSED Status: 200
+✅ GET /auth/me - PASSED Status: 200
+
+📊 Test Results:
+   Total Tests: 45
+   Passed: 43
+   Failed: 2
+   Success Rate: 95.6%
+```
+
 ### Using Postman
 
 1. Import the [Postman collection](docs/P2P_Marketplace_API.postman_collection.json)
-2. Set the `baseUrl` variable to `http://localhost:3000/api`
+2. Set the `baseUrl` variable to `http://localhost:5000/api`
 3. Register/login to get an auth token
 4. The token will be automatically set for authenticated requests
 
