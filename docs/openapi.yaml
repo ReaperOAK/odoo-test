@@ -15,7 +15,7 @@ info:
     - User authentication and authorization (JWT)
     - Listing management for hosts
     - Order processing and management
-    - Integrated payment system with Razorpay
+    - Integrated payment system with Polar.sh
     - Host and admin dashboards
     - Real-time availability checking
     - Atomic reservation system

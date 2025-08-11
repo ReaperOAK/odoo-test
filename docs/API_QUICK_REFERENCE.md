@@ -52,7 +52,7 @@ Include JWT token in header: `Authorization: Bearer <token>`
 
 | Method | Endpoint                    | Auth | Description          |
 | ------ | --------------------------- | ---- | -------------------- |
-| POST   | `/webhook/razorpay`         | ❌   | Razorpay webhook     |
+| POST   | `/webhook/polar`            | ❌   | Polar webhook        |
 | GET    | `/orders/:orderId/payments` | ✅   | Get order payments   |
 | GET    | `/:id`                      | ✅   | Get payment details  |
 | POST   | `/:id/retry`                | ✅   | Retry failed payment |
