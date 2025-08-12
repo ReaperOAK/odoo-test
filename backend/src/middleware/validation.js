@@ -69,16 +69,12 @@ const schemas = {
   
   // User profile update
   updateProfile: Joi.object({
-    firstName: Joi.string().trim().min(2).max(50),
-    lastName: Joi.string().trim().min(2).max(50),
-    phone: Joi.string().pattern(/^[+]?[\d\s-()]+$/).min(10).max(20),
-    dateOfBirth: Joi.date().max('now'),
-    address: Joi.object({
-      street: Joi.string().trim().max(100),
-      city: Joi.string().trim().max(50),
-      state: Joi.string().trim().max(50),
-      zipCode: Joi.string().trim().max(20),
-      country: Joi.string().trim().max(50)
+    name: Joi.string().trim().min(2).max(100),
+    hostProfile: Joi.object({
+      displayName: Joi.string().trim().max(100).allow(''),
+      phone: Joi.string().pattern(/^[+]?[1-9][\d]{0,15}$/).allow(''),
+      address: Joi.string().trim().max(500).allow(''),
+      bio: Joi.string().trim().max(1000).allow('')
     })
   }),
   
@@ -91,15 +87,12 @@ const schemas = {
   
   // Become host
   becomeHost: Joi.object({
-    businessName: Joi.string().trim().min(2).max(100).required(),
-    businessType: Joi.string().valid('individual', 'business').required(),
-    description: Joi.string().trim().min(10).max(500),
-    website: Joi.string().uri().allow(''),
-    socialMedia: Joi.object({
-      facebook: Joi.string().uri().allow(''),
-      instagram: Joi.string().uri().allow(''),
-      twitter: Joi.string().uri().allow('')
-    })
+    hostProfile: Joi.object({
+      displayName: Joi.string().trim().min(2).max(100),
+      phone: Joi.string().trim().pattern(/^[\+]?[1-9][\d]{0,15}$/).allow(''),
+      address: Joi.string().trim().max(500).allow(''),
+      bio: Joi.string().trim().max(1000).allow('')
+    }).required()
   }),
   
   // Listing creation

@@ -188,27 +188,52 @@ class AuthController {
    */
   static async updateProfile(req, res) {
     try {
+      console.log('Raw request body:', JSON.stringify(req.body, null, 2));
+      console.log('Request body keys:', Object.keys(req.body));
+      console.log('Request content-type:', req.headers['content-type']);
+      
       const { name, hostProfile } = req.body;
       const user = req.user;
       
+      console.log('Update request data:', { name, hostProfile });
+      console.log('User before update:', { id: user._id, name: user.name, email: user.email });
+      
       // Update basic info
       if (name) {
+        console.log('Updating name from', user.name, 'to', name.trim());
         user.name = name.trim();
       }
       
-      // Update host profile if user is a host
-      if (user.isHost && hostProfile) {
-        user.hostProfile = {
-          ...user.hostProfile,
-          displayName: hostProfile.displayName?.trim() || user.hostProfile?.displayName,
-          phone: hostProfile.phone?.trim() || user.hostProfile?.phone,
-          address: hostProfile.address?.trim() || user.hostProfile?.address,
-          bio: hostProfile.bio?.trim() || user.hostProfile?.bio
-          // Note: verified status can only be changed by admin
-        };
+      // Update host profile fields (allow for all users, not just hosts)
+      if (hostProfile) {
+        // Initialize hostProfile if it doesn't exist
+        if (!user.hostProfile) {
+          user.hostProfile = {};
+        }
+        
+        // Update fields individually to handle empty strings properly
+        if (hostProfile.hasOwnProperty('displayName')) {
+          user.hostProfile.displayName = hostProfile.displayName?.trim() || '';
+        }
+        if (hostProfile.hasOwnProperty('phone')) {
+          user.hostProfile.phone = hostProfile.phone?.trim() || '';
+        }
+        if (hostProfile.hasOwnProperty('address')) {
+          user.hostProfile.address = hostProfile.address?.trim() || '';
+        }
+        if (hostProfile.hasOwnProperty('bio')) {
+          user.hostProfile.bio = hostProfile.bio?.trim() || '';
+        }
+        
+        // Preserve existing verified status
+        if (user.hostProfile.verified === undefined) {
+          user.hostProfile.verified = false;
+        }
       }
       
       await user.save();
+      
+      console.log('User after save:', { id: user._id, name: user.name, email: user.email });
       
       logger.info(`Profile updated for user: ${user.email}`);
       
