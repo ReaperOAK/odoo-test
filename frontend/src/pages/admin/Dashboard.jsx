@@ -630,17 +630,7 @@ const AdminDashboard = () => {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">User Management</h3>
-          <div className="flex space-x-2">
-            <Button variant="glass" size="sm" onClick={exportUserData}>
-              📥 Export
-            </Button>
-            <Button variant="glass" size="sm" onClick={handlePrintUsers}>
-              🖨️ Print
-            </Button>
-            <Button variant="primary" size="sm">
-              ➕ Add User
-            </Button>
-          </div>
+          
         </div>
 
         <div className="overflow-x-auto">
