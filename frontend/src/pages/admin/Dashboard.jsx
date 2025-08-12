@@ -7,7 +7,7 @@ import UserManagementModal from "../../components/admin/UserManagementModal";
 import OrderDetailsModal from "../../components/admin/OrderDetailsModal";
 import PayoutManagementModal from "../../components/admin/PayoutManagementModal";
 import ExportModal from "../../components/admin/ExportModal";
-import { exportData, generateAdminReport } from "../../utils/exportUtils";
+import { exportData, generateAdminReport, printAdminDashboard, printOrders, printUsers, printPayouts } from "../../utils/exportUtils";
 
 const AdminDashboard = () => {
   const { user, isAdmin } = useAuth();
@@ -247,6 +247,43 @@ const AdminDashboard = () => {
     setShowExportModal(true);
   };
 
+  // Print handler functions
+  const handlePrintDashboard = () => {
+    const dashboardStats = dashboardData?.data?.data;
+    if (!dashboardStats) {
+      alert("Dashboard data not available. Please wait for data to load and try again.");
+      return;
+    }
+    printAdminDashboard(dashboardStats);
+  };
+
+  const handlePrintUsers = () => {
+    const users = usersData?.data?.data || [];
+    if (users.length === 0) {
+      alert("No user data available to print.");
+      return;
+    }
+    printUsers(users);
+  };
+
+  const handlePrintOrders = () => {
+    const orders = ordersData?.data?.data || [];
+    if (orders.length === 0) {
+      alert("No order data available to print.");
+      return;
+    }
+    printOrders(orders);
+  };
+
+  const handlePrintPayouts = () => {
+    const payouts = payoutsData?.data?.data?.payouts || [];
+    if (payouts.length === 0) {
+      alert("No payout data available to print.");
+      return;
+    }
+    printPayouts(payouts);
+  };
+
   // Old export functions removed - now using modal-based multi-format export system
 
   // Fetch admin dashboard data
@@ -370,6 +407,19 @@ const AdminDashboard = () => {
 
     return (
       <div className="space-y-6">
+        {/* Dashboard Actions */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold text-gray-900">Dashboard Overview</h2>
+          <div className="flex space-x-2">
+            <Button variant="glass" size="sm" onClick={handleGenerateReport}>
+              📊 Export Report
+            </Button>
+            <Button variant="glass" size="sm" onClick={handlePrintDashboard}>
+              🖨️ Print Dashboard
+            </Button>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Users"
@@ -577,6 +627,9 @@ const AdminDashboard = () => {
             <Button variant="glass" size="sm" onClick={exportUserData}>
               📥 Export
             </Button>
+            <Button variant="glass" size="sm" onClick={handlePrintUsers}>
+              🖨️ Print
+            </Button>
             <Button variant="primary" size="sm">
               ➕ Add User
             </Button>
@@ -674,6 +727,9 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="glass" size="sm" onClick={exportOrderData}>
               📥 Export
+            </Button>
+            <Button variant="glass" size="sm" onClick={handlePrintOrders}>
+              🖨️ Print
             </Button>
           </div>
         </div>
@@ -777,6 +833,9 @@ const AdminDashboard = () => {
             </Button>
             <Button variant="primary" size="sm">
               📊 Generate Report
+            </Button>
+            <Button variant="glass" size="sm" onClick={handlePrintPayouts}>
+              🖨️ Print Payouts
             </Button>
           </div>
         </div>
@@ -969,36 +1028,72 @@ const AdminDashboard = () => {
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Export Reports</h3>
+          <h3 className="text-lg font-semibold mb-4">Export & Print Reports</h3>
           <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={exportUserData}
-            >
-              Export User Data
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={exportOrderData}
-            >
-              Export Orders
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={exportRevenueReport}
-            >
-              Export Revenue Report
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={exportPayoutReport}
-            >
-              Export Payout Report
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={exportUserData}
+              >
+                📥 Export User Data
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handlePrintUsers}
+              >
+                🖨️ Print Users
+              </Button>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={exportOrderData}
+              >
+                📥 Export Orders
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handlePrintOrders}
+              >
+                🖨️ Print Orders
+              </Button>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={exportRevenueReport}
+              >
+                📥 Export Revenue Report
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handlePrintDashboard}
+              >
+                🖨️ Print Dashboard
+              </Button>
+            </div>
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={exportPayoutReport}
+              >
+                📥 Export Payout Report
+              </Button>
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={handlePrintPayouts}
+              >
+                🖨️ Print Payouts
+              </Button>
+            </div>
           </div>
         </Card>
       </div>

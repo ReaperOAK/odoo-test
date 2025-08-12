@@ -252,3 +252,118 @@ export const generateAdminReport = (reportData, format) => {
     exportData(data, Object.keys(data[0] || {}), filename, format, title);
   }
 };
+
+// Print functionality
+export const printData = (data, headers, title = '') => {
+  const htmlContent = generateHTML(data, headers, title);
+  const printWindow = window.open('', '_blank');
+  
+  if (printWindow) {
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    
+    // Wait for content to load then print
+    printWindow.onload = () => {
+      printWindow.print();
+      printWindow.close();
+    };
+  } else {
+    alert('Please allow popups to use the print feature');
+  }
+};
+
+// Print admin dashboard overview
+export const printAdminDashboard = (dashboardData) => {
+  const data = [];
+  const stats = dashboardData?.stats;
+  
+  if (stats) {
+    data.push({
+      metric: 'Total Users',
+      value: stats.users?.total || 0,
+      category: 'Users'
+    });
+    data.push({
+      metric: 'Total Hosts',
+      value: stats.users?.hosts || 0,
+      category: 'Users'
+    });
+    data.push({
+      metric: 'Total Listings',
+      value: stats.listings?.total || 0,
+      category: 'Listings'
+    });
+    data.push({
+      metric: 'Active Listings',
+      value: stats.listings?.active || 0,
+      category: 'Listings'
+    });
+    data.push({
+      metric: 'Total Orders',
+      value: stats.orders?.total || 0,
+      category: 'Orders'
+    });
+    data.push({
+      metric: 'Completed Orders',
+      value: stats.orders?.completed || 0,
+      category: 'Orders'
+    });
+    data.push({
+      metric: 'Total Revenue',
+      value: `₹${(stats.revenue?.total || 0).toLocaleString()}`,
+      category: 'Revenue'
+    });
+    data.push({
+      metric: 'Monthly Revenue',
+      value: `₹${(stats.revenue?.monthly || 0).toLocaleString()}`,
+      category: 'Revenue'
+    });
+  }
+
+  printData(data, ['Category', 'Metric', 'Value'], 'Admin Dashboard Report');
+};
+
+// Print specific sections
+export const printOrders = (orders) => {
+  const formattedOrders = orders.map(order => ({
+    'Order ID': order._id?.slice(-8) || 'N/A',
+    'Customer': order.renterId?.name || 'N/A',
+    'Host': order.hostId?.name || order.hostId?.hostProfile?.displayName || 'N/A',
+    'Status': order.orderStatus || 'N/A',
+    'Payment Status': order.paymentStatus || 'N/A',
+    'Total Amount': `₹${(order.totalAmount || 0).toLocaleString()}`,
+    'Created Date': new Date(order.createdAt || Date.now()).toLocaleDateString(),
+    'Items': order.lines?.map(line => line.listingId?.title).join(', ') || 'N/A'
+  }));
+
+  printData(formattedOrders, Object.keys(formattedOrders[0] || {}), 'Orders Report');
+};
+
+export const printUsers = (users) => {
+  const formattedUsers = users.map(user => ({
+    'Name': user.name || 'N/A',
+    'Email': user.email || 'N/A',
+    'Role': user.isHost ? 'Host' : 'User',
+    'Status': user.isActive ? 'Active' : 'Inactive',
+    'Phone': user.phone || 'N/A',
+    'Joined Date': new Date(user.createdAt || Date.now()).toLocaleDateString(),
+    'Total Orders': user.orderStats?.totalOrders || 0,
+    'Total Spent': `₹${(user.orderStats?.totalSpent || 0).toLocaleString()}`
+  }));
+
+  printData(formattedUsers, Object.keys(formattedUsers[0] || {}), 'Users Report');
+};
+
+export const printPayouts = (payouts) => {
+  const formattedPayouts = payouts.map(payout => ({
+    'Payout ID': payout._id?.slice(-8) || 'N/A',
+    'Host': payout.hostId?.name || payout.hostId?.hostProfile?.displayName || 'N/A',
+    'Amount': `₹${(payout.amount || 0).toLocaleString()}`,
+    'Status': payout.status || 'N/A',
+    'Method': payout.method || 'N/A',
+    'Created Date': new Date(payout.createdAt || Date.now()).toLocaleDateString(),
+    'Processed Date': payout.processedAt ? new Date(payout.processedAt).toLocaleDateString() : 'N/A'
+  }));
+
+  printData(formattedPayouts, Object.keys(formattedPayouts[0] || {}), 'Payouts Report');
+};
