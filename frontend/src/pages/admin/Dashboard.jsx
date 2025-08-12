@@ -4,6 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import UserManagementModal from "../../components/admin/UserManagementModal";
+import UserDetailsModal from "../../components/admin/UserDetailsModal";
 import OrderDetailsModal from "../../components/admin/OrderDetailsModal";
 import PayoutManagementModal from "../../components/admin/PayoutManagementModal";
 import ExportModal from "../../components/admin/ExportModal";
@@ -17,6 +18,7 @@ const AdminDashboard = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedPayout, setSelectedPayout] = useState(null);
   const [showUserModal, setShowUserModal] = useState(false);
+  const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
 
@@ -287,6 +289,11 @@ const AdminDashboard = () => {
   const handleEditUser = (user) => {
     setSelectedUser(user);
     setShowUserModal(true);
+  };
+
+  const handleViewUser = (user) => {
+    setSelectedUser(user);
+    setShowUserDetailsModal(true);
   };
 
   const handleViewOrder = (order) => {
@@ -636,7 +643,11 @@ const AdminDashboard = () => {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex space-x-2">
-                      <Button variant="glass" size="sm">
+                      <Button 
+                        variant="glass" 
+                        size="sm"
+                        onClick={() => handleViewUser(user)}
+                      >
                         👁️ View
                       </Button>
                       <Button
@@ -1072,6 +1083,15 @@ const AdminDashboard = () => {
         }}
         onUpdate={() => {
           // Refresh users data
+        }}
+      />
+
+      <UserDetailsModal
+        user={selectedUser}
+        isOpen={showUserDetailsModal}
+        onClose={() => {
+          setShowUserDetailsModal(false);
+          setSelectedUser(null);
         }}
       />
 
