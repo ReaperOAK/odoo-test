@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ordersAPI } from "../lib/api";
+import { ordersAPI, listingsAPI } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import {
@@ -77,13 +77,33 @@ const ListingDetail = () => {
 
   const checkAvailability = async ({ start, end, qty }) => {
     try {
-      const response = await actions.fetchListing(id); // You may need to add checkAvailability to your DataContext
-      console.log("Availability response:", response);
-      setAvailabilityData(response.data.data || response.data);
-      return response;
+      const response = await listingsAPI.checkAvailability(id, {
+        start: start,
+        end: end,
+        qty: qty
+      });
+      console.log("Availability response:", response.data);
+      
+      const availabilityData = response.data.data;
+      // Map the API response to the expected UI structure
+      const uiAvailabilityData = {
+        available: availabilityData.available,
+        availableQty: availabilityData.availableQty,
+        pricing: availabilityData.pricing,
+        details: availabilityData.nextAvailable?.map(slot => ({
+          message: `Alternative: ${new Date(slot.start).toLocaleDateString()} - ${new Date(slot.end).toLocaleDateString()}`
+        })) || []
+      };
+      
+      setAvailabilityData(uiAvailabilityData);
+      return response.data;
     } catch (error) {
       console.error("Availability check error:", error);
-      setAvailabilityData({ available: false });
+      setAvailabilityData({ 
+        available: false, 
+        error: error.response?.data?.message || error.message || "Availability check failed"
+      });
+      return null;
     }
   };
 
