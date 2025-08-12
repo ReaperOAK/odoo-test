@@ -257,7 +257,7 @@ export function DataProvider({ children }) {
         dispatch({ type: ActionTypes.SET_ORDERS_LOADING, payload: true });
         try {
           const response = await ordersAPI.getMyOrders();
-          const orders = response.data?.data || [];
+          const orders = response.data?.data?.orders || [];
           dispatch({ type: ActionTypes.SET_ORDERS_SUCCESS, payload: orders });
           return orders;
         } catch (error) {

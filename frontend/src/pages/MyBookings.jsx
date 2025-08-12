@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { ordersAPI } from "../lib/api";
@@ -19,15 +19,8 @@ import EditOrderModal from "../components/orders/EditOrderModal";
 const MyBookings = () => {
   const { user } = useAuth();
   const { state, actions } = useData();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const [statusFilter, setStatusFilter] = useState(searchParams.get("status") || "");
-  
-  // Modal states
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderModal, setShowOrderModal] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [orderDetails, setOrderDetails] = useState(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [searchParams] = useSearchParams();
+  const statusFilter = searchParams.get("status");
 
   // Fetch orders when component mounts or filter changes
   useEffect(() => {
@@ -37,7 +30,7 @@ const MyBookings = () => {
   }, [user, statusFilter, actions]);
 
   // Filter orders based on status
-  const allOrders = state.orders || [];
+  const allOrders = Array.isArray(state.orders) ? state.orders : [];
   const filteredOrders = statusFilter
     ? allOrders.filter((order) => order.orderStatus === statusFilter)
     : allOrders;
@@ -156,7 +149,7 @@ const MyBookings = () => {
     );
   }
 
-  const orders = ordersData?.orders || [];
+  const orders = ordersData || [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
