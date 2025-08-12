@@ -103,7 +103,7 @@ const MyBookings = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">My Bookings</h1>
+        <h1 className="text-2xl font-bold text-gray-900">My Rentals</h1>
 
         {/* Success notification */}
         {searchParams.get("status") === "success" && (
@@ -111,7 +111,7 @@ const MyBookings = () => {
             <div className="flex items-center">
               <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
               <span className="text-green-800 font-medium">
-                Booking successful!
+                Rental booking successful!
               </span>
             </div>
           </div>
@@ -122,11 +122,11 @@ const MyBookings = () => {
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           {[
-            { key: "", label: "All Bookings" },
+            { key: "", label: "All Rentals" },
             { key: "pending", label: "Pending" },
             { key: "confirmed", label: "Confirmed" },
-            { key: "in_progress", label: "In Progress" },
-            { key: "completed", label: "Completed" },
+            { key: "in_progress", label: "Active" },
+            { key: "completed", label: "Returned" },
             { key: "cancelled", label: "Cancelled" },
           ].map(({ key, label }) => (
             <button

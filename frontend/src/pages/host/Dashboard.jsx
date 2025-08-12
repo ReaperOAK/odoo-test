@@ -1,27 +1,52 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { hostAPI, listingsAPI } from "../../lib/api";
 import { useAuth } from "../../contexts/AuthContext";
-import { Plus, Calendar, DollarSign, Package, Users, Eye } from "lucide-react";
+import { Plus, Calendar, DollarSign, Package, Users, Eye, RefreshCw } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 
 const HostDashboard = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("listings");
+  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      console.log('Manual refresh triggered...');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['hostListings'] }),
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['host-orders'] }),
+      ]);
+      console.log('Manual refresh completed');
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  const { data: dashboardData, isLoading: dashboardLoading, dataUpdatedAt: dashboardUpdatedAt } = useQuery({
     queryKey: ["host-dashboard"],
     queryFn: hostAPI.getDashboard,
     enabled: !!user?.isHost,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
-  const { data: hostListings, isLoading: listingsLoading, error: listingsError } = useQuery({
-    queryKey: ["host-listings"],
+  const { data: hostListings, isLoading: listingsLoading, dataUpdatedAt: listingsUpdatedAt } = useQuery({
+    queryKey: ["hostListings"],
     queryFn: () => hostAPI.getListings(),
     select: (response) => response?.data?.data?.listings || [],
     enabled: !!user?.isHost,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
+
+  console.log('Dashboard render - hostListings:', hostListings?.length || 0, 'listings');
+  console.log('Dashboard render - listingsUpdatedAt:', new Date(listingsUpdatedAt).toLocaleTimeString());
+  console.log('Dashboard render - dashboardUpdatedAt:', new Date(dashboardUpdatedAt).toLocaleTimeString());
 
   const { data: hostOrders, isLoading: ordersLoading } = useQuery({
     queryKey: ["host-orders"],
@@ -90,13 +115,23 @@ const HostDashboard = () => {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Host Dashboard</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Owner Dashboard</h1>
           <p className="text-gray-600">Welcome back, {user?.name}!</p>
         </div>
-        <Button onClick={() => (window.location.href = "/listings/new")}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add New Listing
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button onClick={() => (window.location.href = "/listings/new")}>
+            <Plus className="h-4 w-4 mr-2" />
+            List New Item
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -109,7 +144,7 @@ const HostDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Total Listings
+                  Total Items
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
@@ -187,8 +222,8 @@ const HostDashboard = () => {
         <nav className="-mb-px flex space-x-8">
           {[
             { key: "overview", label: "Overview" },
-            { key: "listings", label: "My Listings" },
-            { key: "bookings", label: "Bookings" },
+            { key: "listings", label: "My Items" },
+            { key: "bookings", label: "Rentals" },
             { key: "earnings", label: "Earnings" },
           ].map(({ key, label }) => (
             <button
@@ -359,16 +394,16 @@ const HostDashboard = () => {
               <div className="col-span-full text-center py-12">
                 <Package className="mx-auto h-12 w-12 text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No listings yet
+                  No items listed yet
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Create your first listing to start earning.
+                  List your first item to start earning from rentals.
                 </p>
                 <Button
                   onClick={() => (window.location.href = "/listings/new")}
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Listing
+                  List Your First Item
                 </Button>
               </div>
             )}

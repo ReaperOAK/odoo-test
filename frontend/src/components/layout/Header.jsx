@@ -40,7 +40,7 @@ const Header = () => {
             )}
             {isHost && (
               <Link to="/host/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
-                Host Dashboard
+                Owner Dashboard
               </Link>
             )}
             {isAdmin && (
@@ -84,7 +84,7 @@ const Header = () => {
                           onClick={() => setIsUserMenuOpen(false)}
                         >
                           <Calendar className="h-4 w-4 mr-2" />
-                          Host Dashboard
+                          Owner Dashboard
                         </Link>
                       )}
                       <button
@@ -145,7 +145,7 @@ const Header = () => {
                   className="px-3 py-2 text-gray-600 hover:text-gray-900 font-medium"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  Host Dashboard
+                  Owner Dashboard
                 </Link>
               )}
               {isAdmin && (

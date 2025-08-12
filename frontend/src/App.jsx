@@ -29,25 +29,25 @@ function App() {
             <Header />
             <main>
               <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/listings/:id" element={<ListingDetail />} />
-                <Route path="/checkout/:orderId" element={<Checkout />} />
-                <Route path="/checkout/success" element={<CheckoutSuccess />} />
-                <Route path="/checkout/cancel" element={<CheckoutCancel />} />
-                <Route path="/checkout/mock" element={<MockCheckout />} />
-                <Route path="/my-bookings" element={<MyBookings />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/listings/new" element={<CreateListing />} />
-                <Route path="/host/dashboard" element={<HostDashboard />} />
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                <Route path="*" element={<div className="text-center py-12"><h1 className="text-2xl font-bold">Page Not Found</h1></div>} />
-              </Routes>
-            </main>
-          </div>
-        </Router>
-      </AuthProvider>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/listings/:id" element={<ListingDetail />} />
+                  <Route path="/checkout/:orderId" element={<Checkout />} />
+                  <Route path="/checkout/success" element={<CheckoutSuccess />} />
+                  <Route path="/checkout/cancel" element={<CheckoutCancel />} />
+                  <Route path="/checkout/mock" element={<MockCheckout />} />
+                  <Route path="/my-bookings" element={<MyBookings />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/listings/new" element={<CreateListing />} />
+                  <Route path="/host/dashboard" element={<HostDashboard />} />
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route path="*" element={<div className="text-center py-12"><h1 className="text-2xl font-bold">Page Not Found</h1></div>} />
+                </Routes>
+              </main>
+            </div>
+          </Router>
+        </AuthProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
