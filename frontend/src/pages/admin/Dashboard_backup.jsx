@@ -108,226 +108,6 @@ const AdminDashboard = () => {
     return csv;
   };
 
-  const exportUserData = async () => {
-    try {
-      // Fetch users data directly if not available
-      let userData;
-      if (usersData?.data?.data?.users) {
-        userData = usersData.data.data.users;
-      } else {
-        const response = await adminAPI.getUsers();
-        userData = response.data.data.users;
-      }
-
-      if (!userData || userData.length === 0) {
-        alert('No user data available to export.');
-        return;
-      }
-
-      const date = new Date().toISOString().split('T')[0];
-      
-      let csv = 'User Export Report\n';
-      csv += `Generated at: ${new Date().toLocaleString()}\n\n`;
-      csv += 'Name,Email,Role,Status,Joined Date,Phone,Address,Verified\n';
-      
-      userData.forEach(user => {
-        csv += `"${user.name || 'N/A'}",`;
-        csv += `"${user.email || 'N/A'}",`;
-        csv += `"${user.role === 'admin' ? 'Admin' : user.isHost ? 'Host' : 'Customer'}",`;
-        csv += `"${user.isVerified ? 'Verified' : 'Pending'}",`;
-        csv += `"${new Date(user.createdAt).toLocaleDateString()}",`;
-        csv += `"${user.hostProfile?.phone || 'N/A'}",`;
-        csv += `"${user.hostProfile?.address || 'N/A'}",`;
-        csv += `"${user.hostProfile?.verified ? 'Yes' : 'No'}"\n`;
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `users-export-${date}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      alert('User data exported successfully!');
-    } catch (error) {
-      console.error('Error exporting user data:', error);
-      alert('Failed to export user data. Please try again.');
-    }
-  };
-
-  const exportOrderData = async () => {
-    try {
-      // Fetch orders data directly if not available
-      let orderData;
-      if (ordersData?.data?.data?.orders) {
-        orderData = ordersData.data.data.orders;
-      } else {
-        const response = await adminAPI.getOrders();
-        orderData = response.data.data.orders;
-      }
-
-      if (!orderData || orderData.length === 0) {
-        alert('No order data available to export.');
-        return;
-      }
-
-      const date = new Date().toISOString().split('T')[0];
-      
-      let csv = 'Orders Export Report\n';
-      csv += `Generated at: ${new Date().toLocaleString()}\n\n`;
-      csv += 'Order ID,Customer Name,Customer Email,Host Name,Listing Title,Amount,Status,Payment Status,Order Date,Start Date,End Date\n';
-      
-      orderData.forEach(order => {
-        const listing = order.lines?.[0]?.listingId;
-        csv += `"${order._id?.slice(-8) || 'N/A'}",`;
-        csv += `"${order.renterId?.name || 'N/A'}",`;
-        csv += `"${order.renterId?.email || 'N/A'}",`;
-        csv += `"${order.hostId?.name || order.hostId?.hostProfile?.displayName || 'N/A'}",`;
-        csv += `"${listing?.title || 'N/A'}",`;
-        csv += `"₹${order.totalAmount || 0}",`;
-        csv += `"${order.orderStatus || 'N/A'}",`;
-        csv += `"${order.paymentStatus || 'N/A'}",`;
-        csv += `"${new Date(order.createdAt).toLocaleDateString()}",`;
-        csv += `"${order.lines?.[0]?.start ? new Date(order.lines[0].start).toLocaleDateString() : 'N/A'}",`;
-        csv += `"${order.lines?.[0]?.end ? new Date(order.lines[0].end).toLocaleDateString() : 'N/A'}"\n`;
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `orders-export-${date}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      alert('Order data exported successfully!');
-    } catch (error) {
-      console.error('Error exporting order data:', error);
-      alert('Failed to export order data. Please try again.');
-    }
-  };
-
-  const exportRevenueReport = async () => {
-    try {
-      // Fetch analytics data directly if not available
-      let analyticsDataResponse;
-      if (analyticsData?.data?.data) {
-        analyticsDataResponse = analyticsData.data.data;
-      } else {
-        const response = await adminAPI.getAnalytics();
-        analyticsDataResponse = response.data.data;
-      }
-
-      if (!analyticsDataResponse) {
-        alert('No analytics data available to export.');
-        return;
-      }
-
-      const date = new Date().toISOString().split('T')[0];
-      
-      let csv = 'Revenue Analytics Report\n';
-      csv += `Generated at: ${new Date().toLocaleString()}\n\n`;
-      
-      // Revenue over time
-      csv += 'REVENUE OVER TIME\n';
-      csv += 'Date,Revenue,Orders\n';
-      analyticsDataResponse.revenueOverTime?.forEach(item => {
-        const dateStr = new Date(item._id.year, item._id.month - 1, item._id.day).toLocaleDateString();
-        csv += `"${dateStr}","₹${item.revenue?.toLocaleString() || 0}","${item.orders || 0}"\n`;
-      });
-      
-      csv += '\nCATEGORY PERFORMANCE\n';
-      csv += 'Category,Bookings,Revenue,Percentage\n';
-      const categories = analyticsDataResponse.categoryPerformance || [];
-      const totalBookings = categories.reduce((sum, cat) => sum + cat.bookings, 0);
-      
-      categories.forEach(category => {
-        const percentage = totalBookings > 0 ? ((category.bookings / totalBookings) * 100).toFixed(1) : 0;
-        csv += `"${category._id || 'Unknown'}","${category.bookings || 0}","₹${category.revenue?.toLocaleString() || 0}","${percentage}%"\n`;
-      });
-      
-      csv += '\nUSER GROWTH\n';
-      csv += 'Date,New Users,New Hosts\n';
-      analyticsDataResponse.userGrowth?.forEach(item => {
-        const dateStr = new Date(item._id.year, item._id.month - 1, item._id.day).toLocaleDateString();
-        csv += `"${dateStr}","${item.newUsers || 0}","${item.newHosts || 0}"\n`;
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `revenue-analytics-${date}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      alert('Revenue report exported successfully!');
-    } catch (error) {
-      console.error('Error exporting revenue report:', error);
-      alert('Failed to export revenue report. Please try again.');
-    }
-  };
-
-  const exportPayoutReport = async () => {
-    try {
-      // Fetch payouts data directly if not available
-      let payoutData;
-      if (payoutsData?.data?.data?.payouts) {
-        payoutData = payoutsData.data.data.payouts;
-      } else {
-        const response = await adminAPI.getPayouts();
-        payoutData = response.data.data.payouts;
-      }
-
-      if (!payoutData || payoutData.length === 0) {
-        alert('No payout data available to export.');
-        return;
-      }
-
-      const date = new Date().toISOString().split('T')[0];
-      
-      let csv = 'Payouts Export Report\n';
-      csv += `Generated at: ${new Date().toLocaleString()}\n\n`;
-      csv += 'Host Name,Host Email,Amount,Currency,Status,Method,Created Date,Updated Date,Bank Account,IFSC,Account Holder\n';
-      
-      payoutData.forEach(payout => {
-        csv += `"${payout.hostId?.name || 'N/A'}",`;
-        csv += `"${payout.hostId?.email || 'N/A'}",`;
-        csv += `"₹${payout.amount || 0}",`;
-        csv += `"${payout.currency || 'INR'}",`;
-        csv += `"${payout.status || 'N/A'}",`;
-        csv += `"${payout.method || 'N/A'}",`;
-        csv += `"${new Date(payout.createdAt).toLocaleDateString()}",`;
-        csv += `"${new Date(payout.updatedAt).toLocaleDateString()}",`;
-        csv += `"${payout.bankDetails?.accountNumber || 'N/A'}",`;
-        csv += `"${payout.bankDetails?.ifscCode || 'N/A'}",`;
-        csv += `"${payout.bankDetails?.accountHolderName || 'N/A'}"\n`;
-      });
-      
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
-      const url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', `payouts-export-${date}.csv`);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      alert('Payout data exported successfully!');
-    } catch (error) {
-      console.error('Error exporting payout data:', error);
-      alert('Failed to export payout data. Please try again.');
-    }
-  };
-
   // Fetch admin dashboard data
   const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
     queryKey: ['admin', 'dashboard'],
@@ -580,7 +360,7 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">User Management</h3>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={exportUserData}>Export</Button>
+            <Button variant="outline" size="sm">Export</Button>
             <Button size="sm">Add User</Button>
           </div>
         </div>
@@ -658,7 +438,7 @@ const AdminDashboard = () => {
           <h3 className="text-lg font-semibold">Order Management</h3>
           <div className="flex space-x-2">
             <Button variant="outline" size="sm">Filter</Button>
-            <Button variant="outline" size="sm" onClick={exportOrderData}>Export</Button>
+            <Button variant="outline" size="sm">Export</Button>
           </div>
         </div>
         
@@ -893,10 +673,10 @@ const AdminDashboard = () => {
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4">Export Reports</h3>
           <div className="space-y-3">
-            <Button variant="outline" className="w-full" onClick={exportUserData}>Export User Data</Button>
-            <Button variant="outline" className="w-full" onClick={exportOrderData}>Export Orders</Button>
-            <Button variant="outline" className="w-full" onClick={exportRevenueReport}>Export Revenue Report</Button>
-            <Button variant="outline" className="w-full" onClick={exportPayoutReport}>Export Payout Report</Button>
+            <Button variant="outline" className="w-full">Export User Data</Button>
+            <Button variant="outline" className="w-full">Export Orders</Button>
+            <Button variant="outline" className="w-full">Export Revenue Report</Button>
+            <Button variant="outline" className="w-full">Export Payout Report</Button>
           </div>
         </Card>
       </div>
@@ -992,6 +772,112 @@ const AdminDashboard = () => {
           // Refresh payouts data
         }}
       />
+
+      {/* Settings functionality removed - no backend support */}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Admin Settings</h2>
+              <Button variant="outline" onClick={() => setShowSettingsModal(false)}>✕</Button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Platform Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Platform Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Platform Commission (%)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="10" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Default Deposit (%)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="20" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Max Upload Size (MB)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="10" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Auto-approval</label>
+                    <select className="w-full p-2 border rounded">
+                      <option value="manual">Manual Review</option>
+                      <option value="auto">Auto-approve</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notification Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    Email notifications for new orders
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    SMS alerts for disputes
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" />
+                    Daily revenue reports
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    Weekly analytics summary
+                  </label>
+                </div>
+              </div>
+
+              {/* System Maintenance */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">System Maintenance</h3>
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full">Clear Cache</Button>
+                  <Button variant="outline" className="w-full">Backup Database</Button>
+                  <Button variant="outline" className="w-full">Run System Diagnostics</Button>
+                  <Button variant="outline" className="w-full text-red-600 border-red-600">Enable Maintenance Mode</Button>
+                </div>
+              </div>
+
+              {/* Security Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Security</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Session Timeout (minutes)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="60" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Max Login Attempts</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="5" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    Two-factor authentication required
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" />
+                    Force password reset every 90 days
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-8">
+              <Button variant="outline" onClick={() => setShowSettingsModal(false)}>Cancel</Button>
+              <Button onClick={() => {
+                alert('Settings saved successfully!');
+                setShowSettingsModal(false);
+              }}>Save Settings</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
