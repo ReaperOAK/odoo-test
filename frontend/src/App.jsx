@@ -16,6 +16,7 @@ import CheckoutCancel from './pages/CheckoutCancel';
 import MockCheckout from './pages/MockCheckout';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
+import CreateListing from './pages/CreateListing';
 import HostDashboard from './pages/host/Dashboard';
 import AdminDashboard from './pages/admin/Dashboard';
 
@@ -38,6 +39,7 @@ function App() {
                 <Route path="/checkout/mock" element={<MockCheckout />} />
                 <Route path="/my-bookings" element={<MyBookings />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/listings/new" element={<CreateListing />} />
                 <Route path="/host/dashboard" element={<HostDashboard />} />
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
                 <Route path="*" element={<div className="text-center py-12"><h1 className="text-2xl font-bold">Page Not Found</h1></div>} />
