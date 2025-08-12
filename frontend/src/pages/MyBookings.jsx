@@ -19,7 +19,7 @@ import EditOrderModal from "../components/orders/EditOrderModal";
 const MyBookings = () => {
   const { user } = useAuth();
   const { state, actions } = useData();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const statusFilter = searchParams.get("status");
 
   // State for modals and selected data
@@ -191,7 +191,6 @@ const MyBookings = () => {
             <button
               key={key}
               onClick={() => {
-                setStatusFilter(key);
                 if (key) {
                   setSearchParams({ status: key });
                 } else {
