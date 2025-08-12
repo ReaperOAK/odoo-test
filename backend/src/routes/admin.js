@@ -21,6 +21,8 @@ router.patch('/users/:id', adminController.updateUser);
 
 // Order management
 router.get('/orders', adminController.getOrders);
+router.get('/orders/:id', adminController.getOrderById);
+router.patch('/orders/:id/status', adminController.updateOrderStatus);
 router.post('/orders/:orderId/resolve-dispute', adminController.resolveDispute);
 
 // Payout management

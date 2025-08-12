@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { adminAPI } from "../../lib/api";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
@@ -9,18 +9,41 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
   const [newStatus, setNewStatus] = useState(order?.orderStatus || "");
   const [isUpdating, setIsUpdating] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [orderDetails, setOrderDetails] = useState(null);
 
   const { dispatch } = useData();
+
+  // Fetch full order details when modal opens
+  useEffect(() => {
+    if (isOpen && order?._id) {
+      fetchOrderDetails();
+    }
+  }, [isOpen, order?._id]);
+
+  const fetchOrderDetails = async () => {
+    setIsLoading(true);
+    try {
+      const response = await adminAPI.getOrderById(order._id);
+      setOrderDetails(response.data.data);
+      setNewStatus(response.data.data.order.orderStatus);
+    } catch (error) {
+      console.error("Failed to fetch order details:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateOrderStatus = async (data) => {
     setIsUpdating(true);
     try {
       await adminAPI.updateOrderStatus(order._id, data);
       dispatch({ type: "FETCH_ORDERS_START" });
+      await fetchOrderDetails(); // Refresh order details
       onUpdate?.();
-      onClose();
     } catch (error) {
       console.error("Failed to update order:", error);
+      alert("Failed to update order status. Please try again.");
     } finally {
       setIsUpdating(false);
     }
@@ -56,12 +79,28 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
 
   if (!isOpen || !order) return null;
 
+  const displayOrder = orderDetails?.order || order;
+  const reservations = orderDetails?.reservations || [];
+  const payments = orderDetails?.payments || [];
+  const lateFees = orderDetails?.lateFees || [];
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg p-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p>Loading order details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const statusOptions = [
-    "pending",
+    "quote",
     "confirmed",
-    "payment_pending",
-    "paid",
-    "in_progress",
+    "in_progress", 
     "completed",
     "cancelled",
     "disputed",
@@ -92,42 +131,42 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 <div>
                   <span className="font-medium">Order ID:</span>
                   <span className="ml-2 font-mono">
-                    #{order._id?.slice(-8)}
+                    #{displayOrder._id?.slice(-8)}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
                   <span
                     className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                      order.orderStatus === "completed"
+                      displayOrder.orderStatus === "completed"
                         ? "bg-green-100 text-green-800"
-                        : order.orderStatus === "confirmed"
+                        : displayOrder.orderStatus === "confirmed"
                         ? "bg-blue-100 text-blue-800"
-                        : order.orderStatus === "cancelled"
+                        : displayOrder.orderStatus === "cancelled"
                         ? "bg-red-100 text-red-800"
-                        : order.orderStatus === "disputed"
+                        : displayOrder.orderStatus === "disputed"
                         ? "bg-orange-100 text-orange-800"
                         : "bg-yellow-100 text-yellow-800"
                     }`}
                   >
-                    {order.orderStatus}
+                    {displayOrder.orderStatus}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Created:</span>
-                  <span className="ml-2">{formatDate(order.createdAt)}</span>
+                  <span className="ml-2">{formatDate(displayOrder.createdAt)}</span>
                 </div>
                 <div>
                   <span className="font-medium">Total Amount:</span>
                   <span className="ml-2 font-semibold">
-                    {formatCurrency(order.totalAmount)}
+                    {formatCurrency(displayOrder.totalAmount)}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Platform Commission:</span>
                   <span className="ml-2">
                     {formatCurrency(
-                      order.platformFee || order.totalAmount * 0.1
+                      displayOrder.platformFee || displayOrder.totalAmount * 0.1
                     )}
                   </span>
                 </div>
@@ -135,7 +174,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                   <span className="font-medium">Host Earnings:</span>
                   <span className="ml-2">
                     {formatCurrency(
-                      order.hostEarnings || order.totalAmount * 0.9
+                      displayOrder.hostEarnings || displayOrder.totalAmount * 0.9
                     )}
                   </span>
                 </div>
@@ -148,29 +187,29 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-700">Customer</h4>
-                  <p className="font-medium">{order.renterId?.name || "N/A"}</p>
+                  <p className="font-medium">{displayOrder.renterId?.name || "N/A"}</p>
                   <p className="text-sm text-gray-600">
-                    {order.renterId?.email || "N/A"}
+                    {displayOrder.renterId?.email || "N/A"}
                   </p>
-                  {order.renterId?.phone && (
+                  {displayOrder.renterId?.phone && (
                     <p className="text-sm text-gray-600">
-                      {order.renterId.phone}
+                      {displayOrder.renterId.phone}
                     </p>
                   )}
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700">Host</h4>
                   <p className="font-medium">
-                    {order.hostId?.name ||
-                      order.hostId?.hostProfile?.displayName ||
+                    {displayOrder.hostId?.name ||
+                      displayOrder.hostId?.hostProfile?.displayName ||
                       "N/A"}
                   </p>
                   <p className="text-sm text-gray-600">
-                    {order.hostId?.email || "N/A"}
+                    {displayOrder.hostId?.email || "N/A"}
                   </p>
-                  {order.hostId?.phone && (
+                  {displayOrder.hostId?.phone && (
                     <p className="text-sm text-gray-600">
-                      {order.hostId.phone}
+                      {displayOrder.hostId.phone}
                     </p>
                   )}
                 </div>
@@ -181,7 +220,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
             <Card className="p-4 lg:col-span-2">
               <h3 className="text-lg font-semibold mb-4">Order Items</h3>
               <div className="space-y-3">
-                {order.lines?.map((line, index) => (
+                {displayOrder.lines?.map((line, index) => (
                   <div
                     key={index}
                     className="border border-gray-200 rounded-lg p-3"
@@ -218,13 +257,105 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                     </div>
                   </div>
                 ))}
-                {(!order.lines || order.lines.length === 0) && (
+                {(!displayOrder.lines || displayOrder.lines.length === 0) && (
                   <p className="text-gray-500 text-center py-4">
                     No items in this order
                   </p>
                 )}
               </div>
             </Card>
+
+            {/* Payments */}
+            {payments.length > 0 && (
+              <Card className="p-4 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-4">Payment History</h3>
+                <div className="space-y-3">
+                  {payments.map((payment, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">Payment #{payment._id?.slice(-8)}</p>
+                          <p className="text-sm text-gray-600">Method: {payment.method}</p>
+                          <p className="text-sm">Status: <span className={`px-2 py-1 rounded-full text-xs ${
+                            payment.status === 'paid' ? 'bg-green-100 text-green-800' :
+                            payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>{payment.status}</span></p>
+                          <p className="text-sm text-gray-600">{formatDate(payment.createdAt)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{formatCurrency(payment.amount)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Reservations */}
+            {reservations.length > 0 && (
+              <Card className="p-4 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-4">Reservations</h3>
+                <div className="space-y-3">
+                  {reservations.map((reservation, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">{reservation.listingId?.title || 'Unknown Item'}</p>
+                          <p className="text-sm text-gray-600">
+                            {formatDate(reservation.start)} - {formatDate(reservation.end)}
+                          </p>
+                          <p className="text-sm">
+                            Status: <span className={`px-2 py-1 rounded-full text-xs ${
+                              reservation.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                              reservation.status === 'active' ? 'bg-green-100 text-green-800' :
+                              reservation.status === 'returned' ? 'bg-gray-100 text-gray-800' :
+                              reservation.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>{reservation.status}</span>
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">Qty: {reservation.qty}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
+
+            {/* Late Fees */}
+            {lateFees.length > 0 && (
+              <Card className="p-4 lg:col-span-2">
+                <h3 className="text-lg font-semibold mb-4">Late Fees</h3>
+                <div className="space-y-3">
+                  {lateFees.map((lateFee, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-medium">Late Fee #{lateFee._id?.slice(-8)}</p>
+                          <p className="text-sm text-gray-600">Type: {lateFee.type}</p>
+                          <p className="text-sm text-gray-600">Reason: {lateFee.reason}</p>
+                          <p className="text-sm">
+                            Status: <span className={`px-2 py-1 rounded-full text-xs ${
+                              lateFee.status === 'paid' ? 'bg-green-100 text-green-800' :
+                              lateFee.status === 'waived' ? 'bg-blue-100 text-blue-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>{lateFee.status}</span>
+                          </p>
+                          <p className="text-sm text-gray-600">{formatDate(lateFee.createdAt)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{formatCurrency(lateFee.amount)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Admin Actions */}
             <Card className="p-4 lg:col-span-2">
@@ -250,7 +381,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                     </select>
                     <Button
                       onClick={handleStatusUpdate}
-                      disabled={isUpdating || newStatus === order.orderStatus}
+                      disabled={isUpdating || newStatus === displayOrder.orderStatus}
                     >
                       {isUpdating ? "Updating..." : "Update"}
                     </Button>
@@ -258,7 +389,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 </div>
 
                 {/* Dispute Resolution */}
-                {order.orderStatus === "disputed" && (
+                {displayOrder.orderStatus === "disputed" && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Dispute Resolution

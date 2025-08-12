@@ -104,6 +104,7 @@ export const adminAPI = {
   getUsers: (params) => api.get('/admin/users', { params }),
   updateUser: (id, data) => api.patch(`/admin/users/${id}`, data),
   getOrders: (params) => api.get('/admin/orders', { params }),
+  getOrderById: (id) => api.get(`/admin/orders/${id}`),
   updateOrderStatus: (id, data) => api.patch(`/admin/orders/${id}/status`, data),
   resolveDispute: (orderId, data) => api.post(`/admin/orders/${orderId}/resolve-dispute`, data),
   getPayouts: (params) => api.get('/admin/payouts', { params }),
