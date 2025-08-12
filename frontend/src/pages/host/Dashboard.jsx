@@ -1,40 +1,53 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { hostAPI, listingsAPI } from "../../lib/api";
 import { useAuth } from "../../contexts/AuthContext";
-import { useListings } from "../../contexts/ListingsContext";
 import { Plus, Calendar, DollarSign, Package, Users, Eye, RefreshCw } from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 
 const HostDashboard = () => {
   const { user } = useAuth();
-  const { refreshListings } = useListings();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      await refreshListings();
+      console.log('Manual refresh triggered...');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['hostListings'] }),
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['host-orders'] }),
+      ]);
+      console.log('Manual refresh completed');
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+  const { data: dashboardData, isLoading: dashboardLoading, dataUpdatedAt: dashboardUpdatedAt } = useQuery({
     queryKey: ["host-dashboard"],
     queryFn: hostAPI.getDashboard,
     select: (data) => data.data,
     enabled: !!user?.isHost,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
-  const { data: hostListings, isLoading: listingsLoading } = useQuery({
+  const { data: hostListings, isLoading: listingsLoading, dataUpdatedAt: listingsUpdatedAt } = useQuery({
     queryKey: ["hostListings"],
     queryFn: () => hostAPI.getListings(),
     select: (data) => data.data.listings,
     enabled: !!user?.isHost,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
+
+  console.log('Dashboard render - hostListings:', hostListings?.length || 0, 'listings');
+  console.log('Dashboard render - listingsUpdatedAt:', new Date(listingsUpdatedAt).toLocaleTimeString());
+  console.log('Dashboard render - dashboardUpdatedAt:', new Date(dashboardUpdatedAt).toLocaleTimeString());
 
   const { data: hostOrders, isLoading: ordersLoading } = useQuery({
     queryKey: ["host-orders"],
@@ -105,7 +118,7 @@ const HostDashboard = () => {
           </Button>
           <Button onClick={() => (window.location.href = "/listings/new")}>
             <Plus className="h-4 w-4 mr-2" />
-            List New Item (TanStack)
+            List New Item
           </Button>
         </div>
       </div>

@@ -33,9 +33,6 @@ const Header = () => {
             <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
               Browse
             </Link>
-            <Link to="/state-comparison" className="text-gray-600 hover:text-gray-900 font-medium">
-              State Demo
-            </Link>
             {isAuthenticated && (
               <Link to="/my-bookings" className="text-gray-600 hover:text-gray-900 font-medium">
                 My Bookings
@@ -81,24 +78,14 @@ const Header = () => {
                         Profile
                       </Link>
                       {isHost && (
-                        <>
-                          <Link
-                            to="/host/dashboard"
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Owner Dashboard (TanStack)
-                          </Link>
-                          <Link
-                            to="/host/dashboard-context"
-                            className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <Calendar className="h-4 w-4 mr-2" />
-                            Owner Dashboard (Context)
-                          </Link>
-                        </>
+                        <Link
+                          to="/host/dashboard"
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsUserMenuOpen(false)}
+                        >
+                          <Calendar className="h-4 w-4 mr-2" />
+                          Owner Dashboard
+                        </Link>
                       )}
                       <button
                         onClick={handleLogout}

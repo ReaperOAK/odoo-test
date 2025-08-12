@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useListings } from '../contexts/ListingsContext';
 import { listingsAPI } from '../lib/api';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -11,7 +10,7 @@ import Card from '../components/ui/Card';
 const CreateListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { refreshListings, addListingOptimistic } = useListings();
+  const queryClient = useQueryClient();
 
   // Debug user info
   console.log('Current user in CreateListing:', user);
@@ -38,14 +37,17 @@ const CreateListing = () => {
     mutationFn: listingsAPI.create,
     onSuccess: async (response) => {
       console.log('Listing created successfully:', response);
+      console.log('Invalidating queries...');
       
-      // Add optimistic update first for immediate UI feedback
-      if (response.data?.listing) {
-        addListingOptimistic(response.data.listing);
-      }
+      // Invalidate all related queries to force fresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['hostListings'] }),
+        queryClient.invalidateQueries({ queryKey: ['host-dashboard'] }),
+        queryClient.invalidateQueries({ queryKey: ['host-orders'] }),
+        queryClient.invalidateQueries({ queryKey: ['listings'] }),
+      ]);
       
-      // Then refresh all data to ensure consistency
-      await refreshListings();
+      console.log('Queries invalidated, navigating to dashboard...');
       
       // Navigate to dashboard
       navigate('/host/dashboard');
