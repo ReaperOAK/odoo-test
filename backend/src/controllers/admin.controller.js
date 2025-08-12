@@ -4,6 +4,7 @@ const Listing = require('../models/Listing');
 const Payment = require('../models/Payment');
 const Payout = require('../models/Payout');
 const Reservation = require('../models/Reservation');
+const emailService = require('../services/email.service');
 const { AppError } = require('../utils/errors');
 const logger = require('../utils/logger');
 const mongoose = require('mongoose');
@@ -557,6 +558,12 @@ const processPayout = async (req, res, next) => {
         hostId: payout.hostId._id,
         amount: payout.amount
       });
+
+      // Send payout notification email (non-blocking)
+      emailService.sendPayoutNotification(payout, payout.hostId)
+        .catch(error => {
+          logger.error('Failed to send payout notification email:', error);
+        });
 
       res.json({
         success: true,

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const config = require('../config');
 const { logger } = require('../config/database');
+const emailService = require('../services/email.service');
 
 class AuthController {
   /**
@@ -55,6 +56,11 @@ class AuthController {
       );
       
       logger.info(`User registered successfully: ${user.email}`);
+      
+      // Send welcome email (non-blocking)
+      emailService.sendWelcomeEmail(user).catch(error => {
+        logger.error('Failed to send welcome email:', error);
+      });
       
       res.status(201).json({
         success: true,
@@ -297,6 +303,11 @@ class AuthController {
       await user.save();
       
       logger.info(`User upgraded to host: ${user.email}`);
+      
+      // Send host welcome email (non-blocking)
+      emailService.sendHostWelcomeEmail(user).catch(error => {
+        logger.error('Failed to send host welcome email:', error);
+      });
       
       res.json({
         success: true,

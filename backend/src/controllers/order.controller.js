@@ -5,6 +5,7 @@ const User = require('../models/User');
 const Listing = require('../models/Listing');
 const ReservationService = require('../services/reservation.service');
 const PolarService = require('../services/polar.service');
+const emailService = require('../services/email.service');
 const { AppError } = require('../utils/errors');
 const logger = require('../utils/logger');
 const mongoose = require('mongoose');
@@ -61,6 +62,24 @@ const createOrder = async (req, res, next) => {
         .populate('lines.listingId', 'title images basePrice ownerId')
         .populate('hostId', 'name hostProfile')
         .populate('renterId', 'name email');
+
+      // Send emails asynchronously (non-blocking)
+      const sendEmails = async () => {
+        try {
+          // Send booking confirmation to customer
+          await emailService.sendBookingConfirmation(populatedOrder, populatedOrder.renterId);
+          
+          // Send booking notification to host
+          await emailService.sendBookingNotificationToHost(
+            populatedOrder, 
+            populatedOrder.hostId, 
+            populatedOrder.renterId
+          );
+        } catch (error) {
+          logger.error('Failed to send order emails:', error);
+        }
+      };
+      sendEmails();
 
       res.status(201).json({
         success: true,
@@ -360,101 +379,6 @@ const confirmPayment = async (req, res, next) => {
 };
 
 /**
- * Cancel order (before payment or within cancellation policy)
- */
-const cancelOrder = async (req, res, next) => {
-  try {
-    const { id } = req.params;
-    const { reason } = req.body;
-
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-      return next(new AppError('Invalid order ID', 400));
-    }
-
-    const order = await Order.findById(id);
-    if (!order) {
-      return next(new AppError('Order not found', 404));
-    }
-
-    // Check permissions
-    const isRenter = req.user.id === order.renterId.toString();
-    const isHost = req.user.id === order.hostId.toString();
-    const isAdmin = req.user.role === 'admin';
-
-    if (!isRenter && !isHost && !isAdmin) {
-      return next(new AppError('Not authorized to cancel this order', 403));
-    }
-
-    // Check if cancellation is allowed
-    if (order.orderStatus === 'completed') {
-      return next(new AppError('Cannot cancel completed order', 400));
-    }
-
-    if (order.orderStatus === 'cancelled') {
-      return next(new AppError('Order is already cancelled', 400));
-    }
-
-    // Start transaction
-    const session = await mongoose.startSession();
-    
-    try {
-      await session.withTransaction(async () => {
-        // Update order status
-        order.orderStatus = 'cancelled';
-        order.metadata = { 
-          ...order.metadata, 
-          cancellationReason: reason,
-          cancelledBy: req.user.id,
-          cancelledAt: new Date()
-        };
-        await order.save({ session });
-
-        // Cancel reservations
-        await Reservation.updateMany(
-          { orderId: id },
-          { status: 'cancelled' },
-          { session }
-        );
-
-        // Handle refund if payment was made
-        if (order.paymentStatus === 'paid') {
-          // In a real implementation, initiate refund process
-          // For now, just mark as refund pending
-          order.paymentStatus = 'refunded';
-          await order.save({ session });
-
-          // Reduce host wallet balance if already credited
-          const host = await User.findById(order.hostId).session(session);
-          if (host) {
-            const hostEarnings = order.subtotal - order.platformCommission;
-            host.walletBalance = Math.max(0, host.walletBalance - hostEarnings);
-            await host.save({ session });
-          }
-        }
-      });
-
-      logger.info(`Cancelled order ${id}`, {
-        userId: req.user.id,
-        reason,
-        orderStatus: order.orderStatus
-      });
-
-      res.json({
-        success: true,
-        message: 'Order cancelled successfully',
-        data: { order }
-      });
-
-    } finally {
-      await session.endSession();
-    }
-  } catch (error) {
-    logger.error('Error cancelling order:', error);
-    next(error);
-  }
-};
-
-/**
  * Update order status (host/admin actions)
  */
 const updateOrderStatus = async (req, res, next) => {
@@ -492,6 +416,7 @@ const updateOrderStatus = async (req, res, next) => {
     }
 
     // Update order
+    const previousStatus = order.orderStatus;
     order.orderStatus = status;
     if (notes) {
       order.metadata = { 
@@ -520,9 +445,20 @@ const updateOrderStatus = async (req, res, next) => {
       );
     }
 
+    // Populate order for email
+    const populatedOrder = await Order.findById(id)
+      .populate('renterId', 'name email')
+      .populate('hostId', 'name email');
+
+    // Send status update email (non-blocking)
+    emailService.sendOrderStatusUpdate(populatedOrder, populatedOrder.renterId, previousStatus)
+      .catch(error => {
+        logger.error('Failed to send order status update email:', error);
+      });
+
     logger.info(`Updated order ${id} status to ${status}`, {
       userId: req.user.id,
-      previousStatus: order.orderStatus
+      previousStatus: previousStatus
     });
 
     res.json({
@@ -532,6 +468,78 @@ const updateOrderStatus = async (req, res, next) => {
     });
   } catch (error) {
     logger.error('Error updating order status:', error);
+    next(error);
+  }
+};
+
+/**
+ * Cancel order
+ */
+const cancelOrder = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new AppError('Invalid order ID', 400));
+    }
+
+    const order = await Order.findById(id)
+      .populate('renterId', 'name email')
+      .populate('hostId', 'name email');
+
+    if (!order) {
+      return next(new AppError('Order not found', 404));
+    }
+
+    // Check permissions - only customer or admin can cancel
+    const isOwner = req.user.id === order.renterId._id.toString();
+    const isAdmin = req.user.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
+      return next(new AppError('Not authorized to cancel this order', 403));
+    }
+
+    // Check if order can be cancelled
+    if (['completed', 'cancelled'].includes(order.orderStatus)) {
+      return next(new AppError('Cannot cancel order with current status', 400));
+    }
+
+    // Update order status
+    order.orderStatus = 'cancelled';
+    order.metadata = {
+      ...order.metadata,
+      cancellationReason: reason,
+      cancelledBy: req.user.id,
+      cancelledAt: new Date()
+    };
+
+    await order.save();
+
+    // Update related reservations
+    await Reservation.updateMany(
+      { orderId: id },
+      { status: 'cancelled' }
+    );
+
+    // Send cancellation email (non-blocking)
+    emailService.sendCancellationConfirmation(order, order.renterId, reason)
+      .catch(error => {
+        logger.error('Failed to send cancellation email:', error);
+      });
+
+    logger.info(`Cancelled order ${id}`, {
+      userId: req.user.id,
+      reason: reason
+    });
+
+    res.json({
+      success: true,
+      message: 'Order cancelled successfully',
+      data: { order }
+    });
+  } catch (error) {
+    logger.error('Error cancelling order:', error);
     next(error);
   }
 };
