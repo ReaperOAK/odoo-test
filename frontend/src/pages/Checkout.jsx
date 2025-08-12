@@ -28,13 +28,21 @@ const Checkout = () => {
     },
     select: (data) => {
       console.log('Order API response:', data);
-      return data.data.order;
+      console.log('data.data:', data.data);
+      console.log('data.data.data:', data.data.data);
+      console.log('data.data.data.order:', data.data.data.order);
+      const order = data.data.data.order;
+      console.log('Selected order:', order);
+      return order;
     },
     onError: (error) => {
       console.error('Order fetch error:', error);
       console.error('Error response:', error.response?.data);
     },
   });
+
+  console.log('Query state:', { isLoading, error, order });
+  console.log('Order exists?', !!order);
 
   const mockPaymentMutation = useMutation({
     mutationFn: () => paymentsAPI.mockPaymentSuccess(orderId),
