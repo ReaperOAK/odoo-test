@@ -25,8 +25,11 @@ const MyBookings = () => {
     error,
   } = useQuery({
     queryKey: ["my-orders", statusFilter],
-    queryFn: () => ordersAPI.getMyOrders({ status: statusFilter }),
-    select: (data) => data.data,
+    queryFn: () => {
+      const params = statusFilter ? { status: statusFilter } : {};
+      return ordersAPI.getMyOrders(params);
+    },
+    select: (response) => response.data?.data,
     enabled: !!user,
   });
 
@@ -47,7 +50,7 @@ const MyBookings = () => {
 
   const getStatusColor = (status) => {
     const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
+      quote: "bg-orange-100 text-orange-800",
       confirmed: "bg-blue-100 text-blue-800",
       in_progress: "bg-green-100 text-green-800",
       completed: "bg-gray-100 text-gray-800",
@@ -123,11 +126,12 @@ const MyBookings = () => {
         <nav className="-mb-px flex space-x-8">
           {[
             { key: "", label: "All Rentals" },
-            { key: "pending", label: "Pending" },
+            { key: "quote", label: "Quote" },
             { key: "confirmed", label: "Confirmed" },
-            { key: "in_progress", label: "Active" },
-            { key: "completed", label: "Returned" },
+            { key: "in_progress", label: "In Progress" },
+            { key: "completed", label: "Completed" },
             { key: "cancelled", label: "Cancelled" },
+            { key: "disputed", label: "Disputed" },
           ].map(({ key, label }) => (
             <button
               key={key}
@@ -179,7 +183,7 @@ const MyBookings = () => {
                         </span>
                       </span>
                       <span className="text-sm text-gray-500">
-                        Order #{order.orderNumber || order._id.slice(-8)}
+                        Order #{order.orderNumber || order._id?.slice(-8) || 'N/A'}
                       </span>
                     </div>
                     <div className="text-sm text-gray-500">
@@ -191,7 +195,7 @@ const MyBookings = () => {
                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
                       <div className="flex-shrink-0">
                         <img
-                          src={listing.images?.[0] || "/placeholder-image.jpg"}
+                          src={listing.images?.length > 0 ? listing.images[0] : "/placeholder-image.jpg"}
                           alt={listing.title}
                           className="w-full sm:w-32 h-32 object-cover rounded-lg"
                         />
@@ -202,10 +206,12 @@ const MyBookings = () => {
                           {listing.title}
                         </h3>
 
-                        <div className="flex items-center text-sm text-gray-600 mb-2">
-                          <MapPin className="h-4 w-4 mr-1" />
-                          {listing.location}
-                        </div>
+                        {listing.location && (
+                          <div className="flex items-center text-sm text-gray-600 mb-2">
+                            <MapPin className="h-4 w-4 mr-1" />
+                            {listing.location}
+                          </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
@@ -266,7 +272,7 @@ const MyBookings = () => {
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">Host:</span>
                         <span className="text-sm font-medium">
-                          {order.hostId.name}
+                          {order.hostId.hostProfile?.displayName || order.hostId.name || 'Unknown Host'}
                         </span>
                         {order.hostId.hostProfile?.verified && (
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
@@ -275,7 +281,7 @@ const MyBookings = () => {
                         )}
                       </div>
 
-                      {order.orderStatus === "pending" &&
+                      {order.orderStatus === "quote" &&
                         order.paymentStatus === "pending" && (
                           <Button
                             onClick={() =>

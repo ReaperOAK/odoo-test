@@ -14,15 +14,35 @@ const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState("polar");
   const [isProcessing, setIsProcessing] = useState(false);
 
+  console.log('Checkout component loaded with orderId:', orderId);
+
   const {
     data: order,
     isLoading,
     error,
   } = useQuery({
     queryKey: ["order", orderId],
-    queryFn: () => ordersAPI.getById(orderId),
-    select: (data) => data.data.order,
+    queryFn: () => {
+      console.log('Fetching order with ID:', orderId);
+      return ordersAPI.getById(orderId);
+    },
+    select: (data) => {
+      console.log('Order API response:', data);
+      console.log('data.data:', data.data);
+      console.log('data.data.data:', data.data.data);
+      console.log('data.data.data.order:', data.data.data.order);
+      const order = data.data.data.order;
+      console.log('Selected order:', order);
+      return order;
+    },
+    onError: (error) => {
+      console.error('Order fetch error:', error);
+      console.error('Error response:', error.response?.data);
+    },
   });
+
+  console.log('Query state:', { isLoading, error, order });
+  console.log('Order exists?', !!order);
 
   const mockPaymentMutation = useMutation({
     mutationFn: () => paymentsAPI.mockPaymentSuccess(orderId),
