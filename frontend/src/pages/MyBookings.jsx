@@ -27,7 +27,7 @@ const MyBookings = () => {
   }, [user, statusFilter, actions]);
 
   // Filter orders based on status
-  const allOrders = state.orders || [];
+  const allOrders = Array.isArray(state.orders) ? state.orders : [];
   const filteredOrders = statusFilter
     ? allOrders.filter((order) => order.status === statusFilter)
     : allOrders;
