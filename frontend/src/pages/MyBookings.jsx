@@ -22,6 +22,13 @@ const MyBookings = () => {
   const [searchParams] = useSearchParams();
   const statusFilter = searchParams.get("status");
 
+  // State for modals and selected data
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetails, setOrderDetails] = useState(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+
   // Fetch orders when component mounts or filter changes
   useEffect(() => {
     if (user) {
