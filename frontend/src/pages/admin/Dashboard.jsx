@@ -8,7 +8,14 @@ import UserDetailsModal from "../../components/admin/UserDetailsModal";
 import OrderDetailsModal from "../../components/admin/OrderDetailsModal";
 import PayoutManagementModal from "../../components/admin/PayoutManagementModal";
 import ExportModal from "../../components/admin/ExportModal";
-import { exportData, generateAdminReport, printAdminDashboard, printOrders, printUsers, printPayouts } from "../../utils/exportUtils";
+import {
+  exportData,
+  generateAdminReport,
+  printAdminDashboard,
+  printOrders,
+  printUsers,
+  printPayouts,
+} from "../../utils/exportUtils";
 
 const AdminDashboard = () => {
   const { user, isAdmin } = useAuth();
@@ -151,7 +158,11 @@ const AdminDashboard = () => {
         const revenueData = analytics.revenueOverTime || [];
         const headers = ["date", "revenue", "orders"];
         const processedRevenue = revenueData.map((item) => ({
-          date: new Date(item._id.year, item._id.month - 1, item._id.day).toLocaleDateString(),
+          date: new Date(
+            item._id.year,
+            item._id.month - 1,
+            item._id.day
+          ).toLocaleDateString(),
           revenue: `₹${item.revenue?.toLocaleString() || 0}`,
           orders: item.orders || 0,
         }));
@@ -165,7 +176,16 @@ const AdminDashboard = () => {
         );
       } else if (exportType === "payout-report") {
         const payouts = payoutsData?.data?.data?.payouts || [];
-        const headers = ["host", "email", "amount", "currency", "status", "method", "createdAt", "bankAccount"];
+        const headers = [
+          "host",
+          "email",
+          "amount",
+          "currency",
+          "status",
+          "method",
+          "createdAt",
+          "bankAccount",
+        ];
         const processedPayouts = payouts.map((payout) => ({
           host: payout.hostId?.name || "N/A",
           email: payout.hostId?.email || "N/A",
@@ -253,7 +273,9 @@ const AdminDashboard = () => {
   const handlePrintDashboard = () => {
     const dashboardStats = dashboardData?.data?.data;
     if (!dashboardStats) {
-      alert("Dashboard data not available. Please wait for data to load and try again.");
+      alert(
+        "Dashboard data not available. Please wait for data to load and try again."
+      );
       return;
     }
     printAdminDashboard(dashboardStats);
@@ -416,7 +438,9 @@ const AdminDashboard = () => {
       <div className="space-y-6">
         {/* Dashboard Actions */}
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold text-gray-900">Dashboard Overview</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            Dashboard Overview
+          </h2>
           <div className="flex space-x-2">
             <Button variant="glass" size="sm" onClick={handleGenerateReport}>
               📊 Export Report
@@ -696,8 +720,8 @@ const AdminDashboard = () => {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex space-x-2">
-                      <Button 
-                        variant="glass" 
+                      <Button
+                        variant="glass"
                         size="sm"
                         onClick={() => handleViewUser(user)}
                       >

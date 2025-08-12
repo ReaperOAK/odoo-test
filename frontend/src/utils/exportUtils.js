@@ -257,11 +257,11 @@ export const generateAdminReport = (reportData, format) => {
 export const printData = (data, headers, title = '') => {
   const htmlContent = generateHTML(data, headers, title);
   const printWindow = window.open('', '_blank');
-  
+
   if (printWindow) {
     printWindow.document.write(htmlContent);
     printWindow.document.close();
-    
+
     // Wait for content to load then print
     printWindow.onload = () => {
       printWindow.print();
@@ -276,7 +276,7 @@ export const printData = (data, headers, title = '') => {
 export const printAdminDashboard = (dashboardData) => {
   const data = [];
   const stats = dashboardData?.stats;
-  
+
   if (stats) {
     data.push({
       metric: 'Total Users',
