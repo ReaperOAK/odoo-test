@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -17,7 +17,18 @@ const MyBookings = () => {
   const { user } = useAuth();
   const { state, actions } = useData();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const statusFilter = searchParams.get("status");
+
+  const setStatusFilter = (status) => {
+    const params = new URLSearchParams(searchParams);
+    if (status) {
+      params.set("status", status);
+    } else {
+      params.delete("status");
+    }
+    navigate(`/my-bookings?${params.toString()}`);
+  };
 
   // Fetch orders when component mounts or filter changes
   useEffect(() => {
@@ -29,7 +40,7 @@ const MyBookings = () => {
   // Filter orders based on status
   const allOrders = Array.isArray(state.orders) ? state.orders : [];
   const filteredOrders = statusFilter
-    ? allOrders.filter((order) => order.status === statusFilter)
+    ? allOrders.filter((order) => order.orderStatus === statusFilter)
     : allOrders;
 
   const ordersData = filteredOrders;
@@ -104,7 +115,7 @@ const MyBookings = () => {
     );
   }
 
-  const orders = ordersData?.orders || [];
+  const orders = ordersData || [];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
