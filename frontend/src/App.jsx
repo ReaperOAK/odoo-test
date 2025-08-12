@@ -19,10 +19,7 @@ import MockCheckout from './pages/MockCheckout';
 import MyBookings from './pages/MyBookings';
 import Profile from './pages/Profile';
 import CreateListing from './pages/CreateListing';
-import CreateListingWithContext from './pages/CreateListingWithContext';
 import HostDashboard from './pages/host/Dashboard';
-import HostDashboardWithContext from './pages/host/DashboardWithContext';
-import StateManagementComparison from './pages/StateManagementComparison';
 import AdminDashboard from './pages/admin/Dashboard';
 
 function App() {
