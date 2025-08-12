@@ -109,11 +109,11 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 </div>
                 <div>
                   <span className="font-medium">Platform Commission:</span>
-                  <span className="ml-2">{formatCurrency(order.platformCommission)}</span>
+                  <span className="ml-2">{formatCurrency(order.platformFee || order.totalAmount * 0.1)}</span>
                 </div>
                 <div>
                   <span className="font-medium">Host Earnings:</span>
-                  <span className="ml-2">{formatCurrency(order.hostEarnings)}</span>
+                  <span className="ml-2">{formatCurrency(order.hostEarnings || order.totalAmount * 0.9)}</span>
                 </div>
               </div>
             </Card>
@@ -124,18 +124,18 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-700">Customer</h4>
-                  <p className="font-medium">{order.customerName}</p>
-                  <p className="text-sm text-gray-600">{order.customerEmail}</p>
-                  {order.customerPhone && (
-                    <p className="text-sm text-gray-600">{order.customerPhone}</p>
+                  <p className="font-medium">{order.renterId?.name || 'N/A'}</p>
+                  <p className="text-sm text-gray-600">{order.renterId?.email || 'N/A'}</p>
+                  {order.renterId?.phone && (
+                    <p className="text-sm text-gray-600">{order.renterId.phone}</p>
                   )}
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700">Host</h4>
-                  <p className="font-medium">{order.hostName}</p>
-                  <p className="text-sm text-gray-600">{order.hostEmail}</p>
-                  {order.hostPhone && (
-                    <p className="text-sm text-gray-600">{order.hostPhone}</p>
+                  <p className="font-medium">{order.hostId?.name || order.hostId?.hostProfile?.displayName || 'N/A'}</p>
+                  <p className="text-sm text-gray-600">{order.hostId?.email || 'N/A'}</p>
+                  {order.hostId?.phone && (
+                    <p className="text-sm text-gray-600">{order.hostId.phone}</p>
                   )}
                 </div>
               </div>
@@ -145,30 +145,33 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
             <Card className="p-4 lg:col-span-2">
               <h3 className="text-lg font-semibold mb-4">Order Items</h3>
               <div className="space-y-3">
-                {order.orderLines?.map((line, index) => (
+                {order.lines?.map((line, index) => (
                   <div key={index} className="border border-gray-200 rounded-lg p-3">
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium">{line.listing?.title}</h4>
-                        <p className="text-sm text-gray-600">{line.listing?.category}</p>
+                        <h4 className="font-medium">{line.listingId?.title || 'Item'}</h4>
+                        <p className="text-sm text-gray-600">{line.listingId?.category || 'Category'}</p>
                         <p className="text-sm">
-                          Quantity: {line.quantity} | 
-                          Duration: {line.rentalPeriod?.duration} {line.rentalPeriod?.unit}
+                          Quantity: {line.qty} | 
+                          Duration: {Math.ceil((new Date(line.end) - new Date(line.start)) / (1000 * 60 * 60 * 24))} days
                         </p>
                         <p className="text-sm">
-                          From: {formatDate(line.rentalPeriod?.startDate)} | 
-                          To: {formatDate(line.rentalPeriod?.endDate)}
+                          From: {formatDate(line.start)} | 
+                          To: {formatDate(line.end)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatCurrency(line.subtotal)}</p>
+                        <p className="font-medium">{formatCurrency(line.lineTotal)}</p>
                         <p className="text-sm text-gray-600">
-                          {formatCurrency(line.listing?.pricing?.amount)}/{line.listing?.pricing?.unit}
+                          {formatCurrency(line.unitPrice)}/day
                         </p>
                       </div>
                     </div>
                   </div>
                 ))}
+                {(!order.lines || order.lines.length === 0) && (
+                  <p className="text-gray-500 text-center py-4">No items in this order</p>
+                )}
               </div>
             </Card>
 

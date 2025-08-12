@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '../../lib/api';
 import { useAuth } from '../../contexts/AuthContext';
 import Card from '../../components/ui/Card';
@@ -10,6 +10,7 @@ import PayoutManagementModal from '../../components/admin/PayoutManagementModal'
 
 const AdminDashboard = () => {
   const { user, isAdmin } = useAuth();
+  const queryClient = useQueryClient();
   const [selectedTab, setSelectedTab] = useState('overview');
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -17,6 +18,94 @@ const AdminDashboard = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
+  const refreshData = () => {
+    queryClient.invalidateQueries(['admin']);
+  };
+
+  const handleSettings = () => {
+    setShowSettingsModal(true);
+  };
+
+  const handleGenerateReport = async () => {
+    try {
+      // Get current date for filename
+      const date = new Date().toISOString().split('T')[0];
+      
+      // Create comprehensive report data
+      const reportData = {
+        generatedAt: new Date().toISOString(),
+        period: '30 days',
+        stats: dashboardData?.data?.data?.stats || {},
+        recentOrders: dashboardData?.data?.data?.recentOrders || [],
+        topListings: dashboardData?.data?.data?.topListings || [],
+        analytics: analyticsData?.data?.data || {}
+      };
+
+      // Convert to CSV format for easy viewing
+      const csvContent = generateCSVReport(reportData);
+      
+      // Create and download file
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `admin-report-${date}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      alert('Report generated successfully!');
+    } catch (error) {
+      console.error('Error generating report:', error);
+      alert('Failed to generate report. Please try again.');
+    }
+  };
+
+  const generateCSVReport = (data) => {
+    let csv = 'Admin Dashboard Report\n';
+    csv += `Generated at: ${new Date(data.generatedAt).toLocaleString()}\n\n`;
+    
+    // Platform Statistics
+    csv += 'PLATFORM STATISTICS\n';
+    csv += 'Metric,Value\n';
+    csv += `Total Users,${data.stats.users?.total || 0}\n`;
+    csv += `Active Hosts,${data.stats.users?.hosts || 0}\n`;
+    csv += `Customer Users,${data.stats.users?.customers || 0}\n`;
+    csv += `Total Listings,${data.stats.listings?.total || 0}\n`;
+    csv += `Active Listings,${data.stats.listings?.active || 0}\n`;
+    csv += `Total Orders,${data.stats.orders?.total || 0}\n`;
+    csv += `Completed Orders,${data.stats.orders?.completed || 0}\n`;
+    csv += `Platform Revenue,₹${data.stats.revenue?.total || 0}\n`;
+    csv += `Pending Payouts,₹${data.stats.payouts?.pending || 0}\n\n`;
+    
+    // Recent Orders
+    csv += 'RECENT ORDERS\n';
+    csv += 'Order ID,Customer,Amount,Status,Date\n';
+    data.recentOrders.forEach(order => {
+      csv += `${order._id?.slice(-6) || 'N/A'},`;
+      csv += `${order.renterId?.name || 'Unknown'},`;
+      csv += `₹${order.totalAmount || 0},`;
+      csv += `${order.orderStatus || 'Unknown'},`;
+      csv += `${new Date(order.createdAt).toLocaleDateString()}\n`;
+    });
+    csv += '\n';
+    
+    // Top Listings
+    csv += 'TOP PERFORMING LISTINGS\n';
+    csv += 'Listing,Category,Bookings,Revenue,Base Price\n';
+    data.topListings.forEach(item => {
+      csv += `${item.listing?.title || 'Unknown'},`;
+      csv += `${item.listing?.category || 'Unknown'},`;
+      csv += `${item.totalBookings || 0},`;
+      csv += `₹${item.totalRevenue?.toFixed(0) || 0},`;
+      csv += `₹${item.listing?.basePrice || 0}\n`;
+    });
+    
+    return csv;
+  };
 
   // Fetch admin dashboard data
   const { data: dashboardData, isLoading: dashboardLoading, error: dashboardError } = useQuery({
@@ -47,6 +136,14 @@ const AdminDashboard = () => {
     queryKey: ['admin', 'payouts'],
     queryFn: () => adminAPI.getPayouts(),
     enabled: isAdmin && selectedTab === 'payouts',
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Fetch analytics data
+  const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
+    queryKey: ['admin', 'analytics'],
+    queryFn: () => adminAPI.getAnalytics(),
+    enabled: isAdmin && selectedTab === 'reports',
     staleTime: 5 * 60 * 1000,
   });
 
@@ -122,58 +219,68 @@ const AdminDashboard = () => {
       );
     }
 
-    const stats = dashboardData?.data?.stats || {};
+    const stats = dashboardData?.data?.data?.stats || {};
+    const recentOrders = dashboardData?.data?.data?.recentOrders || [];
+    const topListings = dashboardData?.data?.data?.topListings || [];
 
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <StatCard
             title="Total Users"
-            value={stats.totalUsers || 0}
+            value={stats.users?.total || 0}
             icon="👥"
-            trend="up"
-            trendValue="12% from last month"
+            trend={stats.users?.growth > 0 ? "up" : stats.users?.growth < 0 ? "down" : null}
+            trendValue={stats.users?.growth !== 0 ? `${Math.abs(stats.users?.growth || 0)}% from last month` : "No change"}
           />
           <StatCard
             title="Active Hosts"
-            value={stats.totalHosts || 0}
+            value={stats.users?.hosts || 0}
             icon="🏠"
             trend="up"
-            trendValue="8% from last month"
+            trendValue={`${((stats.users?.hosts || 0) / (stats.users?.total || 1) * 100).toFixed(1)}% of users`}
           />
           <StatCard
             title="Total Orders"
-            value={stats.totalOrders || 0}
+            value={stats.orders?.total || 0}
             icon="📦"
-            trend="up"
-            trendValue="15% from last month"
+            trend={stats.orders?.growth > 0 ? "up" : stats.orders?.growth < 0 ? "down" : null}
+            trendValue={stats.orders?.growth !== 0 ? `${Math.abs(stats.orders?.growth || 0)}% from last month` : "No change"}
           />
           <StatCard
             title="Platform Revenue"
-            value={`₹${(stats.totalRevenue?.[0]?.total || 0).toLocaleString()}`}
+            value={`₹${(stats.revenue?.total || 0).toLocaleString()}`}
             icon="💰"
-            trend="up"
-            trendValue="20% from last month"
+            trend={stats.revenue?.growth > 0 ? "up" : stats.revenue?.growth < 0 ? "down" : null}
+            trendValue={stats.revenue?.growth !== 0 ? `${Math.abs(stats.revenue?.growth || 0)}% from last month` : "No change"}
           />
           <StatCard
             title="Active Listings"
-            value={stats.activeListings || 0}
+            value={stats.listings?.active || 0}
             icon="📋"
+            trend="up"
+            trendValue={`${stats.listings?.total || 0} total listings`}
           />
           <StatCard
             title="Completed Orders"
-            value={stats.completedOrders || 0}
+            value={stats.orders?.completed || 0}
             icon="✅"
+            trend="up"
+            trendValue={`${((stats.orders?.completed || 0) / (stats.orders?.total || 1) * 100).toFixed(1)}% completion rate`}
           />
           <StatCard
             title="Disputed Orders"
-            value={stats.disputedOrders || 0}
+            value={stats.orders?.disputed || 0}
             icon="⚠️"
+            trend={stats.orders?.disputed > 0 ? "down" : null}
+            trendValue={stats.orders?.disputed > 0 ? "Needs attention" : "All good"}
           />
           <StatCard
             title="Pending Payouts"
-            value={stats.pendingPayouts || 0}
+            value={`₹${(stats.payouts?.pending || 0).toLocaleString()}`}
             icon="⏳"
+            trend="up"
+            trendValue={`₹${(stats.payouts?.processed || 0).toLocaleString()} processed`}
           />
         </div>
 
@@ -182,46 +289,57 @@ const AdminDashboard = () => {
           <Card className="p-6">
             <h3 className="text-lg font-semibold mb-4">Recent Orders</h3>
             <div className="space-y-3">
-              {stats.recentOrders?.slice(0, 5).map((order, index) => (
+              {recentOrders?.slice(0, 5).map((order, index) => (
                 <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
                   <div>
                     <p className="font-medium">Order #{order._id?.slice(-6)}</p>
-                    <p className="text-sm text-gray-600">{order.customerName}</p>
+                    <p className="text-sm text-gray-600">{order.renterId?.name}</p>
+                    <p className="text-xs text-gray-500">
+                      {order.lines?.[0]?.listingId?.title || 'Listing'}
+                    </p>
                   </div>
                   <div className="text-right">
-                    <p className="font-medium">₹{order.totalAmount}</p>
+                    <p className="font-medium">₹{order.totalAmount?.toLocaleString()}</p>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       order.orderStatus === 'completed' ? 'bg-green-100 text-green-800' :
                       order.orderStatus === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                      order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      order.orderStatus === 'disputed' ? 'bg-orange-100 text-orange-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
                       {order.orderStatus}
                     </span>
+                    <p className="text-xs text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
                 </div>
               ))}
+              {(!recentOrders || recentOrders.length === 0) && (
+                <p className="text-gray-500 text-center py-4">No recent orders</p>
+              )}
             </div>
           </Card>
 
           <Card className="p-6">
-            <h3 className="text-lg font-semibold mb-4">System Health</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <span>API Response Time</span>
-                <span className="text-green-600 font-medium">120ms</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Database Status</span>
-                <span className="text-green-600 font-medium">Healthy</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Payment Gateway</span>
-                <span className="text-green-600 font-medium">Connected</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span>Storage Usage</span>
-                <span className="text-yellow-600 font-medium">68%</span>
-              </div>
+            <h3 className="text-lg font-semibold mb-4">Top Performing Listings</h3>
+            <div className="space-y-3">
+              {topListings?.slice(0, 5).map((item, index) => (
+                <div key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                  <div>
+                    <p className="font-medium">{item.listing?.title}</p>
+                    <p className="text-sm text-gray-600">{item.listing?.category}</p>
+                    <p className="text-xs text-gray-500">{item.totalBookings} bookings</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium">₹{item.listing?.basePrice}/day</p>
+                    <p className="text-xs text-gray-500">₹{item.totalRevenue?.toFixed(0)} revenue</p>
+                  </div>
+                </div>
+              ))}
+              {(!topListings || topListings.length === 0) && (
+                <p className="text-gray-500 text-center py-4">No listings data</p>
+              )}
             </div>
           </Card>
         </div>
@@ -234,7 +352,7 @@ const AdminDashboard = () => {
       return <div className="text-center py-8">Loading users...</div>;
     }
 
-    const users = usersData?.data?.users || [];
+    const users = usersData?.data?.data?.users || [];
 
     return (
       <Card className="p-6">
@@ -311,7 +429,7 @@ const AdminDashboard = () => {
       return <div className="text-center py-8">Loading orders...</div>;
     }
 
-    const orders = ordersData?.data?.orders || [];
+    const orders = ordersData?.data?.data?.orders || [];
 
     return (
       <Card className="p-6">
@@ -344,12 +462,12 @@ const AdminDashboard = () => {
                   </td>
                   <td className="py-3 px-4">
                     <div>
-                      <p className="font-medium">{order.customerName}</p>
-                      <p className="text-sm text-gray-600">{order.customerEmail}</p>
+                      <p className="font-medium">{order.renterId?.name || 'N/A'}</p>
+                      <p className="text-sm text-gray-600">{order.renterId?.email || 'N/A'}</p>
                     </div>
                   </td>
                   <td className="py-3 px-4">
-                    <p className="font-medium">{order.hostName}</p>
+                    <p className="font-medium">{order.hostId?.name || order.hostId?.hostProfile?.displayName || 'N/A'}</p>
                   </td>
                   <td className="py-3 px-4 font-medium">
                     ₹{order.totalAmount?.toLocaleString()}
@@ -359,6 +477,7 @@ const AdminDashboard = () => {
                       order.orderStatus === 'completed' ? 'bg-green-100 text-green-800' :
                       order.orderStatus === 'confirmed' ? 'bg-blue-100 text-blue-800' :
                       order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800' :
+                      order.orderStatus === 'disputed' ? 'bg-orange-100 text-orange-800' :
                       'bg-yellow-100 text-yellow-800'
                     }`}>
                       {order.orderStatus}
@@ -393,7 +512,7 @@ const AdminDashboard = () => {
       return <div className="text-center py-8">Loading payouts...</div>;
     }
 
-    const payouts = payoutsData?.data?.payouts || [];
+    const payouts = payoutsData?.data?.data?.payouts || [];
 
     return (
       <Card className="p-6">
@@ -467,45 +586,101 @@ const AdminDashboard = () => {
     );
   };
 
-  const renderReports = () => (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Revenue Analytics</h3>
-        <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
-          <p className="text-gray-500">Revenue chart will be implemented here</p>
-        </div>
-      </Card>
-      
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">User Growth</h3>
-        <div className="bg-gray-100 h-64 rounded-lg flex items-center justify-center">
-          <p className="text-gray-500">User growth chart will be implemented here</p>
-        </div>
-      </Card>
-      
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Popular Categories</h3>
-        <div className="space-y-3">
-          {['Electronics', 'Furniture', 'Tools', 'Sports', 'Books'].map((category, index) => (
-            <div key={index} className="flex justify-between items-center">
-              <span>{category}</span>
-              <span className="font-medium">{Math.floor(Math.random() * 100)}%</span>
+  const renderReports = () => {
+    if (analyticsLoading) {
+      return (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="bg-gray-200 h-64 rounded-lg"></div>
             </div>
           ))}
         </div>
-      </Card>
-      
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Export Reports</h3>
-        <div className="space-y-3">
-          <Button variant="outline" className="w-full">Export User Data</Button>
-          <Button variant="outline" className="w-full">Export Orders</Button>
-          <Button variant="outline" className="w-full">Export Revenue Report</Button>
-          <Button variant="outline" className="w-full">Export Payout Report</Button>
-        </div>
-      </Card>
-    </div>
-  );
+      );
+    }
+
+    const analytics = analyticsData?.data?.data || {};
+    const categories = analytics.categoryPerformance || [];
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Revenue Over Time</h3>
+          <div className="space-y-3">
+            {analytics.revenueOverTime?.slice(-7).map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b">
+                <span className="text-sm">
+                  {new Date(item._id.year, item._id.month - 1, item._id.day).toLocaleDateString()}
+                </span>
+                <div className="text-right">
+                  <p className="font-medium">₹{item.revenue?.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">{item.orders} orders</p>
+                </div>
+              </div>
+            ))}
+            {(!analytics.revenueOverTime || analytics.revenueOverTime.length === 0) && (
+              <p className="text-gray-500 text-center py-8">No revenue data available</p>
+            )}
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">User Growth</h3>
+          <div className="space-y-3">
+            {analytics.userGrowth?.slice(-7).map((item, index) => (
+              <div key={index} className="flex justify-between items-center py-2 border-b">
+                <span className="text-sm">
+                  {new Date(item._id.year, item._id.month - 1, item._id.day).toLocaleDateString()}
+                </span>
+                <div className="text-right">
+                  <p className="font-medium">{item.newUsers} new users</p>
+                  <p className="text-xs text-gray-500">{item.newHosts} hosts</p>
+                </div>
+              </div>
+            ))}
+            {(!analytics.userGrowth || analytics.userGrowth.length === 0) && (
+              <p className="text-gray-500 text-center py-8">No user growth data available</p>
+            )}
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Popular Categories</h3>
+          <div className="space-y-3">
+            {categories.slice(0, 10).map((category, index) => {
+              const totalBookings = categories.reduce((sum, cat) => sum + cat.bookings, 0);
+              const percentage = totalBookings > 0 ? ((category.bookings / totalBookings) * 100).toFixed(1) : 0;
+              return (
+                <div key={index} className="flex justify-between items-center py-2">
+                  <div>
+                    <span className="font-medium">{category._id || 'Unknown'}</span>
+                    <p className="text-xs text-gray-500">{category.bookings} bookings</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="font-medium">{percentage}%</span>
+                    <p className="text-xs text-gray-500">₹{category.revenue?.toLocaleString()}</p>
+                  </div>
+                </div>
+              );
+            })}
+            {categories.length === 0 && (
+              <p className="text-gray-500 text-center py-8">No category data available</p>
+            )}
+          </div>
+        </Card>
+        
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Export Reports</h3>
+          <div className="space-y-3">
+            <Button variant="outline" className="w-full">Export User Data</Button>
+            <Button variant="outline" className="w-full">Export Orders</Button>
+            <Button variant="outline" className="w-full">Export Revenue Report</Button>
+            <Button variant="outline" className="w-full">Export Payout Report</Button>
+          </div>
+        </Card>
+      </div>
+    );
+  };
 
   const renderContent = () => {
     switch (selectedTab) {
@@ -532,8 +707,9 @@ const AdminDashboard = () => {
           <p className="text-gray-600">Welcome back, {user?.name}</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline">Settings</Button>
-          <Button>Generate Report</Button>
+          <Button variant="outline" onClick={refreshData}>🔄 Refresh</Button>
+          <Button variant="outline" onClick={handleSettings}>⚙️ Settings</Button>
+          <Button onClick={handleGenerateReport}>📊 Generate Report</Button>
         </div>
       </div>
 
@@ -596,6 +772,113 @@ const AdminDashboard = () => {
           // Refresh payouts data
         }}
       />
+
+      {/* Settings Modal */}
+      {showSettingsModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Admin Settings</h2>
+              <Button variant="outline" onClick={() => setShowSettingsModal(false)}>✕</Button>
+            </div>
+            
+            <div className="space-y-6">
+              {/* Platform Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Platform Configuration</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Platform Commission (%)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="10" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Default Deposit (%)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="20" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Max Upload Size (MB)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="10" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Auto-approval</label>
+                    <select className="w-full p-2 border rounded">
+                      <option value="manual">Manual Review</option>
+                      <option value="auto">Auto-approve</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Notification Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
+                <div className="space-y-3">
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    Email notifications for new orders
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    SMS alerts for disputes
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" />
+                    Daily revenue reports
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    Weekly analytics summary
+                  </label>
+                </div>
+              </div>
+
+              {/* System Maintenance */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">System Maintenance</h3>
+                <div className="space-y-3">
+                  <Button variant="outline" className="w-full">Clear Cache</Button>
+                  <Button variant="outline" className="w-full">Backup Database</Button>
+                  <Button variant="outline" className="w-full">Run System Diagnostics</Button>
+                  <Button variant="outline" className="w-full text-red-600 border-red-600">Enable Maintenance Mode</Button>
+                </div>
+              </div>
+
+              {/* Security Settings */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4">Security</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Session Timeout (minutes)</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="60" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Max Login Attempts</label>
+                    <input type="number" className="w-full p-2 border rounded" defaultValue="5" />
+                  </div>
+                </div>
+                <div className="mt-4 space-y-3">
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" defaultChecked />
+                    Two-factor authentication required
+                  </label>
+                  <label className="flex items-center">
+                    <input type="checkbox" className="mr-2" />
+                    Force password reset every 90 days
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 mt-8">
+              <Button variant="outline" onClick={() => setShowSettingsModal(false)}>Cancel</Button>
+              <Button onClick={() => {
+                alert('Settings saved successfully!');
+                setShowSettingsModal(false);
+              }}>Save Settings</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
