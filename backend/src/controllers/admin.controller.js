@@ -4,6 +4,7 @@ const Listing = require('../models/Listing');
 const Payment = require('../models/Payment');
 const Payout = require('../models/Payout');
 const Reservation = require('../models/Reservation');
+const LateFee = require('../models/LateFee');
 const emailService = require('../services/email.service');
 const { AppError } = require('../utils/errors');
 const logger = require('../utils/logger');
@@ -32,7 +33,8 @@ const getAdminDashboard = async (req, res, next) => {
       activeRentals,
       disputedOrders,
       pendingPayouts,
-      totalPayouts
+      totalPayouts,
+      lateFeeStats
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ isHost: true }),
@@ -72,6 +74,27 @@ const getAdminDashboard = async (req, res, next) => {
       Payout.aggregate([
         { $match: { status: 'processed' } },
         { $group: { _id: null, total: { $sum: '$amount' } } }
+      ]),
+
+      // Late fee statistics
+      LateFee.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalFees: { $sum: 1 },
+            totalAmount: { $sum: '$currentAmount' },
+            activeFees: {
+              $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] }
+            },
+            paidFees: {
+              $sum: { $cond: [{ $eq: ['$status', 'paid'] }, 1, 0] }
+            },
+            waivedFees: {
+              $sum: { $cond: [{ $eq: ['$status', 'waived'] }, 1, 0] }
+            },
+            avgAmount: { $avg: '$currentAmount' }
+          }
+        }
       ])
     ]);
 
@@ -203,6 +226,14 @@ const getAdminDashboard = async (req, res, next) => {
           payouts: {
             pending: pendingPayouts[0]?.total || 0,
             processed: totalPayouts[0]?.total || 0
+          },
+          lateFees: {
+            total: lateFeeStats[0]?.totalFees || 0,
+            totalAmount: lateFeeStats[0]?.totalAmount || 0,
+            active: lateFeeStats[0]?.activeFees || 0,
+            paid: lateFeeStats[0]?.paidFees || 0,
+            waived: lateFeeStats[0]?.waivedFees || 0,
+            avgAmount: lateFeeStats[0]?.avgAmount || 0
           }
         },
         recentOrders,

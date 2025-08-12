@@ -13,10 +13,13 @@ const orderRoutes = require('./routes/orders');
 const paymentRoutes = require('./routes/payments');
 const hostRoutes = require('./routes/host');
 const adminRoutes = require('./routes/admin');
+const lateFeeRoutes = require('./routes/lateFees');
 
 // Import middleware
 const { errorHandler, notFound } = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
+const SchedulerService = require('./services/scheduler.service');
+const LateFeeService = require('./services/lateFee.service');
 
 const app = express();
 
@@ -106,6 +109,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/host', hostRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/late-fees', lateFeeRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -177,6 +181,12 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDB();
+
+    // Initialize late fee configurations
+    await LateFeeService.initializeDefaultConfigs();
+
+    // Initialize scheduler for automatic late fee processing
+    SchedulerService.init();
 
     // Start HTTP server
     server = app.listen(PORT, () => {

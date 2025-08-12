@@ -1,5 +1,26 @@
 const Joi = require('joi');
+const { validationResult } = require('express-validator');
 const { logger } = require('../config/database');
+
+/**
+ * Express-validator middleware to handle validation errors
+ */
+const validateRequest = (req, res, next) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    const errorMessages = errors.array().map(error => ({
+      field: error.path || error.param,
+      message: error.msg
+    }));
+    
+    return res.status(400).json({
+      success: false,
+      message: 'Validation failed',
+      errors: errorMessages
+    });
+  }
+  next();
+};
 
 /**
  * Validation middleware factory
@@ -247,5 +268,8 @@ module.exports = {
   validatePayoutCreation: validate(schemas.payoutCreation),
   
   // Export schemas for testing
-  schemas
+  schemas,
+  
+  // Express-validator support
+  validateRequest
 };
