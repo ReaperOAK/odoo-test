@@ -3,6 +3,7 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const Reservation = require('../models/Reservation');
 const PolarService = require('../services/polar.service');
+const emailService = require('../services/email.service');
 const { AppError } = require('../utils/errors');
 const logger = require('../utils/logger');
 const crypto = require('crypto');
@@ -115,6 +116,20 @@ const handleCheckoutCompleted = async (result) => {
         orderId: order._id,
         paymentId: payment._id,
         amount: payment.amount
+      });
+
+      // Send payment confirmation email outside of transaction (non-blocking)
+      setImmediate(async () => {
+        try {
+          const populatedOrder = await Order.findById(order._id)
+            .populate('renterId', 'name email');
+          
+          if (populatedOrder && populatedOrder.renterId) {
+            await emailService.sendPaymentConfirmation(populatedOrder, payment, populatedOrder.renterId);
+          }
+        } catch (error) {
+          logger.error('Failed to send payment confirmation email:', error);
+        }
       });
     });
   } catch (error) {

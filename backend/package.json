@@ -14,7 +14,8 @@
     "test:load": "node scripts/load-test.js",
     "test:all": "node scripts/run-all-tests.js",
     "test:full": "node scripts/run-all-tests.js --load",
-    "test:focused": "node scripts/focused-test.js"
+    "test:focused": "node scripts/focused-test.js",
+    "test:email": "node test-email.js"
   },
   "dependencies": {
     "@polar-sh/sdk": "^0.34.10",
@@ -36,6 +37,7 @@
     "multer": "^1.4.5-lts.1",
     "node-cron": "^4.2.1",
     "node-fetch": "^3.3.2",
+    "resend": "^6.0.1",
     "winston": "^3.11.0"
   },
   "devDependencies": {

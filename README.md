@@ -8,6 +8,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 - **Item Listings**: Create, update, and manage rental listings
 - **Order Processing**: Complete order lifecycle from creation to completion
 - **Payment Integration**: Secure payments with Razorpay integration
+- **Email Notifications**: Automated email notifications with Resend
 - **Real-time Availability**: Check item availability for specific dates
 - **Host Dashboard**: Comprehensive dashboard for hosts to manage their listings
 - **Admin Panel**: Full administrative control over the platform
@@ -47,6 +48,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 ### Additional Documentation
 
 - **[Implementation Guide](docs/implementation.md)** - Implementation details and architecture
+- **[Email Setup Guide](docs/EMAIL_SETUP.md)** - Email notification system setup
 - **[Backend TODO](docs/TODO-BACKEND.md)** - Backend development roadmap
 - **[Frontend TODO](docs/TODO-FRONTEND.md)** - Frontend development roadmap
 - **[UI Wireframes](docs/ui-wireframe.md)** - User interface design specifications
@@ -60,6 +62,7 @@ A comprehensive peer-to-peer marketplace platform where users can rent out items
 - **MongoDB** - Database with Mongoose ODM
 - **JWT** - Authentication
 - **Razorpay** - Payment processing
+- **Resend** - Email notifications
 - **Winston** - Logging
 - **Joi** - Input validation
 - **Bcrypt** - Password hashing
@@ -179,6 +182,11 @@ RAZORPAY_KEY_ID=your-razorpay-key-id
 RAZORPAY_KEY_SECRET=your-razorpay-key-secret
 RAZORPAY_WEBHOOK_SECRET=your-webhook-secret
 
+# Email (Resend)
+RESEND_API_KEY=your-resend-api-key
+FROM_EMAIL=noreply@yourdomain.com
+EMAIL_ENABLED=true
+
 # Server
 PORT=5000
 NODE_ENV=development
@@ -293,11 +301,18 @@ npm run test:all
 npm run test:full
 ```
 
+#### Email System Testing
+```bash
+# Test email notification system
+npm run test:email
+```
+
 ### Test Features
 
 ✅ **All API Endpoints**: Tests every endpoint in the API
 ✅ **Authentication Flow**: User registration, login, profile management
 ✅ **Role-Based Access**: Customer, Host, and Admin permissions
+✅ **Email Notifications**: Validates email service configuration
 ✅ **Error Handling**: Validates proper error responses
 ✅ **Rate Limiting**: Tests API protection mechanisms
 ✅ **Load Testing**: Performance under concurrent users

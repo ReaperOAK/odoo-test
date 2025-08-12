@@ -15,6 +15,12 @@ module.exports = {
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
   RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,
 
+  // Email/Resend
+  RESEND_API_KEY: process.env.RESEND_API_KEY,
+  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@p2pmarketplace.com',
+  EMAIL_ENABLED: process.env.EMAIL_ENABLED !== 'false',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3000',
+
   // Application settings
   PAYMENT_MODE: process.env.PAYMENT_MODE || 'mock',
   DEMO_MODE: process.env.DEMO_MODE === 'true',
