@@ -157,8 +157,8 @@ const MyBookings = () => {
           <p className="text-gray-600 mb-6">
             You haven't made any bookings yet.
           </p>
-          <Button onClick={() => (window.location.href = "/")}>
-            Start Browsing
+          <Button variant="primary" onClick={() => (window.location.href = "/")} className="text-white font-bold">
+            🛍️ Start Browsing
           </Button>
         </div>
       ) : (

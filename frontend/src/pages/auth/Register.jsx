@@ -183,11 +183,12 @@ const Register = () => {
               
               <Button
                 type="submit"
-                className="w-full"
+                variant="primary"
+                className="w-full text-white font-bold"
                 loading={loading}
                 disabled={loading}
               >
-                Create account
+                🚀 Create account
               </Button>
             </form>
           </Card.Content>

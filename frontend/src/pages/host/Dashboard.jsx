@@ -127,8 +127,8 @@ const HostDashboard = () => {
           <p className="text-gray-600 mb-6">
             Start earning by renting out your items to other users.
           </p>
-          <Button onClick={() => (window.location.href = "/profile")}>
-            Upgrade to Host
+          <Button variant="success" onClick={() => (window.location.href = "/profile")} className="text-white font-bold">
+            🌟 Upgrade to Host
           </Button>
         </div>
       </div>

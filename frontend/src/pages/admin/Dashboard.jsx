@@ -696,10 +696,10 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">User Management</h3>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm" onClick={exportUserData}>
-              Export
+            <Button variant="glass" size="sm" onClick={exportUserData}>
+              📥 Export
             </Button>
-            <Button size="sm">Add User</Button>
+            <Button variant="primary" size="sm">➕ Add User</Button>
           </div>
         </div>
 
@@ -756,15 +756,15 @@ const AdminDashboard = () => {
                   </td>
                   <td className="py-3 px-4">
                     <div className="flex space-x-2">
-                      <Button variant="outline" size="sm">
-                        View
+                      <Button variant="glass" size="sm">
+                        👁️ View
                       </Button>
                       <Button
-                        variant="outline"
+                        variant="warning"
                         size="sm"
                         onClick={() => handleEditUser(user)}
                       >
-                        Edit
+                        ✏️ Edit
                       </Button>
                     </div>
                   </td>
@@ -789,11 +789,11 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">Order Management</h3>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              Filter
+            <Button variant="glass" size="sm">
+              🔍 Filter
             </Button>
-            <Button variant="outline" size="sm" onClick={exportOrderData}>
-              Export
+            <Button variant="glass" size="sm" onClick={exportOrderData}>
+              📥 Export
             </Button>
           </div>
         </div>
@@ -860,14 +860,14 @@ const AdminDashboard = () => {
                   <td className="py-3 px-4">
                     <div className="flex space-x-2">
                       <Button
-                        variant="outline"
+                        variant="glass"
                         size="sm"
                         onClick={() => handleViewOrder(order)}
                       >
-                        View
+                        👁️ View
                       </Button>
-                      <Button variant="outline" size="sm">
-                        Update
+                      <Button variant="warning" size="sm">
+                        🔄 Update
                       </Button>
                     </div>
                   </td>
@@ -892,10 +892,10 @@ const AdminDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-lg font-semibold">Payout Management</h3>
           <div className="flex space-x-2">
-            <Button variant="outline" size="sm">
-              Process All
+            <Button variant="success" size="sm">
+              💳 Process All
             </Button>
-            <Button size="sm">Generate Report</Button>
+            <Button variant="primary" size="sm">📊 Generate Report</Button>
           </div>
         </div>
 
@@ -1148,10 +1148,10 @@ const AdminDashboard = () => {
           <p className="text-gray-600">Welcome back, {user?.name}</p>
         </div>
         <div className="flex space-x-3">
-          <Button variant="outline" onClick={refreshData}>
+          <Button variant="glass" onClick={refreshData}>
             🔄 Refresh
           </Button>
-          <Button onClick={handleGenerateReport}>📊 Generate Report</Button>
+          <Button variant="primary" onClick={handleGenerateReport}>📊 Generate Report</Button>
         </div>
       </div>
 

@@ -128,8 +128,8 @@ const Checkout = () => {
             The order you're looking for doesn't exist or you don't have access
             to it.
           </p>
-          <Button onClick={() => navigate("/")} className="mt-4">
-            Go Home
+          <Button variant="primary" onClick={() => navigate("/")} className="mt-4 text-white font-bold">
+            🏠 Go Home
           </Button>
         </div>
       </div>
@@ -150,11 +150,11 @@ const Checkout = () => {
             Your booking has been confirmed. Order #{order.orderNumber}
           </p>
           <div className="space-x-4">
-            <Button onClick={() => navigate("/my-bookings")}>
-              View My Bookings
+            <Button variant="primary" onClick={() => navigate("/my-bookings")} className="text-white font-bold">
+              📋 View My Bookings
             </Button>
-            <Button variant="outline" onClick={() => navigate("/")}>
-              Continue Shopping
+            <Button variant="glass" onClick={() => navigate("/")} className="text-gray-900 font-semibold">
+              🛍️ Continue Shopping
             </Button>
           </div>
         </div>

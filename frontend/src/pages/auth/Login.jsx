@@ -157,11 +157,12 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="w-full"
+                variant="primary"
+                className="w-full text-white font-bold"
                 loading={loading}
                 disabled={loading}
               >
-                Sign in
+                🔑 Sign in
               </Button>
             </form>
           </Card.Content>

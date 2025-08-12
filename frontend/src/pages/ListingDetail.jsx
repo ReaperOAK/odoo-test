@@ -508,15 +508,16 @@ const ListingDetail = () => {
                   <div className="space-y-2">
                     <Button
                       onClick={handleCheckAvailability}
-                      variant="outline"
-                      className="w-full"
+                      variant="glass"
+                      className="w-full text-gray-900 font-semibold"
                       disabled={!bookingData.startDate || !bookingData.endDate}
                     >
-                      Check Availability
+                      🔍 Check Availability
                     </Button>
                     <Button
                       onClick={handleBookingSubmit}
-                      className="w-full"
+                      variant="primary"
+                      className="w-full text-white font-bold"
                       disabled={
                         !bookingData.startDate ||
                         !bookingData.endDate ||
@@ -524,8 +525,8 @@ const ListingDetail = () => {
                       }
                     >
                       {createOrderMutation.isPending
-                        ? "Creating Rental Order..."
-                        : "Rent Now"}
+                        ? "⏳ Creating Rental Order..."
+                        : "🏠 Rent Now"}
                     </Button>
                   </div>
                 </div>
@@ -533,11 +534,11 @@ const ListingDetail = () => {
                 <div className="text-center py-4">
                   <p className="text-gray-600">This is your item listing</p>
                   <Button
-                    variant="outline"
-                    className="mt-2"
+                    variant="glass"
+                    className="mt-2 text-gray-900 font-semibold"
                     onClick={() => navigate("/host/dashboard")}
                   >
-                    Manage Item
+                    ⚙️ Manage Item
                   </Button>
                 </div>
               )}

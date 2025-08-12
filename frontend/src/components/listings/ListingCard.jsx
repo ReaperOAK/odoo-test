@@ -35,89 +35,104 @@ const ListingCard = ({ listing }) => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      electronics: "bg-blue-100 text-blue-800",
-      vehicles: "bg-green-100 text-green-800",
-      sports: "bg-orange-100 text-orange-800",
-      music: "bg-purple-100 text-purple-800",
-      tools: "bg-gray-100 text-gray-800",
-      furniture: "bg-yellow-100 text-yellow-800",
-      other: "bg-slate-100 text-slate-800",
+      electronics: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25",
+      vehicles: "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25",
+      sports: "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25",
+      music: "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25",
+      tools: "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25",
+      furniture: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/25",
+      other: "bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25",
     };
     return colors[category] || colors.other;
   };
 
   return (
-    <Link to={`/listings/${_id}`}>
-      <Card className="group hover:shadow-lg transition-shadow duration-200 cursor-pointer">
-        <div className="relative">
+    <Link to={`/listings/${_id}`} className="group">
+      <Card className="overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-primary-500/20 transition-all duration-500 cursor-pointer border-0" variant="glass">
+        <div className="relative overflow-hidden">
           <img
             src={images?.[0] || "/placeholder-image.jpg"}
             alt={title}
-            className="w-full h-48 object-cover rounded-t-lg"
+            className="w-full h-48 lg:h-56 object-cover transition-transform duration-700 group-hover:scale-110"
           />
-          <div className="absolute top-2 left-2">
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <div className="absolute top-3 left-3">
             <span
-              className={`px-2 py-1 rounded-md text-xs font-medium ${getCategoryColor(
+              className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm ${getCategoryColor(
                 category
-              )}`}
+              )} animate-float`}
             >
+              <Tag className="h-3 w-3 inline mr-1" />
               {category?.charAt(0).toUpperCase() + category?.slice(1)}
             </span>
           </div>
           {totalQuantity && (
-            <div className="absolute top-2 right-2">
-              <span className="bg-green-500 text-white px-2 py-1 rounded-md text-xs font-medium">
+            <div className="absolute top-3 right-3">
+              <span className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg shadow-green-500/25 backdrop-blur-sm animate-pulse-glow">
                 <Package className="h-3 w-3 inline mr-1" />
                 {totalQuantity} qty
               </span>
             </div>
           )}
+          
+          {/* Shine effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
         </div>
 
-        <Card.Content className="p-4">
-          <div className="space-y-2">
-            <h3 className="font-semibold text-lg text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2">
+        <Card.Content className="p-6">
+          <div className="space-y-4">
+            <h3 className="font-bold text-lg lg:text-xl text-gray-900 group-hover:text-blue-600 transition-all duration-300 line-clamp-2">
               {title}
             </h3>
 
             {location && (
-              <div className="flex items-center text-sm text-gray-600">
-                <MapPin className="h-4 w-4 mr-1" />
-                {location}
+              <div className="flex items-center text-sm lg:text-base text-gray-600 group-hover:text-gray-800 transition-colors duration-300">
+                <div className="bg-gradient-to-r from-primary-500 to-secondary-500 p-1.5 rounded-full mr-2">
+                  <MapPin className="h-3 w-3 lg:h-4 lg:w-4 text-white" />
+                </div>
+                <span className="font-medium">{location}</span>
               </div>
             )}
 
             {/* Key Features Preview */}
             {features && features.length > 0 && (
-              <div className="flex items-center text-sm text-gray-600">
-                <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                <span className="truncate">
+              <div className="flex items-center text-sm lg:text-base text-gray-600 group-hover:text-gray-800 transition-colors duration-300">
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-1.5 rounded-full mr-2">
+                  <Star className="h-3 w-3 lg:h-4 lg:w-4 text-white" />
+                </div>
+                <span className="truncate font-medium">
                   {features.slice(0, 2).join(", ")}
                 </span>
                 {features.length > 2 && (
-                  <span className="ml-1">+{features.length - 2} more</span>
+                  <span className="ml-1 bg-primary-50 text-primary-600 px-2 py-0.5 rounded-full text-xs font-bold">
+                    +{features.length - 2}
+                  </span>
                 )}
               </div>
             )}
 
-            <div className="flex items-center justify-between">
-              <div className="text-lg font-bold text-gray-900">
+            <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+              <div className="text-xl lg:text-2xl font-bold text-gray-900">
                 {formatPrice(basePrice)}
-                <span className="text-sm font-normal text-gray-600">
+                <span className="text-sm lg:text-base font-semibold text-gray-600 ml-1">
                   {getUnitLabel(unitType)}
                 </span>
               </div>
             </div>
 
             {ownerId && (
-              <div className="flex items-center text-sm text-gray-600 pt-2 border-t">
-                <div className="bg-gray-200 rounded-full p-1 mr-2">
-                  <User className="h-3 w-3" />
+              <div className="flex items-center justify-between text-sm lg:text-base text-gray-600 pt-3 border-t border-gray-100">
+                <div className="flex items-center">
+                  <div className="bg-blue-600 rounded-full p-2 mr-3 shadow-lg">
+                    <User className="h-4 w-4 text-white" />
+                  </div>
+                  <span className="font-semibold text-gray-700">{ownerId.name || "Owner"}</span>
                 </div>
-                <span>{ownerId.name || "Owner"}</span>
                 {ownerId.hostProfile?.verified && (
-                  <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">
-                    Verified
+                  <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg shadow-blue-500/25 animate-pulse-glow">
+                    ✓ Verified
                   </span>
                 )}
               </div>

@@ -122,8 +122,8 @@ const PersonalInfoTab = ({ personalInfo, setPersonalInfo, handlePersonalInfoSubm
       </div>
       
       <div className="flex justify-end pt-4">
-        <Button type="submit" loading={loading} className="px-8">
-          Save Changes
+        <Button type="submit" variant="primary" loading={loading} className="px-8 text-white font-bold">
+          💾 Save Changes
         </Button>
       </div>
     </form>
@@ -189,8 +189,8 @@ const SecurityTab = ({ passwordForm, setPasswordForm, handlePasswordSubmit, load
       </div>
       
       <div className="flex justify-end pt-4">
-        <Button type="submit" loading={loading} className="px-8">
-          Update Password
+        <Button type="submit" variant="warning" loading={loading} className="px-8 text-white font-bold">
+          🔒 Update Password
         </Button>
       </div>
     </form>
@@ -294,10 +294,11 @@ const HostTab = ({ user, hostInfo, setHostInfo, handleBecomeHost, loading }) => 
       <div className="flex justify-end pt-4">
         <Button 
           onClick={handleBecomeHost} 
+          variant="success"
           loading={loading} 
-          className="px-8"
+          className="px-8 text-white font-bold"
         >
-          {user?.isHost ? 'Update Host Profile' : 'Become a Host'}
+          {user?.isHost ? '🏠 Update Host Profile' : '🌟 Become a Host'}
         </Button>
       </div>
     </div>
@@ -377,8 +378,8 @@ const NotificationsTab = ({ notifications, setNotifications, handleNotifications
       </div>
       
       <div className="flex justify-end pt-4">
-        <Button onClick={handleNotificationsSave} loading={loading} className="px-8">
-          Save Preferences
+        <Button onClick={handleNotificationsSave} variant="primary" loading={loading} className="px-8 text-white font-bold">
+          🔔 Save Preferences
         </Button>
       </div>
     </div>
