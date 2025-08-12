@@ -1,63 +1,63 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Card from '../../components/ui/Card';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Card from "../../components/ui/Card";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    phone: '',
+    name: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    phone: "",
     isHost: false,
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({ 
-      ...prev, 
-      [name]: type === 'checkbox' ? checked : value 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
+      newErrors.name = "Name is required";
     }
-    
+
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = "Email is invalid";
     }
-    
+
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
-    
+
     if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = "Passwords do not match";
     }
-    
+
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = "Phone number is required";
     }
-    
+
     return newErrors;
   };
 
@@ -75,13 +75,13 @@ const Register = () => {
 
     const { confirmPassword, ...submitData } = formData;
     const result = await register(submitData);
-    
+
     if (result.success) {
-      navigate('/');
+      navigate("/");
     } else {
       setErrors({ general: result.error });
     }
-    
+
     setLoading(false);
   };
 
@@ -93,7 +93,7 @@ const Register = () => {
             Create your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
+            Or{" "}
             <Link
               to="/login"
               className="font-medium text-primary-600 hover:text-primary-500"
@@ -102,7 +102,7 @@ const Register = () => {
             </Link>
           </p>
         </div>
-        
+
         <Card>
           <Card.Content className="p-6">
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -111,7 +111,7 @@ const Register = () => {
                   {errors.general}
                 </div>
               )}
-              
+
               <Input
                 label="Full Name"
                 type="text"
@@ -122,7 +122,7 @@ const Register = () => {
                 required
                 placeholder="Enter your full name"
               />
-              
+
               <Input
                 label="Email address"
                 type="email"
@@ -133,7 +133,7 @@ const Register = () => {
                 required
                 placeholder="Enter your email"
               />
-              
+
               <Input
                 label="Phone Number"
                 type="tel"
@@ -144,7 +144,7 @@ const Register = () => {
                 required
                 placeholder="Enter your phone number"
               />
-              
+
               <Input
                 label="Password"
                 type="password"
@@ -155,7 +155,7 @@ const Register = () => {
                 required
                 placeholder="Enter your password"
               />
-              
+
               <Input
                 label="Confirm Password"
                 type="password"
@@ -166,7 +166,7 @@ const Register = () => {
                 required
                 placeholder="Confirm your password"
               />
-              
+
               <div className="flex items-center">
                 <input
                   id="isHost"
@@ -176,11 +176,14 @@ const Register = () => {
                   onChange={handleChange}
                   className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
                 />
-                <label htmlFor="isHost" className="ml-2 block text-sm text-gray-900">
+                <label
+                  htmlFor="isHost"
+                  className="ml-2 block text-sm text-gray-900"
+                >
                   I want to list items for rent (become a host)
                 </label>
               </div>
-              
+
               <Button
                 type="submit"
                 variant="primary"

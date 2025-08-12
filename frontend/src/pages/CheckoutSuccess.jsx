@@ -22,12 +22,10 @@ const CheckoutSuccess = () => {
       setStatus("success");
       setMessage("Your payment has been confirmed and booking is complete!");
       // Refresh orders data
-      dispatch({ type: 'FETCH_ORDERS_START' });
+      dispatch({ type: "FETCH_ORDERS_START" });
     } catch (error) {
       setStatus("error");
-      setMessage(
-        error.response?.data?.message || "Failed to confirm payment"
-      );
+      setMessage(error.response?.data?.message || "Failed to confirm payment");
     }
   };
 

@@ -17,29 +17,29 @@ export const formatOptions = [
 // Generate CSV content
 export const generateCSV = (data, headers, title = '') => {
   let csv = '';
-  
+
   if (title) {
     csv += `${title}\n`;
     csv += `Generated at: ${new Date().toLocaleString()}\n\n`;
   }
-  
+
   // Add headers
   if (headers && headers.length > 0) {
     csv += headers.join(',') + '\n';
   }
-  
+
   // Add data rows
   data.forEach(row => {
     const values = headers ? headers.map(header => {
       const value = row[header] || '';
       // Escape commas and quotes in CSV
-      return typeof value === 'string' && (value.includes(',') || value.includes('"')) 
-        ? `"${value.replace(/"/g, '""')}"` 
+      return typeof value === 'string' && (value.includes(',') || value.includes('"'))
+        ? `"${value.replace(/"/g, '""')}"`
         : value;
     }) : Object.values(row);
     csv += values.join(',') + '\n';
   });
-  
+
   return csv;
 };
 
@@ -56,17 +56,17 @@ export const generateJSON = (data, title = '') => {
 // Generate TXT content
 export const generateTXT = (data, headers, title = '') => {
   let txt = '';
-  
+
   if (title) {
     txt += `${title}\n`;
     txt += '='.repeat(title.length) + '\n';
     txt += `Generated at: ${new Date().toLocaleString()}\n\n`;
   }
-  
+
   data.forEach((row, index) => {
     txt += `Record ${index + 1}:\n`;
     txt += '-'.repeat(20) + '\n';
-    
+
     if (headers) {
       headers.forEach(header => {
         txt += `${header}: ${row[header] || 'N/A'}\n`;
@@ -78,7 +78,7 @@ export const generateTXT = (data, headers, title = '') => {
     }
     txt += '\n';
   });
-  
+
   return txt;
 };
 
@@ -111,7 +111,7 @@ export const generateHTML = (data, headers, title = '') => {
   }
 
   html += `    <table>`;
-  
+
   // Add headers
   if (headers && headers.length > 0) {
     html += `        <thead><tr>`;
@@ -120,7 +120,7 @@ export const generateHTML = (data, headers, title = '') => {
     });
     html += `</tr></thead>`;
   }
-  
+
   // Add data rows
   html += `        <tbody>`;
   data.forEach(row => {
@@ -179,15 +179,15 @@ export const exportData = (data, headers, filename, format, title = '') => {
   const blob = new Blob([content], { type: mimeType });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
-  
+
   link.setAttribute('href', url);
   link.setAttribute('download', `${filename}.${fileExtension}`);
   link.style.visibility = 'hidden';
-  
+
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
+
   URL.revokeObjectURL(url);
 };
 
@@ -196,7 +196,7 @@ export const generateAdminReport = (reportData, format) => {
   const date = new Date().toISOString().split('T')[0];
   const filename = `admin-report-${date}`;
   const title = 'Admin Dashboard Report';
-  
+
   if (format === 'csv') {
     // CSV format - multiple sections
     let csvContent = `${title}\n`;
@@ -248,7 +248,7 @@ export const generateAdminReport = (reportData, format) => {
       ...reportData.recentOrders.map(order => ({ section: 'Recent Order', ...order })),
       ...reportData.topListings.map(listing => ({ section: 'Top Listing', ...listing }))
     ];
-    
+
     exportData(data, Object.keys(data[0] || {}), filename, format, title);
   }
 };

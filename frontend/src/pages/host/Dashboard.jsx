@@ -28,13 +28,13 @@ const HostDashboard = () => {
 
   const fetchDashboardData = async () => {
     if (!user?.isHost) return;
-    
+
     setDashboardLoading(true);
     try {
       const response = await hostAPI.getDashboard();
       setDashboardData(response);
     } catch (error) {
-      console.error('Error fetching dashboard data:', error);
+      console.error("Error fetching dashboard data:", error);
     } finally {
       setDashboardLoading(false);
     }
@@ -47,7 +47,7 @@ const HostDashboard = () => {
       const listings = response?.data?.data?.listings || [];
       setHostListings(listings);
     } catch (error) {
-      console.error('Error fetching host listings:', error);
+      console.error("Error fetching host listings:", error);
     } finally {
       setListingsLoading(false);
     }
@@ -60,7 +60,7 @@ const HostDashboard = () => {
       const orders = response?.data?.data?.orders || [];
       setHostOrders(orders);
     } catch (error) {
-      console.error('Error fetching host orders:', error);
+      console.error("Error fetching host orders:", error);
     } finally {
       setOrdersLoading(false);
     }
@@ -94,10 +94,7 @@ const HostDashboard = () => {
     hostListings?.length || 0,
     "listings"
   );
-  console.log(
-    "Dashboard render - dashboard loading:",
-    dashboardLoading
-  );
+  console.log("Dashboard render - dashboard loading:", dashboardLoading);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
@@ -145,7 +142,11 @@ const HostDashboard = () => {
           <p className="text-gray-600 mb-6">
             Start earning by renting out your items to other users.
           </p>
-          <Button variant="success" onClick={() => (window.location.href = "/profile")} className="text-white font-bold">
+          <Button
+            variant="success"
+            onClick={() => (window.location.href = "/profile")}
+            className="text-white font-bold"
+          >
             🌟 Upgrade to Host
           </Button>
         </div>

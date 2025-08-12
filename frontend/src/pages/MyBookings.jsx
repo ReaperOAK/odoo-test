@@ -29,7 +29,7 @@ const MyBookings = () => {
   // Filter orders based on status
   const allOrders = state.orders || [];
   const filteredOrders = statusFilter
-    ? allOrders.filter(order => order.status === statusFilter)
+    ? allOrders.filter((order) => order.status === statusFilter)
     : allOrders;
 
   const ordersData = filteredOrders;
@@ -160,7 +160,11 @@ const MyBookings = () => {
           <p className="text-gray-600 mb-6">
             You haven't made any bookings yet.
           </p>
-          <Button variant="primary" onClick={() => (window.location.href = "/")} className="text-white font-bold">
+          <Button
+            variant="primary"
+            onClick={() => (window.location.href = "/")}
+            className="text-white font-bold"
+          >
             🛍️ Start Browsing
           </Button>
         </div>
@@ -186,7 +190,8 @@ const MyBookings = () => {
                         </span>
                       </span>
                       <span className="text-sm text-gray-500">
-                        Order #{order.orderNumber || order._id?.slice(-8) || 'N/A'}
+                        Order #
+                        {order.orderNumber || order._id?.slice(-8) || "N/A"}
                       </span>
                     </div>
                     <div className="text-sm text-gray-500">
@@ -198,7 +203,11 @@ const MyBookings = () => {
                     <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
                       <div className="flex-shrink-0">
                         <img
-                          src={listing.images?.length > 0 ? listing.images[0] : "/placeholder-image.jpg"}
+                          src={
+                            listing.images?.length > 0
+                              ? listing.images[0]
+                              : "/placeholder-image.jpg"
+                          }
                           alt={listing.title}
                           className="w-full sm:w-32 h-32 object-cover rounded-lg"
                         />
@@ -275,7 +284,9 @@ const MyBookings = () => {
                       <div className="flex items-center space-x-2">
                         <span className="text-sm text-gray-600">Host:</span>
                         <span className="text-sm font-medium">
-                          {order.hostId.hostProfile?.displayName || order.hostId.name || 'Unknown Host'}
+                          {order.hostId.hostProfile?.displayName ||
+                            order.hostId.name ||
+                            "Unknown Host"}
                         </span>
                         {order.hostId.hostProfile?.verified && (
                           <span className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full">

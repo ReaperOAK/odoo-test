@@ -35,20 +35,30 @@ const ListingCard = ({ listing }) => {
 
   const getCategoryColor = (category) => {
     const colors = {
-      electronics: "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25",
-      vehicles: "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25",
-      sports: "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25",
-      music: "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25",
-      tools: "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25",
-      furniture: "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/25",
-      other: "bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25",
+      electronics:
+        "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25",
+      vehicles:
+        "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/25",
+      sports:
+        "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg shadow-orange-500/25",
+      music:
+        "bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25",
+      tools:
+        "bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-lg shadow-gray-500/25",
+      furniture:
+        "bg-gradient-to-r from-yellow-500 to-yellow-600 text-white shadow-lg shadow-yellow-500/25",
+      other:
+        "bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-lg shadow-slate-500/25",
     };
     return colors[category] || colors.other;
   };
 
   return (
     <Link to={`/listings/${_id}`} className="group">
-      <Card className="overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-primary-500/20 transition-all duration-500 cursor-pointer border-0" variant="glass">
+      <Card
+        className="overflow-hidden group-hover:scale-105 group-hover:shadow-2xl group-hover:shadow-primary-500/20 transition-all duration-500 cursor-pointer border-0"
+        variant="glass"
+      >
         <div className="relative overflow-hidden">
           <img
             src={images?.[0] || "/placeholder-image.jpg"}
@@ -57,7 +67,7 @@ const ListingCard = ({ listing }) => {
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          
+
           <div className="absolute top-3 left-3">
             <span
               className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm ${getCategoryColor(
@@ -76,7 +86,7 @@ const ListingCard = ({ listing }) => {
               </span>
             </div>
           )}
-          
+
           {/* Shine effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
         </div>
@@ -128,7 +138,9 @@ const ListingCard = ({ listing }) => {
                   <div className="bg-blue-600 rounded-full p-2 mr-3 shadow-lg">
                     <User className="h-4 w-4 text-white" />
                   </div>
-                  <span className="font-semibold text-gray-700">{ownerId.name || "Owner"}</span>
+                  <span className="font-semibold text-gray-700">
+                    {ownerId.name || "Owner"}
+                  </span>
                 </div>
                 {ownerId.hostProfile?.verified && (
                   <span className="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs px-3 py-1.5 rounded-full font-bold shadow-lg shadow-blue-500/25 animate-pulse-glow">

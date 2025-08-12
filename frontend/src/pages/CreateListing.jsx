@@ -40,11 +40,11 @@ const CreateListing = () => {
       console.log("Creating listing...", data);
       const response = await listingsAPI.create(data);
       console.log("Listing created successfully:", response);
-      
+
       // Refresh data using context actions
-      dispatch({ type: 'FETCH_LISTINGS_START' });
-      dispatch({ type: 'FETCH_HOST_LISTINGS_START' });
-      
+      dispatch({ type: "FETCH_LISTINGS_START" });
+      dispatch({ type: "FETCH_HOST_LISTINGS_START" });
+
       console.log("Data refreshed, navigating to dashboard...");
       navigate("/host/dashboard");
     } catch (error) {
@@ -144,7 +144,7 @@ const CreateListing = () => {
     };
 
     console.log("Submitting listing data:", submitData);
-    
+
     try {
       await createListing(submitData);
     } catch (error) {
@@ -469,14 +469,8 @@ const CreateListing = () => {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1"
-              >
-                {isSubmitting
-                  ? "Creating Listing..."
-                  : "Create Listing"}
+              <Button type="submit" disabled={isSubmitting} className="flex-1">
+                {isSubmitting ? "Creating Listing..." : "Create Listing"}
               </Button>
             </div>
           </form>
