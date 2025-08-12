@@ -10,13 +10,17 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isResolving, setIsResolving] = useState(false);
 
-  const { dispatch } = useData();
+  const { actions } = useData();
 
   const updateOrderStatus = async (data) => {
     setIsUpdating(true);
     try {
       await adminAPI.updateOrderStatus(order._id, data);
-      dispatch({ type: "FETCH_ORDERS_START" });
+      try {
+        await actions.fetchAdminOrders();
+      } catch (refreshError) {
+        console.warn("Failed to refresh orders:", refreshError);
+      }
       onUpdate?.();
       onClose();
     } catch (error) {
@@ -30,7 +34,11 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
     setIsResolving(true);
     try {
       await adminAPI.resolveDispute(order._id, data);
-      dispatch({ type: "FETCH_ORDERS_START" });
+      try {
+        await actions.fetchAdminOrders();
+      } catch (refreshError) {
+        console.warn("Failed to refresh orders:", refreshError);
+      }
       onUpdate?.();
       onClose();
     } catch (error) {

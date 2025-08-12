@@ -14,14 +14,18 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
     isActive: user?.isActive !== false,
   });
 
-  const { dispatch } = useData();
+  const { actions } = useData();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const updateUser = async (data) => {
     setIsSubmitting(true);
     try {
       await adminAPI.updateUser(user._id, data);
-      dispatch({ type: "FETCH_USERS_START" });
+      try {
+        await actions.fetchAdminUsers();
+      } catch (refreshError) {
+        console.warn("Failed to refresh users:", refreshError);
+      }
       onUpdate?.();
       onClose();
     } catch (error) {

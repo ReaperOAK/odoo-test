@@ -10,7 +10,7 @@ import Card from "../components/ui/Card";
 const CreateListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { dispatch } = useData();
+  const { actions } = useData();
 
   // Debug user info
   console.log("Current user in CreateListing:", user);
@@ -42,8 +42,12 @@ const CreateListing = () => {
       console.log("Listing created successfully:", response);
 
       // Refresh data using context actions
-      dispatch({ type: "FETCH_LISTINGS_START" });
-      dispatch({ type: "FETCH_HOST_LISTINGS_START" });
+      try {
+        await actions.fetchListings();
+        console.log("Listings refreshed successfully");
+      } catch (refreshError) {
+        console.warn("Failed to refresh listings:", refreshError);
+      }
 
       console.log("Data refreshed, navigating to dashboard...");
       navigate("/host/dashboard");

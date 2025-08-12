@@ -13,13 +13,17 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
   });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const { dispatch } = useData();
+  const { actions } = useData();
 
   const processPayoutAction = async (data) => {
     setIsProcessing(true);
     try {
       await adminAPI.processPayout(payout._id, data);
-      dispatch({ type: "FETCH_PAYOUTS_START" });
+      try {
+        await actions.fetchAdminPayouts();
+      } catch (refreshError) {
+        console.warn("Failed to refresh payouts:", refreshError);
+      }
       onUpdate?.();
       onClose();
     } catch (error) {

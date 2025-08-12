@@ -10,7 +10,7 @@ const CheckoutSuccess = () => {
   const navigate = useNavigate();
   const [status, setStatus] = useState("processing"); // processing, success, error
   const [message, setMessage] = useState("");
-  const { dispatch } = useData();
+  const { actions } = useData();
 
   const orderId = searchParams.get("order_id");
   const sessionId = searchParams.get("session_id");
@@ -22,7 +22,11 @@ const CheckoutSuccess = () => {
       setStatus("success");
       setMessage("Your payment has been confirmed and booking is complete!");
       // Refresh orders data
-      dispatch({ type: "FETCH_ORDERS_START" });
+      try {
+        await actions.fetchOrders();
+      } catch (refreshError) {
+        console.warn("Failed to refresh orders:", refreshError);
+      }
     } catch (error) {
       setStatus("error");
       setMessage(error.response?.data?.message || "Failed to confirm payment");
