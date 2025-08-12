@@ -47,10 +47,14 @@ const ListingDetail = () => {
     setCreatingOrder(true);
     try {
       const response = await ordersAPI.create(orderData);
-      console.log('Order creation success:', response);
-      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
-      const orderId = response.data.data?.order?._id || response.data.order?._id;
-      console.log('Extracted order ID:', orderId);
+      console.log("Order creation success:", response);
+      console.log(
+        "Response data structure:",
+        JSON.stringify(response.data, null, 2)
+      );
+      const orderId =
+        response.data.data?.order?._id || response.data.order?._id;
+      console.log("Extracted order ID:", orderId);
       if (orderId) {
         navigate(`/checkout/${orderId}`);
       } else {
@@ -78,7 +82,7 @@ const ListingDetail = () => {
       setAvailabilityData(response.data.data || response.data);
       return response;
     } catch (error) {
-      console.error('Availability check error:', error);
+      console.error("Availability check error:", error);
       setAvailabilityData({ available: false });
     }
   };
@@ -146,8 +150,8 @@ const ListingDetail = () => {
       paymentOption: bookingData.paymentOption,
     };
 
-    console.log('Creating order with data:', orderData);
-    console.log('User token exists:', !!localStorage.getItem('token'));
+    console.log("Creating order with data:", orderData);
+    console.log("User token exists:", !!localStorage.getItem("token"));
     createOrder(orderData);
   };
 
@@ -350,7 +354,11 @@ const ListingDetail = () => {
                       <input
                         type="date"
                         value={bookingData.startDate}
-                        min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                        min={
+                          new Date(Date.now() + 24 * 60 * 60 * 1000)
+                            .toISOString()
+                            .split("T")[0]
+                        }
                         onChange={(e) => {
                           setBookingData({
                             ...bookingData,
@@ -370,7 +378,9 @@ const ListingDetail = () => {
                         value={bookingData.endDate}
                         min={
                           bookingData.startDate ||
-                          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
+                          new Date(Date.now() + 24 * 60 * 60 * 1000)
+                            .toISOString()
+                            .split("T")[0]
                         }
                         onChange={(e) => {
                           setBookingData({
@@ -497,15 +507,17 @@ const ListingDetail = () => {
                         <Clock className="h-4 w-4 mr-2" />
                         {availabilityData.available
                           ? "Available for selected dates"
-                          : availabilityData.error || "Not available for selected dates"}
+                          : availabilityData.error ||
+                            "Not available for selected dates"}
                       </div>
-                      {availabilityData.details && availabilityData.details.length > 0 && (
-                        <div className="text-xs mt-1">
-                          {availabilityData.details.map((detail, index) => (
-                            <div key={index}>{detail.message}</div>
-                          ))}
-                        </div>
-                      )}
+                      {availabilityData.details &&
+                        availabilityData.details.length > 0 && (
+                          <div className="text-xs mt-1">
+                            {availabilityData.details.map((detail, index) => (
+                              <div key={index}>{detail.message}</div>
+                            ))}
+                          </div>
+                        )}
                     </div>
                   )}
 

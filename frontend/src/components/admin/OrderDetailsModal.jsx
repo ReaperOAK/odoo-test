@@ -16,7 +16,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
     setIsUpdating(true);
     try {
       await adminAPI.updateOrderStatus(order._id, data);
-      dispatch({ type: 'FETCH_ORDERS_START' });
+      dispatch({ type: "FETCH_ORDERS_START" });
       onUpdate?.();
       onClose();
     } catch (error) {
@@ -30,7 +30,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
     setIsResolving(true);
     try {
       await adminAPI.resolveDispute(order._id, data);
-      dispatch({ type: 'FETCH_ORDERS_START' });
+      dispatch({ type: "FETCH_ORDERS_START" });
       onUpdate?.();
       onClose();
     } catch (error) {
@@ -250,10 +250,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                     </select>
                     <Button
                       onClick={handleStatusUpdate}
-                      disabled={
-                        isUpdating ||
-                        newStatus === order.orderStatus
-                      }
+                      disabled={isUpdating || newStatus === order.orderStatus}
                     >
                       {isUpdating ? "Updating..." : "Update"}
                     </Button>

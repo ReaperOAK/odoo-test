@@ -51,7 +51,11 @@ const SearchFilters = ({ filters, setFilters }) => {
         </Button>
 
         {hasActiveFilters && (
-          <Button variant="outline" onClick={clearFilters} className="text-sm font-semibold">
+          <Button
+            variant="outline"
+            onClick={clearFilters}
+            className="text-sm font-semibold"
+          >
             <X className="h-4 w-4 mr-1" />
             Clear all
           </Button>
@@ -60,7 +64,6 @@ const SearchFilters = ({ filters, setFilters }) => {
 
       {showFilters && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 pt-6 border-t border-gray-200 bg-gray-50/80 backdrop-blur-sm rounded-2xl p-6">
-          
           {/* Mobile Search Input */}
           <div className="md:hidden">
             <label className="block text-sm lg:text-base font-bold text-gray-800 mb-2">
@@ -77,7 +80,7 @@ const SearchFilters = ({ filters, setFilters }) => {
               />
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm lg:text-base font-bold text-gray-800 mb-2">
               Category

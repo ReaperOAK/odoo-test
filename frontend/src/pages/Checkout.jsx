@@ -18,28 +18,28 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  console.log('Checkout component loaded with orderId:', orderId);
+  console.log("Checkout component loaded with orderId:", orderId);
 
   useEffect(() => {
     const fetchOrder = async () => {
       if (!orderId) return;
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
-        console.log('Fetching order with ID:', orderId);
+        console.log("Fetching order with ID:", orderId);
         const response = await ordersAPI.getById(orderId);
-        console.log('Order API response:', response);
-        console.log('response.data:', response.data);
-        console.log('response.data.data:', response.data.data);
-        console.log('response.data.data.order:', response.data.data.order);
+        console.log("Order API response:", response);
+        console.log("response.data:", response.data);
+        console.log("response.data.data:", response.data.data);
+        console.log("response.data.data.order:", response.data.data.order);
         const orderData = response.data.data.order;
-        console.log('Selected order:', orderData);
+        console.log("Selected order:", orderData);
         setOrder(orderData);
       } catch (err) {
-        console.error('Order fetch error:', err);
-        console.error('Error response:', err.response?.data);
+        console.error("Order fetch error:", err);
+        console.error("Error response:", err.response?.data);
         setError(err);
       } finally {
         setLoading(false);
@@ -49,8 +49,8 @@ const Checkout = () => {
     fetchOrder();
   }, [orderId]);
 
-  console.log('Query state:', { loading, error, order });
-  console.log('Order exists?', !!order);
+  console.log("Query state:", { loading, error, order });
+  console.log("Order exists?", !!order);
 
   const handleMockPayment = async () => {
     try {
@@ -82,7 +82,7 @@ const Checkout = () => {
 
   const handlePayment = async () => {
     setIsProcessing(true);
-    
+
     if (paymentMethod === "mock") {
       // Simulate payment processing delay
       setTimeout(() => {
@@ -92,9 +92,9 @@ const Checkout = () => {
       try {
         // Initiate payment with Polar
         const response = await ordersAPI.initiatePayment(orderId, {
-          paymentMethod: "polar"
+          paymentMethod: "polar",
         });
-        
+
         if (response.data.checkoutUrl) {
           // Redirect to Polar checkout
           window.location.href = response.data.checkoutUrl;
@@ -136,7 +136,11 @@ const Checkout = () => {
             The order you're looking for doesn't exist or you don't have access
             to it.
           </p>
-          <Button variant="primary" onClick={() => navigate("/")} className="mt-4 text-white font-bold">
+          <Button
+            variant="primary"
+            onClick={() => navigate("/")}
+            className="mt-4 text-white font-bold"
+          >
             🏠 Go Home
           </Button>
         </div>
@@ -158,10 +162,18 @@ const Checkout = () => {
             Your booking has been confirmed. Order #{order.orderNumber}
           </p>
           <div className="space-x-4">
-            <Button variant="primary" onClick={() => navigate("/my-bookings")} className="text-white font-bold">
+            <Button
+              variant="primary"
+              onClick={() => navigate("/my-bookings")}
+              className="text-white font-bold"
+            >
               📋 View My Bookings
             </Button>
-            <Button variant="glass" onClick={() => navigate("/")} className="text-gray-900 font-semibold">
+            <Button
+              variant="glass"
+              onClick={() => navigate("/")}
+              className="text-gray-900 font-semibold"
+            >
               🛍️ Continue Shopping
             </Button>
           </div>
@@ -305,7 +317,7 @@ const Checkout = () => {
                       </div>
                     </div>
                   </label>
-                  
+
                   <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
                       type="radio"

@@ -21,7 +21,7 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
     setIsSubmitting(true);
     try {
       await adminAPI.updateUser(user._id, data);
-      dispatch({ type: 'FETCH_USERS_START' });
+      dispatch({ type: "FETCH_USERS_START" });
       onUpdate?.();
       onClose();
     } catch (error) {
@@ -145,11 +145,7 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              className="flex-1"
-            >
+            <Button type="submit" disabled={isSubmitting} className="flex-1">
               {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>

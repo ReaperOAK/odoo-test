@@ -19,10 +19,10 @@ const AdminDashboard = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
-  
+
   // Export modal states
   const [showExportModal, setShowExportModal] = useState(false);
-  const [exportType, setExportType] = useState('');
+  const [exportType, setExportType] = useState("");
   const [exportData, setExportData] = useState(null);
 
   const refreshData = () => {
@@ -61,7 +61,7 @@ const AdminDashboard = () => {
       };
 
       setExportData(reportData);
-      setExportType('report');
+      setExportType("report");
       setShowExportModal(true);
     } catch (error) {
       console.error("Error preparing report:", error);
@@ -71,48 +71,119 @@ const AdminDashboard = () => {
 
   const handleExportData = async (format) => {
     try {
-      if (exportType === 'report') {
+      if (exportType === "report") {
         generateAdminReport(exportData, format);
-      } else if (exportType === 'users') {
+      } else if (exportType === "users") {
         const users = usersData?.data?.data || [];
-        const headers = ['name', 'email', 'role', 'isHost', 'isVerified', 'createdAt'];
-        const processedUsers = users.map(user => ({
+        const headers = [
+          "name",
+          "email",
+          "role",
+          "isHost",
+          "isVerified",
+          "createdAt",
+        ];
+        const processedUsers = users.map((user) => ({
           name: user.name,
           email: user.email,
-          role: user.role === 'admin' ? 'Admin' : user.isHost ? 'Host' : 'Customer',
-          isHost: user.isHost ? 'Yes' : 'No',
-          isVerified: user.isVerified ? 'Verified' : 'Pending',
-          createdAt: new Date(user.createdAt).toLocaleDateString()
+          role:
+            user.role === "admin" ? "Admin" : user.isHost ? "Host" : "Customer",
+          isHost: user.isHost ? "Yes" : "No",
+          isVerified: user.isVerified ? "Verified" : "Pending",
+          createdAt: new Date(user.createdAt).toLocaleDateString(),
         }));
-        const date = new Date().toISOString().split('T')[0];
-        exportData(processedUsers, headers, `users-export-${date}`, format, 'User Data Export');
-      } else if (exportType === 'orders') {
+        const date = new Date().toISOString().split("T")[0];
+        exportData(
+          processedUsers,
+          headers,
+          `users-export-${date}`,
+          format,
+          "User Data Export"
+        );
+      } else if (exportType === "orders") {
         const orders = ordersData?.data?.data || [];
-        const headers = ['orderId', 'customer', 'total', 'status', 'paymentStatus', 'createdAt'];
-        const processedOrders = orders.map(order => ({
+        const headers = [
+          "orderId",
+          "customer",
+          "total",
+          "status",
+          "paymentStatus",
+          "createdAt",
+        ];
+        const processedOrders = orders.map((order) => ({
           orderId: order._id,
-          customer: order.customer?.name || 'N/A',
+          customer: order.customer?.name || "N/A",
           total: `₹${order.total || 0}`,
           status: order.orderStatus,
           paymentStatus: order.paymentStatus,
-          createdAt: new Date(order.createdAt).toLocaleDateString()
+          createdAt: new Date(order.createdAt).toLocaleDateString(),
         }));
-        const date = new Date().toISOString().split('T')[0];
-        exportData(processedOrders, headers, `orders-export-${date}`, format, 'Orders Data Export');
-      } else if (exportType === 'payouts') {
+        const date = new Date().toISOString().split("T")[0];
+        exportData(
+          processedOrders,
+          headers,
+          `orders-export-${date}`,
+          format,
+          "Orders Data Export"
+        );
+      } else if (exportType === "payouts") {
         const payouts = payoutsData?.data?.data?.payouts || [];
-        const headers = ['payoutId', 'host', 'amount', 'status', 'createdAt'];
-        const processedPayouts = payouts.map(payout => ({
+        const headers = ["payoutId", "host", "amount", "status", "createdAt"];
+        const processedPayouts = payouts.map((payout) => ({
           payoutId: payout._id,
-          host: payout.host?.name || 'N/A',
+          host: payout.host?.name || "N/A",
           amount: `₹${payout.amount || 0}`,
           status: payout.status,
-          createdAt: new Date(payout.createdAt).toLocaleDateString()
+          createdAt: new Date(payout.createdAt).toLocaleDateString(),
         }));
-        const date = new Date().toISOString().split('T')[0];
-        exportData(processedPayouts, headers, `payouts-export-${date}`, format, 'Payouts Data Export');
+        const date = new Date().toISOString().split("T")[0];
+        exportData(
+          processedPayouts,
+          headers,
+          `payouts-export-${date}`,
+          format,
+          "Payouts Data Export"
+        );
+      } else if (exportType === "revenue") {
+        const analytics = analyticsData?.data?.data || {};
+        const revenueData = analytics.revenueOverTime || [];
+        const headers = ["date", "revenue", "orders"];
+        const processedRevenue = revenueData.map((item) => ({
+          date: new Date(item._id.year, item._id.month - 1, item._id.day).toLocaleDateString(),
+          revenue: `₹${item.revenue?.toLocaleString() || 0}`,
+          orders: item.orders || 0,
+        }));
+        const date = new Date().toISOString().split("T")[0];
+        exportData(
+          processedRevenue,
+          headers,
+          `revenue-report-${date}`,
+          format,
+          "Revenue Analytics Report"
+        );
+      } else if (exportType === "payout-report") {
+        const payouts = payoutsData?.data?.data?.payouts || [];
+        const headers = ["host", "email", "amount", "currency", "status", "method", "createdAt", "bankAccount"];
+        const processedPayouts = payouts.map((payout) => ({
+          host: payout.hostId?.name || "N/A",
+          email: payout.hostId?.email || "N/A",
+          amount: `₹${payout.amount || 0}`,
+          currency: payout.currency || "INR",
+          status: payout.status || "N/A",
+          method: payout.method || "N/A",
+          createdAt: new Date(payout.createdAt).toLocaleDateString(),
+          bankAccount: payout.bankDetails?.accountNumber || "N/A",
+        }));
+        const date = new Date().toISOString().split("T")[0];
+        exportData(
+          processedPayouts,
+          headers,
+          `payout-report-${date}`,
+          format,
+          "Payout Report Export"
+        );
       }
-      
+
       alert(`${format.toUpperCase()} file downloaded successfully!`);
     } catch (error) {
       console.error("Error exporting data:", error);
@@ -128,7 +199,7 @@ const AdminDashboard = () => {
       return;
     }
     setExportData(users);
-    setExportType('users');
+    setExportType("users");
     setShowExportModal(true);
   };
 
@@ -139,7 +210,7 @@ const AdminDashboard = () => {
       return;
     }
     setExportData(orders);
-    setExportType('orders');
+    setExportType("orders");
     setShowExportModal(true);
   };
 
@@ -150,7 +221,29 @@ const AdminDashboard = () => {
       return;
     }
     setExportData(payouts);
-    setExportType('payouts');
+    setExportType("payouts");
+    setShowExportModal(true);
+  };
+
+  const exportRevenueReport = () => {
+    const analytics = analyticsData?.data?.data || {};
+    if (!analytics.revenueOverTime || analytics.revenueOverTime.length === 0) {
+      alert("No revenue data available to export.");
+      return;
+    }
+    setExportData(analytics);
+    setExportType("revenue");
+    setShowExportModal(true);
+  };
+
+  const exportPayoutReport = () => {
+    const payouts = payoutsData?.data?.data?.payouts || [];
+    if (payouts.length === 0) {
+      alert("No payout report data available to export.");
+      return;
+    }
+    setExportData(payouts);
+    setExportType("payout-report");
     setShowExportModal(true);
   };
 
@@ -160,7 +253,7 @@ const AdminDashboard = () => {
   // Fetch data based on selected tab
   useEffect(() => {
     if (!isAdmin) return;
-    
+
     if (selectedTab === "overview") {
       actions.fetchAdminStats();
     } else if (selectedTab === "users") {
@@ -178,16 +271,16 @@ const AdminDashboard = () => {
   const dashboardData = { data: { data: state.adminStats } };
   const dashboardLoading = state.adminLoading;
   const dashboardError = state.adminError;
-  
+
   const usersData = { data: { data: state.adminUsers } };
   const usersLoading = state.adminLoading;
-  
+
   const ordersData = { data: { data: state.adminOrders } };
   const ordersLoading = state.adminLoading;
-  
+
   const payoutsData = { data: { data: state.adminPayouts } };
   const payoutsLoading = state.adminLoading;
-  
+
   const analyticsData = { data: { data: state.adminAnalytics } };
   const analyticsLoading = state.adminLoading;
 
@@ -484,7 +577,9 @@ const AdminDashboard = () => {
             <Button variant="glass" size="sm" onClick={exportUserData}>
               📥 Export
             </Button>
-            <Button variant="primary" size="sm">➕ Add User</Button>
+            <Button variant="primary" size="sm">
+              ➕ Add User
+            </Button>
           </div>
         </div>
 
@@ -680,7 +775,9 @@ const AdminDashboard = () => {
             <Button variant="success" size="sm">
               💳 Process All
             </Button>
-            <Button variant="primary" size="sm">📊 Generate Report</Button>
+            <Button variant="primary" size="sm">
+              📊 Generate Report
+            </Button>
           </div>
         </div>
 
@@ -936,7 +1033,9 @@ const AdminDashboard = () => {
           <Button variant="glass" onClick={refreshData}>
             🔄 Refresh
           </Button>
-          <Button variant="primary" onClick={handleGenerateReport}>📊 Generate Report</Button>
+          <Button variant="primary" onClick={handleGenerateReport}>
+            📊 Generate Report
+          </Button>
         </div>
       </div>
 
@@ -1005,18 +1104,26 @@ const AdminDashboard = () => {
         isOpen={showExportModal}
         onClose={() => {
           setShowExportModal(false);
-          setExportType('');
+          setExportType("");
           setExportData(null);
         }}
         onExport={handleExportData}
-        title={`Export ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Data`}
+        title={`Export ${
+          exportType.charAt(0).toUpperCase() + exportType.slice(1)
+        } Data`}
         description={`Choose your preferred format to export ${exportType} data`}
         dataPreview={{
           count: Array.isArray(exportData) ? exportData.length : 1,
-          sample: exportType === 'users' ? 'Users with name, email, role...' :
-                   exportType === 'orders' ? 'Orders with customer, amount, status...' :
-                   exportType === 'payouts' ? 'Payouts with host, amount, status...' :
-                   exportType === 'report' ? 'Comprehensive admin report with all statistics' : 'Data export'
+          sample:
+            exportType === "users"
+              ? "Users with name, email, role..."
+              : exportType === "orders"
+              ? "Orders with customer, amount, status..."
+              : exportType === "payouts"
+              ? "Payouts with host, amount, status..."
+              : exportType === "report"
+              ? "Comprehensive admin report with all statistics"
+              : "Data export",
         }}
       />
     </div>

@@ -19,7 +19,7 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
     setIsProcessing(true);
     try {
       await adminAPI.processPayout(payout._id, data);
-      dispatch({ type: 'FETCH_PAYOUTS_START' });
+      dispatch({ type: "FETCH_PAYOUTS_START" });
       onUpdate?.();
       onClose();
     } catch (error) {
@@ -294,10 +294,7 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                     </Button>
                     <Button
                       onClick={handleCompletePayout}
-                      disabled={
-                        isProcessing ||
-                        !processingData.transactionRef
-                      }
+                      disabled={isProcessing || !processingData.transactionRef}
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       {isProcessing ? "Processing..." : "Complete Payout"}

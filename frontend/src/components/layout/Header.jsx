@@ -119,10 +119,18 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-3">
-                <Button variant="glass" onClick={() => navigate("/login")} className="hover:scale-105 transition-transform duration-300 text-gray-900 font-semibold">
+                <Button
+                  variant="glass"
+                  onClick={() => navigate("/login")}
+                  className="hover:scale-105 transition-transform duration-300 text-gray-900 font-semibold"
+                >
                   🔑 Login
                 </Button>
-                <Button variant="primary" onClick={() => navigate("/register")} className="animate-pulse-glow hover:scale-105 transition-transform duration-300 text-white font-bold">
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/register")}
+                  className="animate-pulse-glow hover:scale-105 transition-transform duration-300 text-white font-bold"
+                >
                   🚀 Sign Up
                 </Button>
               </div>

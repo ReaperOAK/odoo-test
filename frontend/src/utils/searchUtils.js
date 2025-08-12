@@ -20,7 +20,7 @@ export const normalizeText = (text) => {
  */
 export const searchListing = (listing, searchTerm) => {
   if (!searchTerm || !listing) return true;
-  
+
   const normalizedSearchTerm = normalizeText(searchTerm);
   if (!normalizedSearchTerm) return true;
 
@@ -45,7 +45,7 @@ export const searchListing = (listing, searchTerm) => {
     .filter(field => field) // Remove null/undefined fields
     .map(field => normalizeText(field))
     .join(' ');
-  
+
   // For partial matching, check if searchable text includes the search term
   return searchableText.includes(normalizedSearchTerm);
 };
@@ -60,7 +60,7 @@ export const filterListings = (listings, searchTerm) => {
   if (!searchTerm || !Array.isArray(listings)) {
     return listings;
   }
-  
+
   return listings.filter(listing => searchListing(listing, searchTerm));
 };
 
@@ -72,16 +72,16 @@ export const filterListings = (listings, searchTerm) => {
  */
 export const highlightMatch = (text, searchTerm) => {
   if (!text || !searchTerm) return text;
-  
+
   const normalizedSearchTerm = normalizeText(searchTerm);
   const searchTerms = normalizedSearchTerm.split(' ').filter(term => term.length > 0);
-  
+
   let highlightedText = text;
-  
+
   searchTerms.forEach(term => {
     const regex = new RegExp(`(${term})`, 'gi');
     highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
   });
-  
+
   return highlightedText;
 };
