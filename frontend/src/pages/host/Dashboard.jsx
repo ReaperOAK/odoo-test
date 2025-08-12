@@ -43,11 +43,19 @@ const HostDashboard = () => {
   const fetchHostListings = async () => {
     setListingsLoading(true);
     try {
-      const response = await listingsAPI.getHost();
+      console.log('Attempting to fetch host listings...');
+      const response = await hostAPI.getListings();
+      console.log('Host listings response:', response);
       const listings = response?.data?.data?.listings || [];
+      console.log('Parsed listings:', listings);
       setHostListings(listings);
     } catch (error) {
       console.error("Error fetching host listings:", error);
+      console.error("Error details:", {
+        status: error.response?.status,
+        data: error.response?.data,
+        message: error.message
+      });
     } finally {
       setListingsLoading(false);
     }
