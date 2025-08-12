@@ -110,7 +110,7 @@ const schemas = {
     }).default(20),
     totalQuantity: Joi.number().integer().min(1).max(1000).default(1),
     location: Joi.string().trim().min(2).max(200).required(),
-    images: Joi.array().items(Joi.string().uri()).max(10).default([]),
+    images: Joi.array().items(Joi.string().trim()).max(10).default([]),
     features: Joi.array().items(Joi.string().trim().max(100)).max(20).default([]),
     rules: Joi.array().items(Joi.string().trim().max(200)).max(10).default([]),
     status: Joi.string().valid('draft', 'published', 'disabled').default('published')
