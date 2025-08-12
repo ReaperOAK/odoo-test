@@ -35,7 +35,9 @@ const ListingDetail = () => {
     mutationFn: ordersAPI.create,
     onSuccess: (response) => {
       console.log('Order creation success:', response);
+      console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       const orderId = response.data.data?.order?._id || response.data.order?._id;
+      console.log('Extracted order ID:', orderId);
       if (orderId) {
         navigate(`/checkout/${orderId}`);
       } else {
@@ -61,7 +63,13 @@ const ListingDetail = () => {
     },
     onError: (error) => {
       console.error('Availability check error:', error);
-      setAvailabilityData({ available: false });
+      const errorMessage = error.response?.data?.message || error.message || "Failed to check availability";
+      console.error('Error details:', error.response?.data);
+      setAvailabilityData({ 
+        available: false, 
+        error: errorMessage,
+        details: error.response?.data?.errors || []
+      });
     }
   });
 
@@ -114,7 +122,7 @@ const ListingDetail = () => {
       return;
     }
 
-    const { subtotal, deposit } = calculateTotalPrice();
+    const { subtotal, deposit, duration } = calculateTotalPrice();
 
     const orderData = {
       lines: [
@@ -129,6 +137,7 @@ const ListingDetail = () => {
     };
 
     console.log('Creating order with data:', orderData);
+    console.log('Frontend calculation:', { basePrice: listing.basePrice, quantity: bookingData.quantity, duration, unitType: listing.unitType });
     console.log('User token exists:', !!localStorage.getItem('token'));
     createOrderMutation.mutate(orderData);
   };
@@ -136,8 +145,8 @@ const ListingDetail = () => {
   const handleCheckAvailability = () => {
     if (bookingData.startDate && bookingData.endDate) {
       checkAvailabilityMutation.mutate({
-        start: bookingData.startDate,
-        end: bookingData.endDate,
+        start: new Date(bookingData.startDate).toISOString(),
+        end: new Date(bookingData.endDate).toISOString(),
         qty: bookingData.quantity,
       });
     }
@@ -326,13 +335,14 @@ const ListingDetail = () => {
                       <input
                         type="date"
                         value={bookingData.startDate}
-                        min={new Date().toISOString().split("T")[0]}
-                        onChange={(e) =>
+                        min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+                        onChange={(e) => {
                           setBookingData({
                             ...bookingData,
                             startDate: e.target.value,
-                          })
-                        }
+                          });
+                          setAvailabilityData(null);
+                        }}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
@@ -345,14 +355,15 @@ const ListingDetail = () => {
                         value={bookingData.endDate}
                         min={
                           bookingData.startDate ||
-                          new Date().toISOString().split("T")[0]
+                          new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0]
                         }
-                        onChange={(e) =>
+                        onChange={(e) => {
                           setBookingData({
                             ...bookingData,
                             endDate: e.target.value,
-                          })
-                        }
+                          });
+                          setAvailabilityData(null);
+                        }}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
@@ -364,12 +375,13 @@ const ListingDetail = () => {
                     </label>
                     <select
                       value={bookingData.quantity}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setBookingData({
                           ...bookingData,
                           quantity: parseInt(e.target.value),
-                        })
-                      }
+                        });
+                        setAvailabilityData(null);
+                      }}
                       className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500"
                     >
                       {[...Array(Math.min(listing?.totalQuantity || 1, 5))].map(
@@ -454,12 +466,19 @@ const ListingDetail = () => {
                           : "bg-red-50 text-red-800"
                       }`}
                     >
-                      <div className="flex items-center">
+                      <div className="flex items-center mb-1">
                         <Clock className="h-4 w-4 mr-2" />
                         {availabilityData.available
                           ? "Available for selected dates"
-                          : "Not available for selected dates"}
+                          : availabilityData.error || "Not available for selected dates"}
                       </div>
+                      {availabilityData.details && availabilityData.details.length > 0 && (
+                        <div className="text-xs mt-1">
+                          {availabilityData.details.map((detail, index) => (
+                            <div key={index}>{detail.message}</div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
 

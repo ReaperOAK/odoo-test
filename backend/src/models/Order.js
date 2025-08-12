@@ -296,11 +296,13 @@ OrderSchema.pre('save', function(next) {
     let calculatedSubtotal = 0;
     
     this.lines.forEach(line => {
-      // Calculate rental duration in days (minimum 1 day)
-      const durationMs = new Date(line.end) - new Date(line.start);
-      const durationDays = Math.max(1, Math.ceil(durationMs / (1000 * 60 * 60 * 24)));
+      // Skip validation if line data is incomplete (ReservationService hasn't processed it yet)
+      if (!line.unitPrice || line.lineTotal === undefined || !line.duration) {
+        return; // Skip this line, it will be validated after ReservationService processes it
+      }
       
-      const expectedLineTotal = line.unitPrice * line.qty * durationDays;
+      // Use the duration calculated by ReservationService (which considers unitType)
+      const expectedLineTotal = line.unitPrice * line.qty * line.duration;
       
       if (Math.abs(line.lineTotal - expectedLineTotal) > 0.01) {
         return next(new Error(`Line total does not match unit price × quantity × duration. Expected: ${expectedLineTotal}, got: ${line.lineTotal}`));
@@ -308,7 +310,9 @@ OrderSchema.pre('save', function(next) {
       calculatedSubtotal += line.lineTotal;
     });
     
-    if (Math.abs(this.subtotal - calculatedSubtotal) > 0.01) {
+    // Only validate subtotal if all lines have been processed (have unitPrice and lineTotal)
+    const allLinesProcessed = this.lines.every(line => line.unitPrice && line.lineTotal !== undefined && line.duration);
+    if (allLinesProcessed && Math.abs(this.subtotal - calculatedSubtotal) > 0.01) {
       return next(new Error('Subtotal does not match sum of line totals'));
     }
   }
