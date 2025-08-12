@@ -464,6 +464,133 @@ const getOrders = async (req, res, next) => {
 };
 
 /**
+ * Get single order by ID for admin
+ */
+const getOrderById = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new AppError('Invalid order ID', 400));
+    }
+
+    const order = await Order.findById(id)
+      .populate('renterId', 'name email phone')
+      .populate('hostId', 'name email phone hostProfile.displayName')
+      .populate('lines.listingId', 'title images category location pricing')
+      .lean();
+
+    if (!order) {
+      return next(new AppError('Order not found', 404));
+    }
+
+    // Get associated reservations
+    const reservations = await Reservation.find({ orderId: id })
+      .populate('listingId', 'title images')
+      .sort({ createdAt: -1 });
+
+    // Get payments
+    const payments = await Payment.find({ orderId: id })
+      .sort({ createdAt: -1 });
+
+    // Get late fees
+    const lateFees = await LateFee.find({ orderId: id })
+      .sort({ createdAt: -1 });
+
+    logger.info(`Admin fetched order ${id}`, { adminId: req.user.id });
+
+    res.json({
+      success: true,
+      data: {
+        order,
+        reservations,
+        payments,
+        lateFees
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching order by ID:', error);
+    next(error);
+  }
+};
+
+/**
+ * Update order status as admin
+ */
+const updateOrderStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { status, adminNotes, metadata } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return next(new AppError('Invalid order ID', 400));
+    }
+
+    const order = await Order.findById(id);
+    if (!order) {
+      return next(new AppError('Order not found', 404));
+    }
+
+    // Validate status transitions (admin has more flexibility)
+    const validStatuses = ['quote', 'confirmed', 'in_progress', 'completed', 'cancelled', 'disputed'];
+    if (!validStatuses.includes(status)) {
+      return next(new AppError(`Invalid status: ${status}`, 400));
+    }
+
+    // Update order
+    const previousStatus = order.orderStatus;
+    order.orderStatus = status;
+    order.metadata = {
+      ...order.metadata,
+      adminNotes,
+      lastUpdatedBy: req.user.id,
+      lastUpdatedAt: new Date(),
+      ...metadata
+    };
+
+    await order.save();
+
+    // Update related reservations based on status
+    if (status === 'in_progress') {
+      await Reservation.updateMany(
+        { orderId: id },
+        { status: 'active' }
+      );
+    } else if (status === 'completed') {
+      await Reservation.updateMany(
+        { orderId: id },
+        { status: 'returned' }
+      );
+    } else if (status === 'cancelled') {
+      await Reservation.updateMany(
+        { orderId: id },
+        { status: 'cancelled' }
+      );
+    }
+
+    // Populate order for response
+    const populatedOrder = await Order.findById(id)
+      .populate('renterId', 'name email')
+      .populate('hostId', 'name email hostProfile.displayName')
+      .populate('lines.listingId', 'title images');
+
+    logger.info(`Admin updated order ${id} status from ${previousStatus} to ${status}`, {
+      adminId: req.user.id,
+      notes: adminNotes
+    });
+
+    res.json({
+      success: true,
+      message: 'Order status updated successfully',
+      data: { order: populatedOrder }
+    });
+  } catch (error) {
+    logger.error('Error updating order status:', error);
+    next(error);
+  }
+};
+
+/**
  * Get all payouts
  */
 const getPayouts = async (req, res, next) => {
@@ -980,6 +1107,8 @@ module.exports = {
   getAdminDashboard,
   getUsers,
   getOrders,
+  getOrderById,
+  updateOrderStatus,
   getPayouts,
   processPayout,
   createPayout,

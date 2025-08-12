@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
+import { ordersAPI } from "../lib/api";
 import {
   Calendar,
   MapPin,
@@ -12,23 +13,14 @@ import {
 } from "lucide-react";
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
+import OrderDetailsModal from "../components/orders/OrderDetailsModal";
+import EditOrderModal from "../components/orders/EditOrderModal";
 
 const MyBookings = () => {
   const { user } = useAuth();
   const { state, actions } = useData();
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const statusFilter = searchParams.get("status");
-
-  const setStatusFilter = (status) => {
-    const params = new URLSearchParams(searchParams);
-    if (status) {
-      params.set("status", status);
-    } else {
-      params.delete("status");
-    }
-    navigate(`/my-bookings?${params.toString()}`);
-  };
 
   // Fetch orders when component mounts or filter changes
   useEffect(() => {
@@ -84,6 +76,48 @@ const MyBookings = () => {
         return <AlertCircle className="h-4 w-4" />;
       default:
         return <Clock className="h-4 w-4" />;
+    }
+  };
+
+  // Handler functions for view and edit
+  const handleViewOrder = async (order) => {
+    setSelectedOrder(order);
+    setIsLoadingDetails(true);
+    setShowOrderModal(true);
+    
+    try {
+      const response = await ordersAPI.getById(order._id);
+      setOrderDetails(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch order details:", error);
+      alert("Failed to load order details. Please try again.");
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  };
+
+  const handleEditOrder = (order) => {
+    setSelectedOrder(order);
+    setShowEditModal(true);
+  };
+
+  const handleCloseModals = () => {
+    setShowOrderModal(false);
+    setShowEditModal(false);
+    setSelectedOrder(null);
+    setOrderDetails(null);
+  };
+
+  const handleUpdateOrder = async (orderId, updateData) => {
+    try {
+      await ordersAPI.updateStatus(orderId, updateData);
+      // Refresh orders list
+      actions.fetchOrders();
+      handleCloseModals();
+      alert("Order updated successfully!");
+    } catch (error) {
+      console.error("Failed to update order:", error);
+      alert("Failed to update order. Please try again.");
     }
   };
 
@@ -149,7 +183,14 @@ const MyBookings = () => {
           ].map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setStatusFilter(key)}
+              onClick={() => {
+                setStatusFilter(key);
+                if (key) {
+                  setSearchParams({ status: key });
+                } else {
+                  setSearchParams({});
+                }
+              }}
               className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
                 statusFilter === key
                   ? "border-primary-500 text-primary-600"
@@ -306,17 +347,37 @@ const MyBookings = () => {
                         )}
                       </div>
 
-                      {order.orderStatus === "quote" &&
-                        order.paymentStatus === "pending" && (
+                      <div className="flex items-center space-x-2">
+                        {order.orderStatus === "quote" &&
+                          order.paymentStatus === "pending" && (
+                            <Button
+                              onClick={() =>
+                                (window.location.href = `/checkout/${order._id}`)
+                              }
+                              size="sm"
+                            >
+                              Complete Payment
+                            </Button>
+                          )}
+                        
+                        <Button
+                          onClick={() => handleViewOrder(order)}
+                          size="sm"
+                          variant="outline"
+                        >
+                          👁️ View Details
+                        </Button>
+                        
+                        {(order.orderStatus === "quote" || order.orderStatus === "confirmed") && (
                           <Button
-                            onClick={() =>
-                              (window.location.href = `/checkout/${order._id}`)
-                            }
+                            onClick={() => handleEditOrder(order)}
                             size="sm"
+                            variant="outline"
                           >
-                            Complete Payment
+                            ✏️ Edit
                           </Button>
                         )}
+                      </div>
                     </div>
                   )}
                 </Card.Content>
@@ -324,6 +385,27 @@ const MyBookings = () => {
             );
           })}
         </div>
+      )}
+
+      {/* Order Details Modal */}
+      {showOrderModal && selectedOrder && (
+        <OrderDetailsModal
+          order={selectedOrder}
+          orderDetails={orderDetails}
+          isLoading={isLoadingDetails}
+          isOpen={showOrderModal}
+          onClose={handleCloseModals}
+        />
+      )}
+
+      {/* Edit Order Modal */}
+      {showEditModal && selectedOrder && (
+        <EditOrderModal
+          order={selectedOrder}
+          isOpen={showEditModal}
+          onClose={handleCloseModals}
+          onUpdate={handleUpdateOrder}
+        />
       )}
     </div>
   );
