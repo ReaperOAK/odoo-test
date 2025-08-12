@@ -6,9 +6,9 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [editData, setEditData] = useState({
     qty: order?.lines?.[0]?.qty || 1,
-    startDate: order?.lines?.[0]?.start?.split('T')[0] || '',
-    endDate: order?.lines?.[0]?.end?.split('T')[0] || '',
-    notes: ''
+    startDate: order?.lines?.[0]?.start?.split("T")[0] || "",
+    endDate: order?.lines?.[0]?.end?.split("T")[0] || "",
+    notes: "",
   });
 
   if (!isOpen || !order) return null;
@@ -21,16 +21,16 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
     try {
       await onUpdate(order._id, {
         notes: editData.notes,
-        // For now, we'll just update notes. 
+        // For now, we'll just update notes.
         // Full editing would require more complex backend changes
         metadata: {
           editRequest: {
             qty: editData.qty,
             startDate: editData.startDate,
             endDate: editData.endDate,
-            requestedAt: new Date().toISOString()
-          }
-        }
+            requestedAt: new Date().toISOString(),
+          },
+        },
       });
     } catch (error) {
       console.error("Failed to update order:", error);
@@ -49,7 +49,7 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
   const estimateNewPrice = () => {
     const originalLine = order.lines?.[0];
     if (!originalLine) return 0;
-    
+
     const duration = calculateDuration();
     const unitPrice = originalLine.unitPrice || 0;
     return editData.qty * unitPrice * duration;
@@ -74,15 +74,36 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
             <Card className="p-4">
               <h3 className="text-lg font-semibold mb-3">Current Order</h3>
               <div className="space-y-2 text-sm">
-                <p><span className="font-medium">Order ID:</span> #{order._id?.slice(-8)}</p>
-                <p><span className="font-medium">Status:</span> {order.orderStatus}</p>
-                <p><span className="font-medium">Total:</span> {formatCurrency(order.totalAmount)}</p>
+                <p>
+                  <span className="font-medium">Order ID:</span> #
+                  {order._id?.slice(-8)}
+                </p>
+                <p>
+                  <span className="font-medium">Status:</span>{" "}
+                  {order.orderStatus}
+                </p>
+                <p>
+                  <span className="font-medium">Total:</span>{" "}
+                  {formatCurrency(order.totalAmount)}
+                </p>
                 {order.lines?.[0] && (
                   <>
-                    <p><span className="font-medium">Item:</span> {order.lines[0].listingId?.title}</p>
-                    <p><span className="font-medium">Quantity:</span> {order.lines[0].qty}</p>
-                    <p><span className="font-medium">From:</span> {formatDate(order.lines[0].start)}</p>
-                    <p><span className="font-medium">To:</span> {formatDate(order.lines[0].end)}</p>
+                    <p>
+                      <span className="font-medium">Item:</span>{" "}
+                      {order.lines[0].listingId?.title}
+                    </p>
+                    <p>
+                      <span className="font-medium">Quantity:</span>{" "}
+                      {order.lines[0].qty}
+                    </p>
+                    <p>
+                      <span className="font-medium">From:</span>{" "}
+                      {formatDate(order.lines[0].start)}
+                    </p>
+                    <p>
+                      <span className="font-medium">To:</span>{" "}
+                      {formatDate(order.lines[0].end)}
+                    </p>
                   </>
                 )}
               </div>
@@ -100,7 +121,12 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
                     type="number"
                     min="1"
                     value={editData.qty}
-                    onChange={(e) => setEditData({ ...editData, qty: parseInt(e.target.value) || 1 })}
+                    onChange={(e) =>
+                      setEditData({
+                        ...editData,
+                        qty: parseInt(e.target.value) || 1,
+                      })
+                    }
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -113,7 +139,9 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
                     <input
                       type="date"
                       value={editData.startDate}
-                      onChange={(e) => setEditData({ ...editData, startDate: e.target.value })}
+                      onChange={(e) =>
+                        setEditData({ ...editData, startDate: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -124,7 +152,9 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
                     <input
                       type="date"
                       value={editData.endDate}
-                      onChange={(e) => setEditData({ ...editData, endDate: e.target.value })}
+                      onChange={(e) =>
+                        setEditData({ ...editData, endDate: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -136,7 +166,9 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
                   </label>
                   <textarea
                     value={editData.notes}
-                    onChange={(e) => setEditData({ ...editData, notes: e.target.value })}
+                    onChange={(e) =>
+                      setEditData({ ...editData, notes: e.target.value })
+                    }
                     placeholder="Explain why you need to make these changes..."
                     rows={3}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -147,18 +179,27 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
 
             {/* Price Estimate */}
             <Card className="p-4">
-              <h3 className="text-lg font-semibold mb-3">Estimated New Price</h3>
+              <h3 className="text-lg font-semibold mb-3">
+                Estimated New Price
+              </h3>
               <div className="space-y-2 text-sm">
-                <p><span className="font-medium">Duration:</span> {calculateDuration()} days</p>
-                <p><span className="font-medium">Quantity:</span> {editData.qty}</p>
+                <p>
+                  <span className="font-medium">Duration:</span>{" "}
+                  {calculateDuration()} days
+                </p>
+                <p>
+                  <span className="font-medium">Quantity:</span> {editData.qty}
+                </p>
                 <p className="text-lg font-semibold text-green-600">
-                  <span className="font-medium">Estimated Total:</span> {formatCurrency(estimateNewPrice())}
+                  <span className="font-medium">Estimated Total:</span>{" "}
+                  {formatCurrency(estimateNewPrice())}
                 </p>
               </div>
               <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> This is an estimate. The host will review your request and may adjust pricing. 
-                  You'll be notified of any changes before confirmation.
+                  <strong>Note:</strong> This is an estimate. The host will
+                  review your request and may adjust pricing. You'll be notified
+                  of any changes before confirmation.
                 </p>
               </div>
             </Card>
@@ -172,10 +213,7 @@ const EditOrderModal = ({ order, isOpen, onClose, onUpdate }) => {
               >
                 {isUpdating ? "Submitting Request..." : "Submit Change Request"}
               </Button>
-              <Button
-                onClick={onClose}
-                variant="outline"
-              >
+              <Button onClick={onClose} variant="outline">
                 Cancel
               </Button>
             </div>

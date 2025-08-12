@@ -3,7 +3,13 @@ import { ordersAPI } from "../../lib/api";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 
-const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) => {
+const OrderDetailsModal = ({
+  order,
+  orderDetails,
+  isLoading,
+  isOpen,
+  onClose,
+}) => {
   const [isUpdating, setIsUpdating] = useState(false);
 
   if (!isOpen || !order) return null;
@@ -91,7 +97,9 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
                 </div>
                 <div>
                   <span className="font-medium">Created:</span>
-                  <span className="ml-2">{formatDate(displayOrder.createdAt)}</span>
+                  <span className="ml-2">
+                    {formatDate(displayOrder.createdAt)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Total Amount:</span>
@@ -128,7 +136,9 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
                 </div>
                 <div>
                   <span className="font-medium">Contact:</span>
-                  <span className="ml-2">{displayOrder.hostId?.email || "N/A"}</span>
+                  <span className="ml-2">
+                    {displayOrder.hostId?.email || "N/A"}
+                  </span>
                 </div>
                 {displayOrder.hostId?.phone && (
                   <div>
@@ -158,7 +168,8 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
                         </p>
                         <div className="text-sm mt-2 space-y-1">
                           <p>
-                            <span className="font-medium">Quantity:</span> {line.qty}
+                            <span className="font-medium">Quantity:</span>{" "}
+                            {line.qty}
                           </p>
                           <p>
                             <span className="font-medium">Duration:</span>{" "}
@@ -169,10 +180,12 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
                             days
                           </p>
                           <p>
-                            <span className="font-medium">From:</span> {formatDate(line.start)}
+                            <span className="font-medium">From:</span>{" "}
+                            {formatDate(line.start)}
                           </p>
                           <p>
-                            <span className="font-medium">To:</span> {formatDate(line.end)}
+                            <span className="font-medium">To:</span>{" "}
+                            {formatDate(line.end)}
                           </p>
                         </div>
                       </div>
@@ -208,20 +221,40 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
                 <h3 className="text-lg font-semibold mb-4">Payment History</h3>
                 <div className="space-y-3">
                   {payments.map((payment, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-3"
+                    >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">Payment #{payment._id?.slice(-8)}</p>
-                          <p className="text-sm text-gray-600">Method: {payment.method}</p>
-                          <p className="text-sm">Status: <span className={`px-2 py-1 rounded-full text-xs ${
-                            payment.status === 'paid' ? 'bg-green-100 text-green-800' :
-                            payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>{payment.status}</span></p>
-                          <p className="text-sm text-gray-600">{formatDate(payment.createdAt)}</p>
+                          <p className="font-medium">
+                            Payment #{payment._id?.slice(-8)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Method: {payment.method}
+                          </p>
+                          <p className="text-sm">
+                            Status:{" "}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                payment.status === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : payment.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {payment.status}
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {formatDate(payment.createdAt)}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{formatCurrency(payment.amount)}</p>
+                          <p className="font-medium">
+                            {formatCurrency(payment.amount)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -234,7 +267,8 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
             <Card className="p-4 lg:col-span-2">
               <h3 className="text-lg font-semibold mb-4">Actions</h3>
               <div className="flex space-x-3">
-                {(displayOrder.orderStatus === "quote" || displayOrder.orderStatus === "confirmed") && (
+                {(displayOrder.orderStatus === "quote" ||
+                  displayOrder.orderStatus === "confirmed") && (
                   <Button
                     onClick={handleCancelOrder}
                     disabled={isUpdating}
@@ -244,21 +278,19 @@ const OrderDetailsModal = ({ order, orderDetails, isLoading, isOpen, onClose }) 
                     {isUpdating ? "Cancelling..." : "Cancel Order"}
                   </Button>
                 )}
-                
-                {displayOrder.orderStatus === "quote" && displayOrder.paymentStatus === "pending" && (
-                  <Button
-                    onClick={() => {
-                      window.location.href = `/checkout/${displayOrder._id}`;
-                    }}
-                  >
-                    Complete Payment
-                  </Button>
-                )}
-                
-                <Button
-                  onClick={onClose}
-                  variant="outline"
-                >
+
+                {displayOrder.orderStatus === "quote" &&
+                  displayOrder.paymentStatus === "pending" && (
+                    <Button
+                      onClick={() => {
+                        window.location.href = `/checkout/${displayOrder._id}`;
+                      }}
+                    >
+                      Complete Payment
+                    </Button>
+                  )}
+
+                <Button onClick={onClose} variant="outline">
                   Close
                 </Button>
               </div>

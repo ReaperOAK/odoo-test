@@ -100,7 +100,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
   const statusOptions = [
     "quote",
     "confirmed",
-    "in_progress", 
+    "in_progress",
     "completed",
     "cancelled",
     "disputed",
@@ -154,7 +154,9 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 </div>
                 <div>
                   <span className="font-medium">Created:</span>
-                  <span className="ml-2">{formatDate(displayOrder.createdAt)}</span>
+                  <span className="ml-2">
+                    {formatDate(displayOrder.createdAt)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Total Amount:</span>
@@ -174,7 +176,8 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                   <span className="font-medium">Host Earnings:</span>
                   <span className="ml-2">
                     {formatCurrency(
-                      displayOrder.hostEarnings || displayOrder.totalAmount * 0.9
+                      displayOrder.hostEarnings ||
+                        displayOrder.totalAmount * 0.9
                     )}
                   </span>
                 </div>
@@ -187,7 +190,9 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-700">Customer</h4>
-                  <p className="font-medium">{displayOrder.renterId?.name || "N/A"}</p>
+                  <p className="font-medium">
+                    {displayOrder.renterId?.name || "N/A"}
+                  </p>
                   <p className="text-sm text-gray-600">
                     {displayOrder.renterId?.email || "N/A"}
                   </p>
@@ -271,20 +276,40 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 <h3 className="text-lg font-semibold mb-4">Payment History</h3>
                 <div className="space-y-3">
                   {payments.map((payment, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-3"
+                    >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">Payment #{payment._id?.slice(-8)}</p>
-                          <p className="text-sm text-gray-600">Method: {payment.method}</p>
-                          <p className="text-sm">Status: <span className={`px-2 py-1 rounded-full text-xs ${
-                            payment.status === 'paid' ? 'bg-green-100 text-green-800' :
-                            payment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>{payment.status}</span></p>
-                          <p className="text-sm text-gray-600">{formatDate(payment.createdAt)}</p>
+                          <p className="font-medium">
+                            Payment #{payment._id?.slice(-8)}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Method: {payment.method}
+                          </p>
+                          <p className="text-sm">
+                            Status:{" "}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                payment.status === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : payment.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {payment.status}
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {formatDate(payment.createdAt)}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{formatCurrency(payment.amount)}</p>
+                          <p className="font-medium">
+                            {formatCurrency(payment.amount)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -299,21 +324,36 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 <h3 className="text-lg font-semibold mb-4">Reservations</h3>
                 <div className="space-y-3">
                   {reservations.map((reservation, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-3"
+                    >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">{reservation.listingId?.title || 'Unknown Item'}</p>
+                          <p className="font-medium">
+                            {reservation.listingId?.title || "Unknown Item"}
+                          </p>
                           <p className="text-sm text-gray-600">
-                            {formatDate(reservation.start)} - {formatDate(reservation.end)}
+                            {formatDate(reservation.start)} -{" "}
+                            {formatDate(reservation.end)}
                           </p>
                           <p className="text-sm">
-                            Status: <span className={`px-2 py-1 rounded-full text-xs ${
-                              reservation.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                              reservation.status === 'active' ? 'bg-green-100 text-green-800' :
-                              reservation.status === 'returned' ? 'bg-gray-100 text-gray-800' :
-                              reservation.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>{reservation.status}</span>
+                            Status:{" "}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                reservation.status === "confirmed"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : reservation.status === "active"
+                                  ? "bg-green-100 text-green-800"
+                                  : reservation.status === "returned"
+                                  ? "bg-gray-100 text-gray-800"
+                                  : reservation.status === "cancelled"
+                                  ? "bg-red-100 text-red-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {reservation.status}
+                            </span>
                           </p>
                         </div>
                         <div className="text-right">
@@ -332,23 +372,43 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 <h3 className="text-lg font-semibold mb-4">Late Fees</h3>
                 <div className="space-y-3">
                   {lateFees.map((lateFee, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-3">
+                    <div
+                      key={index}
+                      className="border border-gray-200 rounded-lg p-3"
+                    >
                       <div className="flex justify-between items-start">
                         <div>
-                          <p className="font-medium">Late Fee #{lateFee._id?.slice(-8)}</p>
-                          <p className="text-sm text-gray-600">Type: {lateFee.type}</p>
-                          <p className="text-sm text-gray-600">Reason: {lateFee.reason}</p>
-                          <p className="text-sm">
-                            Status: <span className={`px-2 py-1 rounded-full text-xs ${
-                              lateFee.status === 'paid' ? 'bg-green-100 text-green-800' :
-                              lateFee.status === 'waived' ? 'bg-blue-100 text-blue-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>{lateFee.status}</span>
+                          <p className="font-medium">
+                            Late Fee #{lateFee._id?.slice(-8)}
                           </p>
-                          <p className="text-sm text-gray-600">{formatDate(lateFee.createdAt)}</p>
+                          <p className="text-sm text-gray-600">
+                            Type: {lateFee.type}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Reason: {lateFee.reason}
+                          </p>
+                          <p className="text-sm">
+                            Status:{" "}
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                lateFee.status === "paid"
+                                  ? "bg-green-100 text-green-800"
+                                  : lateFee.status === "waived"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {lateFee.status}
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            {formatDate(lateFee.createdAt)}
+                          </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-medium">{formatCurrency(lateFee.amount)}</p>
+                          <p className="font-medium">
+                            {formatCurrency(lateFee.amount)}
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -381,7 +441,9 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                     </select>
                     <Button
                       onClick={handleStatusUpdate}
-                      disabled={isUpdating || newStatus === displayOrder.orderStatus}
+                      disabled={
+                        isUpdating || newStatus === displayOrder.orderStatus
+                      }
                     >
                       {isUpdating ? "Updating..." : "Update"}
                     </Button>

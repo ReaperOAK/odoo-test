@@ -540,8 +540,8 @@ const updateOrderStatus = async (req, res, next) => {
     // Update order
     const previousStatus = order.orderStatus;
     order.orderStatus = status;
-    order.metadata = { 
-      ...order.metadata, 
+    order.metadata = {
+      ...order.metadata,
       adminNotes,
       lastUpdatedBy: req.user.id,
       lastUpdatedAt: new Date(),
