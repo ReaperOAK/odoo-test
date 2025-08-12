@@ -20,24 +20,24 @@ class ReservationService {
       if (!mongoose.Types.ObjectId.isValid(listingId)) {
         throw new Error('Invalid listing ID');
       }
-      
+
       const startDate = new Date(start);
       const endDate = new Date(end);
-      
+
       if (startDate >= endDate) {
         throw new Error('Start date must be before end date');
       }
-      
+
       if (startDate < new Date()) {
         throw new Error('Start date cannot be in the past');
       }
-      
+
       // Get listing to check total quantity
       const listing = await Listing.findById(listingId);
       if (!listing) {
         throw new Error('Listing not found');
       }
-      
+
       if (!listing.canBeBooked()) {
         return {
           available: false,
@@ -47,18 +47,18 @@ class ReservationService {
           reason: 'Listing is not available for booking'
         };
       }
-      
+
       // Get reserved quantity for the period
       const reservedQty = await Reservation.getReservedQuantity(
-        listingId, 
-        startDate, 
-        endDate, 
+        listingId,
+        startDate,
+        endDate,
         excludeOrderId
       );
-      
+
       const availableQty = listing.totalQuantity - reservedQty;
       const isAvailable = availableQty >= requestedQty;
-      
+
       return {
         available: isAvailable,
         availableQty,
@@ -72,7 +72,7 @@ class ReservationService {
       throw error;
     }
   }
-  
+
   /**
    * Create order with atomic reservation transaction
    * @param {Object} orderData - Order data
@@ -82,14 +82,14 @@ class ReservationService {
   static async createOrderAndReserve(orderData, session = null) {
     const sessionLocal = session || await mongoose.startSession();
     let shouldEndSession = !session;
-    
+
     try {
       if (!session) {
         await sessionLocal.startTransaction();
       }
-      
+
       const { renterId, lines, paymentOption = 'deposit' } = orderData;
-      
+
       // Validate all lines first
       for (const line of lines) {
         const availability = await this.checkAvailability(
@@ -98,28 +98,28 @@ class ReservationService {
           line.end,
           line.qty
         );
-        
+
         if (!availability.available) {
           throw new Error(`Insufficient availability for ${availability.listingTitle}. Available: ${availability.availableQty}, Requested: ${line.qty}`);
         }
-        
+
         // Get listing for pricing
         const listing = await Listing.findById(line.listingId).session(sessionLocal);
         if (!listing) {
           throw new Error(`Listing ${line.listingId} not found`);
         }
-        
+
         // Calculate line pricing
         const startDate = new Date(line.start);
         const endDate = new Date(line.end);
         const duration = this.calculateDuration(startDate, endDate, listing.unitType);
-        
+
         line.unitPrice = listing.basePrice;
         line.lineTotal = listing.basePrice * line.qty * duration;
         line.duration = duration;
         line.hostId = listing.ownerId;
       }
-      
+
       // All lines should have the same host for MVP
       const hostId = lines[0].hostId;
       if (!lines.every(line => line.hostId.toString() === hostId.toString())) {
@@ -129,16 +129,16 @@ class ReservationService {
       // Calculate order totals first
       const subtotal = lines.reduce((sum, line) => sum + line.lineTotal, 0);
       const platformCommission = Math.round(subtotal * (process.env.PLATFORM_COMMISSION_PERCENT || 10) / 100);
-      
+
       // Calculate deposit amount based on payment option
       let depositAmount = 0;
       if (paymentOption === 'deposit') {
         depositAmount = await this.calculateTotalDeposit(lines);
       }
-      
+
       const totalAmount = paymentOption === 'full' ? subtotal : depositAmount;
       const remainingAmount = paymentOption === 'full' ? 0 : subtotal - depositAmount;
-      
+
       // Create order first
       const order = new Order({
         renterId,
@@ -153,7 +153,7 @@ class ReservationService {
         paymentStatus: 'pending',
         orderStatus: 'quote'
       });
-      
+
       await order.save({ session: sessionLocal });
 
       // Create reservations with the order ID
@@ -167,27 +167,27 @@ class ReservationService {
           end: new Date(line.end),
           status: 'reserved'
         });
-        
+
         await reservation.save({ session: sessionLocal });
         reservations.push(reservation);
         line.reservationId = reservation._id;
       }
-      
+
       // Update order with reservation IDs
       order.lines = lines;
       await order.save({ session: sessionLocal });
-      
+
       // Add initial timeline entry
       order.addTimelineEntry('order_created', renterId, 'Order created');
       await order.save({ session: sessionLocal });
-      
+
       if (!session) {
         await sessionLocal.commitTransaction();
       }
-      
+
       logger.info(`Order created successfully: ${order._id}`);
       return order;
-      
+
     } catch (error) {
       if (!session && sessionLocal.inTransaction()) {
         await sessionLocal.abortTransaction();
@@ -200,7 +200,7 @@ class ReservationService {
       }
     }
   }
-  
+
   /**
    * Calculate duration based on unit type
    * @param {Date} start - Start date
@@ -210,7 +210,7 @@ class ReservationService {
    */
   static calculateDuration(start, end, unitType) {
     const diffMs = end - start;
-    
+
     switch (unitType) {
       case 'hour':
         return Math.ceil(diffMs / (1000 * 60 * 60));
@@ -222,7 +222,7 @@ class ReservationService {
         return Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // Default to days
     }
   }
-  
+
   /**
    * Calculate total deposit amount for multiple lines
    * @param {Array} lines - Order lines
@@ -230,7 +230,7 @@ class ReservationService {
    */
   static async calculateTotalDeposit(lines) {
     let totalDeposit = 0;
-    
+
     for (const line of lines) {
       const listing = await Listing.findById(line.listingId);
       if (listing) {
@@ -241,10 +241,10 @@ class ReservationService {
         }
       }
     }
-    
+
     return totalDeposit;
   }
-  
+
   /**
    * Find next available slots for a listing
    * @param {string} listingId - Listing ID
@@ -260,17 +260,17 @@ class ReservationService {
       if (!listing) {
         throw new Error('Listing not found');
       }
-      
+
       const suggestions = [];
       let currentStart = new Date(preferredStart);
       const maxDaysToCheck = 30; // Don't check beyond 30 days
-      
+
       for (let day = 0; day < maxDaysToCheck && suggestions.length < limit; day++) {
         const start = new Date(currentStart.getTime() + (day * 24 * 60 * 60 * 1000));
         const end = new Date(start.getTime() + (durationHours * 60 * 60 * 1000));
-        
+
         const availability = await this.checkAvailability(listingId, start, end, requestedQty);
-        
+
         if (availability.available) {
           suggestions.push({
             start,
@@ -279,14 +279,14 @@ class ReservationService {
           });
         }
       }
-      
+
       return suggestions;
     } catch (error) {
       logger.error('Error finding next available slots:', error);
       throw error;
     }
   }
-  
+
   /**
    * Update reservation status
    * @param {string} reservationId - Reservation ID
@@ -301,15 +301,15 @@ class ReservationService {
       if (!reservation) {
         throw new Error('Reservation not found');
       }
-      
+
       const oldStatus = reservation.status;
       reservation.status = newStatus;
-      
+
       // Add status-specific data
       if (newStatus === 'picked' && additionalData.pickupNotes) {
         reservation.pickupNotes = additionalData.pickupNotes;
       }
-      
+
       if (newStatus === 'returned') {
         if (additionalData.returnNotes) {
           reservation.returnNotes = additionalData.returnNotes;
@@ -318,9 +318,9 @@ class ReservationService {
           reservation.damageReport = additionalData.damageReport;
         }
       }
-      
+
       await reservation.save();
-      
+
       // Update order status if needed
       if (reservation.orderId) {
         const order = reservation.orderId;
@@ -329,7 +329,7 @@ class ReservationService {
           actorId,
           `Reservation status changed from ${oldStatus} to ${newStatus}`
         );
-        
+
         // Update order status based on reservation status
         if (newStatus === 'picked' && order.orderStatus === 'confirmed') {
           order.orderStatus = 'in_progress';
@@ -338,13 +338,13 @@ class ReservationService {
         } else if (newStatus === 'disputed') {
           order.orderStatus = 'disputed';
         }
-        
+
         await order.save();
       }
-      
+
       logger.info(`Reservation ${reservationId} status updated from ${oldStatus} to ${newStatus}`);
       return reservation;
-      
+
     } catch (error) {
       logger.error('Error updating reservation status:', error);
       throw error;

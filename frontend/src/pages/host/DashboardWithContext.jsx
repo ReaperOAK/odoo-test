@@ -1,7 +1,15 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useListingsState } from "../../contexts/ListingsStateContext";
-import { Plus, Calendar, DollarSign, Package, Users, Eye, RefreshCw } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  DollarSign,
+  Package,
+  Users,
+  Eye,
+  RefreshCw,
+} from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 
@@ -14,9 +22,9 @@ const HostDashboardWithContext = () => {
     error,
     lastUpdated,
     refreshAll,
-    clearError
+    clearError,
   } = useListingsState();
-  
+
   const [activeTab, setActiveTab] = useState("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -50,14 +58,15 @@ const HostDashboardWithContext = () => {
   };
 
   const formatLastUpdated = (dateString) => {
-    if (!dateString) return '';
+    if (!dateString) return "";
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
-    if (diffInSeconds < 60) return 'just now';
+
+    if (diffInSeconds < 60) return "just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)}h ago`;
     return formatDate(dateString);
   };
 
@@ -103,17 +112,23 @@ const HostDashboardWithContext = () => {
           )}
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleRefresh}
             disabled={isRefreshing || loading.dashboard || loading.hostListings}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${
-              isRefreshing || loading.dashboard || loading.hostListings ? 'animate-spin' : ''
-            }`} />
-            {isRefreshing ? 'Refreshing...' : 'Refresh'}
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${
+                isRefreshing || loading.dashboard || loading.hostListings
+                  ? "animate-spin"
+                  : ""
+              }`}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh"}
           </Button>
-          <Button onClick={() => (window.location.href = "/listings/new-context")}>
+          <Button
+            onClick={() => (window.location.href = "/listings/new-context")}
+          >
             <Plus className="h-4 w-4 mr-2" />
             List New Item (Context)
           </Button>
@@ -125,11 +140,7 @@ const HostDashboardWithContext = () => {
         <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
           <div className="flex justify-between items-center">
             <p className="text-red-600 text-sm">{error.message}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={clearError}
-            >
+            <Button variant="outline" size="sm" onClick={clearError}>
               Dismiss
             </Button>
           </div>
@@ -145,13 +156,13 @@ const HostDashboardWithContext = () => {
                 <Package className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Total Items
-                </p>
+                <p className="text-sm font-medium text-gray-600">Total Items</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {loading.dashboard
                     ? "..."
-                    : dashboardData?.stats?.totalListings || hostListings?.length || 0}
+                    : dashboardData?.stats?.totalListings ||
+                      hostListings?.length ||
+                      0}
                 </p>
               </div>
             </div>
@@ -276,7 +287,10 @@ const HostDashboardWithContext = () => {
                 {loading.dashboard ? (
                   <div className="space-y-3">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="animate-pulse bg-gray-200 h-6 rounded"></div>
+                      <div
+                        key={i}
+                        className="animate-pulse bg-gray-200 h-6 rounded"
+                      ></div>
                     ))}
                   </div>
                 ) : (
@@ -319,7 +333,10 @@ const HostDashboardWithContext = () => {
                 {loading.hostListings ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="animate-pulse bg-gray-200 h-6 rounded"></div>
+                      <div
+                        key={i}
+                        className="animate-pulse bg-gray-200 h-6 rounded"
+                      ></div>
                     ))}
                   </div>
                 ) : (
@@ -327,13 +344,15 @@ const HostDashboardWithContext = () => {
                     <div className="flex justify-between">
                       <span className="text-gray-600">Published Items</span>
                       <span className="font-medium">
-                        {hostListings?.filter(l => l.status === 'published').length || 0}
+                        {hostListings?.filter((l) => l.status === "published")
+                          .length || 0}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Draft Items</span>
                       <span className="font-medium">
-                        {hostListings?.filter(l => l.status === 'draft').length || 0}
+                        {hostListings?.filter((l) => l.status === "draft")
+                          .length || 0}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -417,7 +436,9 @@ const HostDashboardWithContext = () => {
                   List your first item to start earning from rentals.
                 </p>
                 <Button
-                  onClick={() => (window.location.href = "/listings/new-context")}
+                  onClick={() =>
+                    (window.location.href = "/listings/new-context")
+                  }
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   List Your First Item

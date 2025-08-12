@@ -1,11 +1,11 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { listingsAPI } from '../lib/api';
-import Button from '../components/ui/Button';
-import Input from '../components/ui/Input';
-import Card from '../components/ui/Card';
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { listingsAPI } from "../lib/api";
+import Button from "../components/ui/Button";
+import Input from "../components/ui/Input";
+import Card from "../components/ui/Card";
 
 const CreateListing = () => {
   const { user } = useAuth();
@@ -13,22 +13,22 @@ const CreateListing = () => {
   const queryClient = useQueryClient();
 
   // Debug user info
-  console.log('Current user in CreateListing:', user);
-  console.log('User isHost:', user?.isHost);
+  console.log("Current user in CreateListing:", user);
+  console.log("User isHost:", user?.isHost);
 
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: 'electronics',
-    basePrice: '',
-    unitType: 'day',
-    location: '',
-    totalQuantity: '1',
-    depositType: 'percent',
-    depositValue: '20',
-    features: '',
-    rules: '',
-    images: ''
+    title: "",
+    description: "",
+    category: "electronics",
+    basePrice: "",
+    unitType: "day",
+    location: "",
+    totalQuantity: "1",
+    depositType: "percent",
+    depositValue: "20",
+    features: "",
+    rules: "",
+    images: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -36,44 +36,47 @@ const CreateListing = () => {
   const createListingMutation = useMutation({
     mutationFn: listingsAPI.create,
     onSuccess: async (response) => {
-      console.log('Listing created successfully:', response);
-      console.log('Invalidating queries...');
-      
+      console.log("Listing created successfully:", response);
+      console.log("Invalidating queries...");
+
       // Invalidate all related queries to force fresh data
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['hostListings'] }),
-        queryClient.invalidateQueries({ queryKey: ['host-dashboard'] }),
-        queryClient.invalidateQueries({ queryKey: ['host-orders'] }),
-        queryClient.invalidateQueries({ queryKey: ['listings'] }),
+        queryClient.invalidateQueries({ queryKey: ["hostListings"] }),
+        queryClient.invalidateQueries({ queryKey: ["host-dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["host-orders"] }),
+        queryClient.invalidateQueries({ queryKey: ["listings"] }),
       ]);
-      
-      console.log('Queries invalidated, navigating to dashboard...');
-      
+
+      console.log("Queries invalidated, navigating to dashboard...");
+
       // Navigate to dashboard
-      navigate('/host/dashboard');
+      navigate("/host/dashboard");
     },
     onError: (error) => {
-      console.error('Error creating listing:', error);
-      console.error('Error response data:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      const errorMessage = error.response?.data?.message || error.message || 'Failed to create listing';
+      console.error("Error creating listing:", error);
+      console.error("Error response data:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create listing";
       const validationErrors = error.response?.data?.errors || [];
-      console.error('Validation errors:', validationErrors);
+      console.error("Validation errors:", validationErrors);
       setErrors({ submit: errorMessage });
-    }
+    },
   });
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     // Clear error when user starts typing
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
@@ -85,39 +88,39 @@ const CreateListing = () => {
     // Basic validation
     const newErrors = {};
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = "Title is required";
     } else if (formData.title.trim().length < 5) {
-      newErrors.title = 'Title must be at least 5 characters';
+      newErrors.title = "Title must be at least 5 characters";
     } else if (formData.title.trim().length > 200) {
-      newErrors.title = 'Title cannot exceed 200 characters';
+      newErrors.title = "Title cannot exceed 200 characters";
     }
-    
+
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = "Description is required";
     } else if (formData.description.trim().length < 10) {
-      newErrors.description = 'Description must be at least 10 characters';
+      newErrors.description = "Description must be at least 10 characters";
     } else if (formData.description.trim().length > 2000) {
-      newErrors.description = 'Description cannot exceed 2000 characters';
+      newErrors.description = "Description cannot exceed 2000 characters";
     }
-    
+
     if (!formData.location.trim()) {
-      newErrors.location = 'Location is required';
+      newErrors.location = "Location is required";
     } else if (formData.location.trim().length < 2) {
-      newErrors.location = 'Location must be at least 2 characters';
+      newErrors.location = "Location must be at least 2 characters";
     } else if (formData.location.trim().length > 200) {
-      newErrors.location = 'Location cannot exceed 200 characters';
+      newErrors.location = "Location cannot exceed 200 characters";
     }
-    
+
     if (!formData.basePrice || formData.basePrice <= 0) {
-      newErrors.basePrice = 'Valid price is required';
+      newErrors.basePrice = "Valid price is required";
     } else if (formData.basePrice > 1000000) {
-      newErrors.basePrice = 'Price cannot exceed ₹10,00,000';
+      newErrors.basePrice = "Price cannot exceed ₹10,00,000";
     }
-    
+
     if (!formData.totalQuantity || formData.totalQuantity <= 0) {
-      newErrors.totalQuantity = 'Quantity must be at least 1';
+      newErrors.totalQuantity = "Quantity must be at least 1";
     } else if (formData.totalQuantity > 1000) {
-      newErrors.totalQuantity = 'Quantity cannot exceed 1000';
+      newErrors.totalQuantity = "Quantity cannot exceed 1000";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -131,18 +134,33 @@ const CreateListing = () => {
       basePrice: parseFloat(formData.basePrice),
       totalQuantity: parseInt(formData.totalQuantity),
       depositValue: parseFloat(formData.depositValue),
-      features: formData.features ? formData.features.split(',').map(f => f.trim()).filter(f => f) : [],
-      rules: formData.rules ? formData.rules.split(',').map(r => r.trim()).filter(r => r) : [],
-      images: formData.images ? formData.images.split(',').map(img => img.trim()).filter(img => img) : []
+      features: formData.features
+        ? formData.features
+            .split(",")
+            .map((f) => f.trim())
+            .filter((f) => f)
+        : [],
+      rules: formData.rules
+        ? formData.rules
+            .split(",")
+            .map((r) => r.trim())
+            .filter((r) => r)
+        : [],
+      images: formData.images
+        ? formData.images
+            .split(",")
+            .map((img) => img.trim())
+            .filter((img) => img)
+        : [],
     };
 
-    console.log('Submitting listing data:', submitData);
+    console.log("Submitting listing data:", submitData);
     createListingMutation.mutate(submitData);
   };
 
   // Redirect if not a host
   if (user && !user.isHost) {
-    navigate('/');
+    navigate("/");
     return null;
   }
 
@@ -151,14 +169,19 @@ const CreateListing = () => {
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900">List Your Item</h1>
-          <p className="text-gray-600 mt-2">Share your items with others and earn money while they're not in use</p>
+          <p className="text-gray-600 mt-2">
+            Share your items with others and earn money while they're not in use
+          </p>
         </div>
 
         <Card className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Item Title *
               </label>
               <Input
@@ -167,14 +190,19 @@ const CreateListing = () => {
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="Professional DSLR Camera Kit"
-                className={errors.title ? 'border-red-500' : ''}
+                className={errors.title ? "border-red-500" : ""}
               />
-              {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+              {errors.title && (
+                <p className="text-red-500 text-sm mt-1">{errors.title}</p>
+              )}
             </div>
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Description *
               </label>
               <textarea
@@ -185,16 +213,23 @@ const CreateListing = () => {
                 rows={4}
                 placeholder="Describe your item, its condition, what's included, and any special instructions..."
                 className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  errors.description ? 'border-red-500' : ''
+                  errors.description ? "border-red-500" : ""
                 }`}
               />
-              {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.description}
+                </p>
+              )}
             </div>
 
             {/* Category and Location */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="category"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Category *
                 </label>
                 <select
@@ -214,7 +249,10 @@ const CreateListing = () => {
                 </select>
               </div>
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Location *
                 </label>
                 <Input
@@ -223,16 +261,21 @@ const CreateListing = () => {
                   value={formData.location}
                   onChange={handleInputChange}
                   placeholder="City, State"
-                  className={errors.location ? 'border-red-500' : ''}
+                  className={errors.location ? "border-red-500" : ""}
                 />
-                {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
+                {errors.location && (
+                  <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+                )}
               </div>
             </div>
 
             {/* Pricing */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="basePrice" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="basePrice"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Base Price (₹) *
                 </label>
                 <Input
@@ -244,12 +287,19 @@ const CreateListing = () => {
                   value={formData.basePrice}
                   onChange={handleInputChange}
                   placeholder="50"
-                  className={errors.basePrice ? 'border-red-500' : ''}
+                  className={errors.basePrice ? "border-red-500" : ""}
                 />
-                {errors.basePrice && <p className="text-red-500 text-sm mt-1">{errors.basePrice}</p>}
+                {errors.basePrice && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.basePrice}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="unitType" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="unitType"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Price Per *
                 </label>
                 <select
@@ -269,7 +319,10 @@ const CreateListing = () => {
             {/* Quantity and Deposit */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="totalQuantity" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="totalQuantity"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Available Quantity *
                 </label>
                 <Input
@@ -280,12 +333,19 @@ const CreateListing = () => {
                   value={formData.totalQuantity}
                   onChange={handleInputChange}
                   placeholder="1"
-                  className={errors.totalQuantity ? 'border-red-500' : ''}
+                  className={errors.totalQuantity ? "border-red-500" : ""}
                 />
-                {errors.totalQuantity && <p className="text-red-500 text-sm mt-1">{errors.totalQuantity}</p>}
+                {errors.totalQuantity && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.totalQuantity}
+                  </p>
+                )}
               </div>
               <div>
-                <label htmlFor="depositType" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="depositType"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Deposit Type
                 </label>
                 <select
@@ -300,7 +360,10 @@ const CreateListing = () => {
                 </select>
               </div>
               <div>
-                <label htmlFor="depositValue" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="depositValue"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Deposit Value
                 </label>
                 <Input
@@ -308,21 +371,28 @@ const CreateListing = () => {
                   name="depositValue"
                   type="number"
                   min="0"
-                  max={formData.depositType === 'percent' ? "100" : undefined}
+                  max={formData.depositType === "percent" ? "100" : undefined}
                   step="0.01"
                   value={formData.depositValue}
                   onChange={handleInputChange}
-                  placeholder={formData.depositType === 'percent' ? "20" : "500"}
+                  placeholder={
+                    formData.depositType === "percent" ? "20" : "500"
+                  }
                 />
                 <p className="text-sm text-gray-500 mt-1">
-                  {formData.depositType === 'percent' ? 'Percentage of item value' : 'Fixed amount in ₹'}
+                  {formData.depositType === "percent"
+                    ? "Percentage of item value"
+                    : "Fixed amount in ₹"}
                 </p>
               </div>
             </div>
 
             {/* Features */}
             <div>
-              <label htmlFor="features" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="features"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Key Features
               </label>
               <Input
@@ -332,12 +402,17 @@ const CreateListing = () => {
                 onChange={handleInputChange}
                 placeholder="Image Stabilization, 4K Video, Weather Resistant (comma separated)"
               />
-              <p className="text-sm text-gray-500 mt-1">List the main features that make your item attractive</p>
+              <p className="text-sm text-gray-500 mt-1">
+                List the main features that make your item attractive
+              </p>
             </div>
 
             {/* Rules */}
             <div>
-              <label htmlFor="rules" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="rules"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Rental Rules
               </label>
               <textarea
@@ -349,12 +424,17 @@ const CreateListing = () => {
                 placeholder="Handle with care, No water exposure, Return with all accessories (comma separated for multiple rules)"
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <p className="text-sm text-gray-500 mt-1">Set clear expectations for renters</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Set clear expectations for renters
+              </p>
             </div>
 
             {/* Images */}
             <div>
-              <label htmlFor="images" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="images"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Image URLs
               </label>
               <Input
@@ -364,7 +444,9 @@ const CreateListing = () => {
                 onChange={handleInputChange}
                 placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg (comma separated)"
               />
-              <p className="text-sm text-gray-500 mt-1">Add multiple images to showcase your item</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Add multiple images to showcase your item
+              </p>
             </div>
 
             {/* Error message */}
@@ -379,7 +461,7 @@ const CreateListing = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/host/dashboard')}
+                onClick={() => navigate("/host/dashboard")}
                 className="flex-1"
               >
                 Cancel
@@ -389,7 +471,9 @@ const CreateListing = () => {
                 disabled={createListingMutation.isPending}
                 className="flex-1"
               >
-                {createListingMutation.isPending ? 'Creating Listing...' : 'Create Listing'}
+                {createListingMutation.isPending
+                  ? "Creating Listing..."
+                  : "Create Listing"}
               </Button>
             </div>
           </form>

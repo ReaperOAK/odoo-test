@@ -39,34 +39,34 @@ const getAdminDashboard = async (req, res, next) => {
       Listing.countDocuments({ status: 'published' }),
       Order.countDocuments(),
       Order.countDocuments({ orderStatus: 'completed' }),
-      
+
       // Total platform revenue (commission)
       Order.aggregate([
         { $match: { paymentStatus: 'paid' } },
         { $group: { _id: null, total: { $sum: '$platformCommission' } } }
       ]),
-      
+
       // Monthly revenue
       Order.aggregate([
-        { 
-          $match: { 
+        {
+          $match: {
             paymentStatus: 'paid',
             createdAt: { $gte: startOfMonth }
-          } 
+          }
         },
         { $group: { _id: null, total: { $sum: '$platformCommission' } } }
       ]),
-      
+
       Order.countDocuments({ createdAt: { $gte: startOfWeek } }),
       Order.countDocuments({ orderStatus: 'in_progress' }),
       Order.countDocuments({ orderStatus: 'disputed' }),
-      
+
       // Pending payouts
       Payout.aggregate([
         { $match: { status: 'pending' } },
         { $group: { _id: null, total: { $sum: '$amount' } } }
       ]),
-      
+
       // Total processed payouts
       Payout.aggregate([
         { $match: { status: 'processed' } },
@@ -130,39 +130,39 @@ const getAdminDashboard = async (req, res, next) => {
     // Calculate growth metrics
     const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
     const lastMonthEnd = new Date(today.getFullYear(), today.getMonth(), 0);
-    
+
     const [lastMonthUsers, lastMonthOrders, lastMonthRevenue] = await Promise.all([
-      User.countDocuments({ 
+      User.countDocuments({
         createdAt: { $gte: lastMonth, $lte: lastMonthEnd }
       }),
-      Order.countDocuments({ 
+      Order.countDocuments({
         createdAt: { $gte: lastMonth, $lte: lastMonthEnd }
       }),
       Order.aggregate([
-        { 
-          $match: { 
+        {
+          $match: {
             paymentStatus: 'paid',
             createdAt: { $gte: lastMonth, $lte: lastMonthEnd }
-          } 
+          }
         },
         { $group: { _id: null, total: { $sum: '$platformCommission' } } }
       ])
     ]);
 
-    const thisMonthUsers = await User.countDocuments({ 
+    const thisMonthUsers = await User.countDocuments({
       createdAt: { $gte: startOfMonth }
     });
 
     // Calculate growth percentages
-    const userGrowth = lastMonthUsers > 0 ? 
+    const userGrowth = lastMonthUsers > 0 ?
       ((thisMonthUsers - lastMonthUsers) / lastMonthUsers * 100).toFixed(1) : 0;
-    
-    const orderGrowth = lastMonthOrders > 0 ? 
+
+    const orderGrowth = lastMonthOrders > 0 ?
       ((weeklyOrders - lastMonthOrders) / lastMonthOrders * 100).toFixed(1) : 0;
-    
-    const revenueGrowth = (lastMonthRevenue[0]?.total || 0) > 0 ? 
-      (((monthlyRevenue[0]?.total || 0) - (lastMonthRevenue[0]?.total || 0)) / 
-       (lastMonthRevenue[0]?.total || 1) * 100).toFixed(1) : 0;
+
+    const revenueGrowth = (lastMonthRevenue[0]?.total || 0) > 0 ?
+      (((monthlyRevenue[0]?.total || 0) - (lastMonthRevenue[0]?.total || 0)) /
+        (lastMonthRevenue[0]?.total || 1) * 100).toFixed(1) : 0;
 
     logger.info('Fetched admin dashboard statistics', {
       adminId: req.user.id,
@@ -231,7 +231,7 @@ const getUsers = async (req, res, next) => {
     } = req.query;
 
     const query = {};
-    
+
     if (role) {
       if (role === 'host') {
         query.isHost = true;
@@ -262,7 +262,7 @@ const getUsers = async (req, res, next) => {
 
     // Get additional stats for each user
     const userIds = users.map(u => u._id);
-    
+
     const [orderStats, listingStats] = await Promise.all([
       Order.aggregate([
         { $match: { $or: [{ renterId: { $in: userIds } }, { hostId: { $in: userIds } }] } },
@@ -281,7 +281,7 @@ const getUsers = async (req, res, next) => {
           }
         }
       ]),
-      
+
       Listing.aggregate([
         { $match: { ownerId: { $in: userIds } } },
         {
@@ -303,7 +303,7 @@ const getUsers = async (req, res, next) => {
     const usersWithStats = users.map(user => {
       const orders = orderStatsMap.get(user._id.toString()) || {};
       const listings = listingStatsMap.get(user._id.toString()) || {};
-      
+
       return {
         ...user,
         stats: {
@@ -362,11 +362,11 @@ const getOrders = async (req, res, next) => {
     } = req.query;
 
     const query = {};
-    
+
     if (status) {
       query.orderStatus = status;
     }
-    
+
     if (paymentStatus) {
       query.paymentStatus = paymentStatus;
     }
@@ -393,11 +393,11 @@ const getOrders = async (req, res, next) => {
     // Apply search filter after population if needed
     if (search) {
       const searchLower = search.toLowerCase();
-      orders = orders.filter(order => 
+      orders = orders.filter(order =>
         order.renterId.name.toLowerCase().includes(searchLower) ||
         order.renterId.email.toLowerCase().includes(searchLower) ||
         order.hostId.name.toLowerCase().includes(searchLower) ||
-        order.lines.some(line => 
+        order.lines.some(line =>
           line.listingId.title.toLowerCase().includes(searchLower)
         )
       );
@@ -445,7 +445,7 @@ const getPayouts = async (req, res, next) => {
     } = req.query;
 
     const query = {};
-    
+
     if (status) {
       query.status = status;
     }
@@ -531,7 +531,7 @@ const processPayout = async (req, res, next) => {
 
     // Start transaction
     const session = await mongoose.startSession();
-    
+
     try {
       await session.withTransaction(async () => {
         // Update payout status
@@ -704,7 +704,7 @@ const resolveDispute = async (req, res, next) => {
 
     // Start transaction
     const session = await mongoose.startSession();
-    
+
     try {
       await session.withTransaction(async () => {
         // Update order status
@@ -762,10 +762,10 @@ const resolveDispute = async (req, res, next) => {
 const getAnalytics = async (req, res, next) => {
   try {
     const { period = '30d' } = req.query;
-    
+
     let startDate;
     const endDate = new Date();
-    
+
     switch (period) {
       case '7d':
         startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -885,23 +885,23 @@ const getAnalytics = async (req, res, next) => {
 const getSystemHealth = async (req, res, next) => {
   try {
     const startTime = Date.now();
-    
+
     // Test database connection
     const dbStatus = await mongoose.connection.db.admin().ping();
     const dbResponseTime = Date.now() - startTime;
-    
+
     // Get system stats
     const totalCollections = await mongoose.connection.db.listCollections().toArray();
     const dbStats = await mongoose.connection.db.stats();
-    
+
     // Calculate storage usage percentage (assuming 1GB limit for demo)
     const storageLimit = 1024 * 1024 * 1024; // 1GB in bytes
     const storageUsed = dbStats.dataSize || 0;
     const storagePercentage = Math.round((storageUsed / storageLimit) * 100);
-    
+
     // Mock payment gateway status (would be real in production)
     const paymentGatewayStatus = 'connected';
-    
+
     res.json({
       success: true,
       data: {

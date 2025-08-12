@@ -1,28 +1,28 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminAPI } from '../../lib/api';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminAPI } from "../../lib/api";
+import Button from "../ui/Button";
+import Card from "../ui/Card";
 
 const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState("");
   const [processingData, setProcessingData] = useState({
-    bankAccount: '',
-    transactionRef: '',
+    bankAccount: "",
+    transactionRef: "",
     processingFee: 0,
   });
-  
+
   const queryClient = useQueryClient();
 
   const processPayoutMutation = useMutation({
     mutationFn: (data) => adminAPI.processPayout(payout._id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['admin', 'payouts']);
+      queryClient.invalidateQueries(["admin", "payouts"]);
       onUpdate?.();
       onClose();
     },
     onError: (error) => {
-      console.error('Failed to process payout:', error);
+      console.error("Failed to process payout:", error);
     },
   });
 
@@ -30,7 +30,7 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
     processPayoutMutation.mutate({
       ...processingData,
       adminNotes: notes,
-      status: 'processing'
+      status: "processing",
     });
   };
 
@@ -38,14 +38,14 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
     processPayoutMutation.mutate({
       ...processingData,
       adminNotes: notes,
-      status: 'completed'
+      status: "completed",
     });
   };
 
   const handleRejectPayout = () => {
     processPayoutMutation.mutate({
       adminNotes: notes,
-      status: 'rejected'
+      status: "rejected",
     });
   };
 
@@ -75,31 +75,44 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
               <div className="space-y-3">
                 <div>
                   <span className="font-medium">Payout ID:</span>
-                  <span className="ml-2 font-mono">#{payout._id?.slice(-8)}</span>
+                  <span className="ml-2 font-mono">
+                    #{payout._id?.slice(-8)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                    payout.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    payout.status === 'processing' ? 'bg-blue-100 text-blue-800' :
-                    payout.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span
+                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      payout.status === "completed"
+                        ? "bg-green-100 text-green-800"
+                        : payout.status === "processing"
+                        ? "bg-blue-100 text-blue-800"
+                        : payout.status === "rejected"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
                     {payout.status}
                   </span>
                 </div>
                 <div>
                   <span className="font-medium">Amount:</span>
-                  <span className="ml-2 font-semibold text-lg">{formatCurrency(payout.amount)}</span>
+                  <span className="ml-2 font-semibold text-lg">
+                    {formatCurrency(payout.amount)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Processing Fee:</span>
-                  <span className="ml-2">{formatCurrency(payout.processingFee || 0)}</span>
+                  <span className="ml-2">
+                    {formatCurrency(payout.processingFee || 0)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Net Amount:</span>
                   <span className="ml-2 font-semibold">
-                    {formatCurrency((payout.amount || 0) - (payout.processingFee || 0))}
+                    {formatCurrency(
+                      (payout.amount || 0) - (payout.processingFee || 0)
+                    )}
                   </span>
                 </div>
                 <div>
@@ -113,7 +126,9 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                 {payout.processedAt && (
                   <div>
                     <span className="font-medium">Processed:</span>
-                    <span className="ml-2">{formatDate(payout.processedAt)}</span>
+                    <span className="ml-2">
+                      {formatDate(payout.processedAt)}
+                    </span>
                   </div>
                 )}
               </div>
@@ -144,7 +159,8 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                 <div>
                   <span className="font-medium">Period:</span>
                   <span className="ml-2">
-                    {formatDate(payout.periodStart)} - {formatDate(payout.periodEnd)}
+                    {formatDate(payout.periodStart)} -{" "}
+                    {formatDate(payout.periodEnd)}
                   </span>
                 </div>
               </div>
@@ -153,7 +169,9 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
             {/* Orders Included */}
             {payout.orders && payout.orders.length > 0 && (
               <Card className="p-4 lg:col-span-2">
-                <h3 className="text-lg font-semibold mb-4">Orders Included in Payout</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Orders Included in Payout
+                </h3>
                 <div className="max-h-64 overflow-y-auto">
                   <table className="w-full text-sm">
                     <thead>
@@ -168,11 +186,19 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                     <tbody>
                       {payout.orders.map((order, index) => (
                         <tr key={index} className="border-b">
-                          <td className="py-2 font-mono">#{order._id?.slice(-6)}</td>
+                          <td className="py-2 font-mono">
+                            #{order._id?.slice(-6)}
+                          </td>
                           <td className="py-2">{order.customerName}</td>
-                          <td className="py-2">{formatDate(order.completedAt)}</td>
-                          <td className="py-2">{formatCurrency(order.totalAmount)}</td>
-                          <td className="py-2 font-medium">{formatCurrency(order.hostEarnings)}</td>
+                          <td className="py-2">
+                            {formatDate(order.completedAt)}
+                          </td>
+                          <td className="py-2">
+                            {formatCurrency(order.totalAmount)}
+                          </td>
+                          <td className="py-2 font-medium">
+                            {formatCurrency(order.hostEarnings)}
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -182,10 +208,10 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
             )}
 
             {/* Processing Actions */}
-            {payout.status === 'pending' && (
+            {payout.status === "pending" && (
               <Card className="p-4 lg:col-span-2">
                 <h3 className="text-lg font-semibold mb-4">Process Payout</h3>
-                
+
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -195,10 +221,12 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                       <input
                         type="text"
                         value={processingData.bankAccount}
-                        onChange={(e) => setProcessingData(prev => ({
-                          ...prev,
-                          bankAccount: e.target.value
-                        }))}
+                        onChange={(e) =>
+                          setProcessingData((prev) => ({
+                            ...prev,
+                            bankAccount: e.target.value,
+                          }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Enter bank account or UPI ID"
                       />
@@ -210,10 +238,12 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                       <input
                         type="text"
                         value={processingData.transactionRef}
-                        onChange={(e) => setProcessingData(prev => ({
-                          ...prev,
-                          transactionRef: e.target.value
-                        }))}
+                        onChange={(e) =>
+                          setProcessingData((prev) => ({
+                            ...prev,
+                            transactionRef: e.target.value,
+                          }))
+                        }
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="Transaction reference number"
                       />
@@ -228,10 +258,12 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                       type="number"
                       step="0.01"
                       value={processingData.processingFee}
-                      onChange={(e) => setProcessingData(prev => ({
-                        ...prev,
-                        processingFee: parseFloat(e.target.value) || 0
-                      }))}
+                      onChange={(e) =>
+                        setProcessingData((prev) => ({
+                          ...prev,
+                          processingFee: parseFloat(e.target.value) || 0,
+                        }))
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
@@ -259,7 +291,10 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                     </Button>
                     <Button
                       onClick={handleCompletePayout}
-                      disabled={processPayoutMutation.isPending || !processingData.transactionRef}
+                      disabled={
+                        processPayoutMutation.isPending ||
+                        !processingData.transactionRef
+                      }
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
                       Complete Payout
@@ -290,11 +325,15 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
             {/* Transaction Details */}
             {payout.transactionRef && (
               <Card className="p-4 lg:col-span-2">
-                <h3 className="text-lg font-semibold mb-4">Transaction Details</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Transaction Details
+                </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <span className="font-medium">Transaction Ref:</span>
-                    <span className="ml-2 font-mono">{payout.transactionRef}</span>
+                    <span className="ml-2 font-mono">
+                      {payout.transactionRef}
+                    </span>
                   </div>
                   {payout.bankAccount && (
                     <div>

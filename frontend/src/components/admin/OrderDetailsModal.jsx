@@ -1,64 +1,64 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminAPI } from '../../lib/api';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminAPI } from "../../lib/api";
+import Button from "../ui/Button";
+import Card from "../ui/Card";
 
 const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
-  const [notes, setNotes] = useState('');
-  const [newStatus, setNewStatus] = useState(order?.orderStatus || '');
-  
+  const [notes, setNotes] = useState("");
+  const [newStatus, setNewStatus] = useState(order?.orderStatus || "");
+
   const queryClient = useQueryClient();
 
   const updateOrderMutation = useMutation({
     mutationFn: (data) => adminAPI.updateOrderStatus(order._id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['admin', 'orders']);
+      queryClient.invalidateQueries(["admin", "orders"]);
       onUpdate?.();
       onClose();
     },
     onError: (error) => {
-      console.error('Failed to update order:', error);
+      console.error("Failed to update order:", error);
     },
   });
 
   const resolveDisputeMutation = useMutation({
     mutationFn: (data) => adminAPI.resolveDispute(order._id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['admin', 'orders']);
+      queryClient.invalidateQueries(["admin", "orders"]);
       onUpdate?.();
       onClose();
     },
     onError: (error) => {
-      console.error('Failed to resolve dispute:', error);
+      console.error("Failed to resolve dispute:", error);
     },
   });
 
   const handleStatusUpdate = () => {
     updateOrderMutation.mutate({
       status: newStatus,
-      adminNotes: notes
+      adminNotes: notes,
     });
   };
 
   const handleResolveDispute = (resolution) => {
     resolveDisputeMutation.mutate({
       resolution,
-      adminNotes: notes
+      adminNotes: notes,
     });
   };
 
   if (!isOpen || !order) return null;
 
   const statusOptions = [
-    'pending',
-    'confirmed',
-    'payment_pending',
-    'paid',
-    'in_progress',
-    'completed',
-    'cancelled',
-    'disputed'
+    "pending",
+    "confirmed",
+    "payment_pending",
+    "paid",
+    "in_progress",
+    "completed",
+    "cancelled",
+    "disputed",
   ];
 
   const formatCurrency = (amount) => `₹${amount?.toLocaleString()}`;
@@ -85,17 +85,25 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
               <div className="space-y-3">
                 <div>
                   <span className="font-medium">Order ID:</span>
-                  <span className="ml-2 font-mono">#{order._id?.slice(-8)}</span>
+                  <span className="ml-2 font-mono">
+                    #{order._id?.slice(-8)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Status:</span>
-                  <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
-                    order.orderStatus === 'completed' ? 'bg-green-100 text-green-800' :
-                    order.orderStatus === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                    order.orderStatus === 'cancelled' ? 'bg-red-100 text-red-800' :
-                    order.orderStatus === 'disputed' ? 'bg-orange-100 text-orange-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span
+                    className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      order.orderStatus === "completed"
+                        ? "bg-green-100 text-green-800"
+                        : order.orderStatus === "confirmed"
+                        ? "bg-blue-100 text-blue-800"
+                        : order.orderStatus === "cancelled"
+                        ? "bg-red-100 text-red-800"
+                        : order.orderStatus === "disputed"
+                        ? "bg-orange-100 text-orange-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
                     {order.orderStatus}
                   </span>
                 </div>
@@ -105,15 +113,25 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 </div>
                 <div>
                   <span className="font-medium">Total Amount:</span>
-                  <span className="ml-2 font-semibold">{formatCurrency(order.totalAmount)}</span>
+                  <span className="ml-2 font-semibold">
+                    {formatCurrency(order.totalAmount)}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Platform Commission:</span>
-                  <span className="ml-2">{formatCurrency(order.platformFee || order.totalAmount * 0.1)}</span>
+                  <span className="ml-2">
+                    {formatCurrency(
+                      order.platformFee || order.totalAmount * 0.1
+                    )}
+                  </span>
                 </div>
                 <div>
                   <span className="font-medium">Host Earnings:</span>
-                  <span className="ml-2">{formatCurrency(order.hostEarnings || order.totalAmount * 0.9)}</span>
+                  <span className="ml-2">
+                    {formatCurrency(
+                      order.hostEarnings || order.totalAmount * 0.9
+                    )}
+                  </span>
                 </div>
               </div>
             </Card>
@@ -124,18 +142,30 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
               <div className="space-y-4">
                 <div>
                   <h4 className="font-medium text-gray-700">Customer</h4>
-                  <p className="font-medium">{order.renterId?.name || 'N/A'}</p>
-                  <p className="text-sm text-gray-600">{order.renterId?.email || 'N/A'}</p>
+                  <p className="font-medium">{order.renterId?.name || "N/A"}</p>
+                  <p className="text-sm text-gray-600">
+                    {order.renterId?.email || "N/A"}
+                  </p>
                   {order.renterId?.phone && (
-                    <p className="text-sm text-gray-600">{order.renterId.phone}</p>
+                    <p className="text-sm text-gray-600">
+                      {order.renterId.phone}
+                    </p>
                   )}
                 </div>
                 <div>
                   <h4 className="font-medium text-gray-700">Host</h4>
-                  <p className="font-medium">{order.hostId?.name || order.hostId?.hostProfile?.displayName || 'N/A'}</p>
-                  <p className="text-sm text-gray-600">{order.hostId?.email || 'N/A'}</p>
+                  <p className="font-medium">
+                    {order.hostId?.name ||
+                      order.hostId?.hostProfile?.displayName ||
+                      "N/A"}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    {order.hostId?.email || "N/A"}
+                  </p>
                   {order.hostId?.phone && (
-                    <p className="text-sm text-gray-600">{order.hostId.phone}</p>
+                    <p className="text-sm text-gray-600">
+                      {order.hostId.phone}
+                    </p>
                   )}
                 </div>
               </div>
@@ -146,22 +176,35 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
               <h3 className="text-lg font-semibold mb-4">Order Items</h3>
               <div className="space-y-3">
                 {order.lines?.map((line, index) => (
-                  <div key={index} className="border border-gray-200 rounded-lg p-3">
+                  <div
+                    key={index}
+                    className="border border-gray-200 rounded-lg p-3"
+                  >
                     <div className="flex justify-between items-start">
                       <div>
-                        <h4 className="font-medium">{line.listingId?.title || 'Item'}</h4>
-                        <p className="text-sm text-gray-600">{line.listingId?.category || 'Category'}</p>
-                        <p className="text-sm">
-                          Quantity: {line.qty} | 
-                          Duration: {Math.ceil((new Date(line.end) - new Date(line.start)) / (1000 * 60 * 60 * 24))} days
+                        <h4 className="font-medium">
+                          {line.listingId?.title || "Item"}
+                        </h4>
+                        <p className="text-sm text-gray-600">
+                          {line.listingId?.category || "Category"}
                         </p>
                         <p className="text-sm">
-                          From: {formatDate(line.start)} | 
-                          To: {formatDate(line.end)}
+                          Quantity: {line.qty} | Duration:{" "}
+                          {Math.ceil(
+                            (new Date(line.end) - new Date(line.start)) /
+                              (1000 * 60 * 60 * 24)
+                          )}{" "}
+                          days
+                        </p>
+                        <p className="text-sm">
+                          From: {formatDate(line.start)} | To:{" "}
+                          {formatDate(line.end)}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">{formatCurrency(line.lineTotal)}</p>
+                        <p className="font-medium">
+                          {formatCurrency(line.lineTotal)}
+                        </p>
                         <p className="text-sm text-gray-600">
                           {formatCurrency(line.unitPrice)}/day
                         </p>
@@ -170,7 +213,9 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                   </div>
                 ))}
                 {(!order.lines || order.lines.length === 0) && (
-                  <p className="text-gray-500 text-center py-4">No items in this order</p>
+                  <p className="text-gray-500 text-center py-4">
+                    No items in this order
+                  </p>
                 )}
               </div>
             </Card>
@@ -178,7 +223,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
             {/* Admin Actions */}
             <Card className="p-4 lg:col-span-2">
               <h3 className="text-lg font-semibold mb-4">Admin Actions</h3>
-              
+
               <div className="space-y-4">
                 {/* Status Update */}
                 <div>
@@ -191,15 +236,18 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                       onChange={(e) => setNewStatus(e.target.value)}
                       className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                      {statusOptions.map(status => (
+                      {statusOptions.map((status) => (
                         <option key={status} value={status}>
-                          {status.replace('_', ' ').toUpperCase()}
+                          {status.replace("_", " ").toUpperCase()}
                         </option>
                       ))}
                     </select>
                     <Button
                       onClick={handleStatusUpdate}
-                      disabled={updateOrderMutation.isPending || newStatus === order.orderStatus}
+                      disabled={
+                        updateOrderMutation.isPending ||
+                        newStatus === order.orderStatus
+                      }
                     >
                       Update
                     </Button>
@@ -207,7 +255,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                 </div>
 
                 {/* Dispute Resolution */}
-                {order.orderStatus === 'disputed' && (
+                {order.orderStatus === "disputed" && (
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Dispute Resolution
@@ -215,7 +263,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                     <div className="flex space-x-3">
                       <Button
                         variant="outline"
-                        onClick={() => handleResolveDispute('favor_customer')}
+                        onClick={() => handleResolveDispute("favor_customer")}
                         disabled={resolveDisputeMutation.isPending}
                         className="bg-green-50 text-green-700 border-green-200"
                       >
@@ -223,7 +271,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => handleResolveDispute('favor_host')}
+                        onClick={() => handleResolveDispute("favor_host")}
                         disabled={resolveDisputeMutation.isPending}
                         className="bg-blue-50 text-blue-700 border-blue-200"
                       >
@@ -231,7 +279,7 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => handleResolveDispute('split_decision')}
+                        onClick={() => handleResolveDispute("split_decision")}
                         disabled={resolveDisputeMutation.isPending}
                         className="bg-purple-50 text-purple-700 border-purple-200"
                       >

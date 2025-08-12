@@ -42,7 +42,7 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       'http://localhost:5000',
       'http://localhost:5173',
@@ -51,12 +51,12 @@ const corsOptions = {
       'http://localhost:5174',
       'http://127.0.0.1:5174'
     ];
-    
+
     // In production, add your actual frontend URLs
     if (process.env.NODE_ENV === 'production') {
       allowedOrigins.push(process.env.FRONTEND_URL);
     }
-    
+
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
@@ -136,16 +136,16 @@ const connectDB = async () => {
 // Graceful shutdown
 const gracefulShutdown = (signal) => {
   logger.info(`Received ${signal}. Shutting down gracefully...`);
-  
+
   server.close(() => {
     logger.info('HTTP server closed.');
-    
+
     mongoose.connection.close(false, () => {
       logger.info('MongoDB connection closed.');
       process.exit(0);
     });
   });
-  
+
   // Force close after 10 seconds
   setTimeout(() => {
     logger.error('Could not close connections in time, forcefully shutting down');
@@ -177,11 +177,11 @@ const startServer = async () => {
   try {
     // Connect to database
     await connectDB();
-    
+
     // Start HTTP server
     server = app.listen(PORT, () => {
       logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-      
+
       // Log configuration info
       logger.info('Configuration:', {
         nodeEnv: process.env.NODE_ENV,
@@ -192,15 +192,15 @@ const startServer = async () => {
         paymentMode: process.env.PAYMENT_MODE || 'razorpay'
       });
     });
-    
+
     // Handle server errors
     server.on('error', (error) => {
       if (error.syscall !== 'listen') {
         throw error;
       }
-      
+
       const bind = typeof PORT === 'string' ? 'Pipe ' + PORT : 'Port ' + PORT;
-      
+
       switch (error.code) {
         case 'EACCES':
           logger.error(`${bind} requires elevated privileges`);
@@ -214,7 +214,7 @@ const startServer = async () => {
           throw error;
       }
     });
-    
+
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);

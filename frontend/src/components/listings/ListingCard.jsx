@@ -36,12 +36,12 @@ const ListingCard = ({ listing }) => {
   const getCategoryColor = (category) => {
     const colors = {
       electronics: "bg-blue-100 text-blue-800",
-      vehicles: "bg-green-100 text-green-800", 
+      vehicles: "bg-green-100 text-green-800",
       sports: "bg-orange-100 text-orange-800",
       music: "bg-purple-100 text-purple-800",
       tools: "bg-gray-100 text-gray-800",
       furniture: "bg-yellow-100 text-yellow-800",
-      other: "bg-slate-100 text-slate-800"
+      other: "bg-slate-100 text-slate-800",
     };
     return colors[category] || colors.other;
   };
@@ -56,7 +56,11 @@ const ListingCard = ({ listing }) => {
             className="w-full h-48 object-cover rounded-t-lg"
           />
           <div className="absolute top-2 left-2">
-            <span className={`px-2 py-1 rounded-md text-xs font-medium ${getCategoryColor(category)}`}>
+            <span
+              className={`px-2 py-1 rounded-md text-xs font-medium ${getCategoryColor(
+                category
+              )}`}
+            >
               {category?.charAt(0).toUpperCase() + category?.slice(1)}
             </span>
           </div>
@@ -87,8 +91,12 @@ const ListingCard = ({ listing }) => {
             {features && features.length > 0 && (
               <div className="flex items-center text-sm text-gray-600">
                 <Star className="h-4 w-4 mr-1 text-yellow-500" />
-                <span className="truncate">{features.slice(0, 2).join(", ")}</span>
-                {features.length > 2 && <span className="ml-1">+{features.length - 2} more</span>}
+                <span className="truncate">
+                  {features.slice(0, 2).join(", ")}
+                </span>
+                {features.length > 2 && (
+                  <span className="ml-1">+{features.length - 2} more</span>
+                )}
               </div>
             )}
 

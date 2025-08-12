@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
-import Button from '../ui/Button';
-import { Menu, X, User, Home, Calendar, Settings, LogOut } from 'lucide-react';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import Button from "../ui/Button";
+import { Menu, X, User, Home, Calendar, Settings, LogOut } from "lucide-react";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -12,7 +12,7 @@ const Header = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
     setIsUserMenuOpen(false);
   };
 
@@ -30,21 +30,33 @@ const Header = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <Link to="/" className="text-gray-600 hover:text-gray-900 font-medium">
+            <Link
+              to="/"
+              className="text-gray-600 hover:text-gray-900 font-medium"
+            >
               Browse
             </Link>
             {isAuthenticated && (
-              <Link to="/my-bookings" className="text-gray-600 hover:text-gray-900 font-medium">
+              <Link
+                to="/my-bookings"
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
                 My Bookings
               </Link>
             )}
             {isHost && (
-              <Link to="/host/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
+              <Link
+                to="/host/dashboard"
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
                 Owner Dashboard
               </Link>
             )}
             {isAdmin && (
-              <Link to="/admin/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">
+              <Link
+                to="/admin/dashboard"
+                className="text-gray-600 hover:text-gray-900 font-medium"
+              >
                 Admin
               </Link>
             )}
@@ -62,7 +74,7 @@ const Header = () => {
                     <User className="h-4 w-4" />
                   </div>
                   <span className="hidden sm:block text-sm font-medium">
-                    {user?.name || 'User'}
+                    {user?.name || "User"}
                   </span>
                 </button>
 
@@ -100,12 +112,10 @@ const Header = () => {
               </div>
             ) : (
               <div className="flex items-center space-x-2">
-                <Button variant="ghost" onClick={() => navigate('/login')}>
+                <Button variant="ghost" onClick={() => navigate("/login")}>
                   Login
                 </Button>
-                <Button onClick={() => navigate('/register')}>
-                  Sign Up
-                </Button>
+                <Button onClick={() => navigate("/register")}>Sign Up</Button>
               </div>
             )}
 
@@ -114,7 +124,11 @@ const Header = () => {
               className="md:hidden p-2 rounded-md hover:bg-gray-100"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>

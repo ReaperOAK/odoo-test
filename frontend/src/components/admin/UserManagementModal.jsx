@@ -1,14 +1,14 @@
-import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminAPI } from '../../lib/api';
-import Button from '../ui/Button';
-import Input from '../ui/Input';
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminAPI } from "../../lib/api";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
 
 const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    role: user?.role || 'customer',
+    name: user?.name || "",
+    email: user?.email || "",
+    role: user?.role || "customer",
     isHost: user?.isHost || false,
     isVerified: user?.isVerified || false,
     isActive: user?.isActive !== false,
@@ -19,12 +19,12 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
   const updateUserMutation = useMutation({
     mutationFn: (data) => adminAPI.updateUser(user._id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['admin', 'users']);
+      queryClient.invalidateQueries(["admin", "users"]);
       onUpdate?.();
       onClose();
     },
     onError: (error) => {
-      console.error('Failed to update user:', error);
+      console.error("Failed to update user:", error);
     },
   });
 
@@ -35,9 +35,9 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -147,7 +147,7 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
               disabled={updateUserMutation.isPending}
               className="flex-1"
             >
-              {updateUserMutation.isPending ? 'Saving...' : 'Save Changes'}
+              {updateUserMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

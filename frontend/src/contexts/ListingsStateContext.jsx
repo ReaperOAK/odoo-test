@@ -1,18 +1,24 @@
-import { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { useAuth } from './AuthContext';
-import { listingsAPI, hostAPI } from '../lib/api';
+import {
+  createContext,
+  useContext,
+  useReducer,
+  useCallback,
+  useEffect,
+} from "react";
+import { useAuth } from "./AuthContext";
+import { listingsAPI, hostAPI } from "../lib/api";
 
 // Action types
 const ACTIONS = {
-  SET_LOADING: 'SET_LOADING',
-  SET_ERROR: 'SET_ERROR',
-  SET_LISTINGS: 'SET_LISTINGS',
-  SET_HOST_LISTINGS: 'SET_HOST_LISTINGS',
-  SET_HOST_DASHBOARD: 'SET_HOST_DASHBOARD',
-  ADD_LISTING: 'ADD_LISTING',
-  UPDATE_LISTING: 'UPDATE_LISTING',
-  DELETE_LISTING: 'DELETE_LISTING',
-  CLEAR_ERROR: 'CLEAR_ERROR',
+  SET_LOADING: "SET_LOADING",
+  SET_ERROR: "SET_ERROR",
+  SET_LISTINGS: "SET_LISTINGS",
+  SET_HOST_LISTINGS: "SET_HOST_LISTINGS",
+  SET_HOST_DASHBOARD: "SET_HOST_DASHBOARD",
+  ADD_LISTING: "ADD_LISTING",
+  UPDATE_LISTING: "UPDATE_LISTING",
+  DELETE_LISTING: "DELETE_LISTING",
+  CLEAR_ERROR: "CLEAR_ERROR",
 };
 
 // Initial state
@@ -96,13 +102,16 @@ const listingsReducer = (state, action) => {
         ...state,
         listings: [action.payload, ...state.listings],
         hostListings: [action.payload, ...state.hostListings],
-        dashboardData: state.dashboardData ? {
-          ...state.dashboardData,
-          stats: {
-            ...state.dashboardData.stats,
-            totalListings: (state.dashboardData.stats?.totalListings || 0) + 1,
-          },
-        } : null,
+        dashboardData: state.dashboardData
+          ? {
+              ...state.dashboardData,
+              stats: {
+                ...state.dashboardData.stats,
+                totalListings:
+                  (state.dashboardData.stats?.totalListings || 0) + 1,
+              },
+            }
+          : null,
         loading: {
           ...state.loading,
           create: false,
@@ -113,11 +122,15 @@ const listingsReducer = (state, action) => {
     case ACTIONS.UPDATE_LISTING:
       return {
         ...state,
-        listings: state.listings.map(listing => 
-          listing._id === action.payload._id ? { ...listing, ...action.payload } : listing
+        listings: state.listings.map((listing) =>
+          listing._id === action.payload._id
+            ? { ...listing, ...action.payload }
+            : listing
         ),
-        hostListings: state.hostListings.map(listing => 
-          listing._id === action.payload._id ? { ...listing, ...action.payload } : listing
+        hostListings: state.hostListings.map((listing) =>
+          listing._id === action.payload._id
+            ? { ...listing, ...action.payload }
+            : listing
         ),
         lastUpdated: new Date().toISOString(),
       };
@@ -125,15 +138,24 @@ const listingsReducer = (state, action) => {
     case ACTIONS.DELETE_LISTING:
       return {
         ...state,
-        listings: state.listings.filter(listing => listing._id !== action.payload),
-        hostListings: state.hostListings.filter(listing => listing._id !== action.payload),
-        dashboardData: state.dashboardData ? {
-          ...state.dashboardData,
-          stats: {
-            ...state.dashboardData.stats,
-            totalListings: Math.max((state.dashboardData.stats?.totalListings || 1) - 1, 0),
-          },
-        } : null,
+        listings: state.listings.filter(
+          (listing) => listing._id !== action.payload
+        ),
+        hostListings: state.hostListings.filter(
+          (listing) => listing._id !== action.payload
+        ),
+        dashboardData: state.dashboardData
+          ? {
+              ...state.dashboardData,
+              stats: {
+                ...state.dashboardData.stats,
+                totalListings: Math.max(
+                  (state.dashboardData.stats?.totalListings || 1) - 1,
+                  0
+                ),
+              },
+            }
+          : null,
         lastUpdated: new Date().toISOString(),
       };
 
@@ -148,7 +170,9 @@ const ListingsStateContext = createContext();
 export const useListingsState = () => {
   const context = useContext(ListingsStateContext);
   if (!context) {
-    throw new Error('useListingsState must be used within a ListingsStateProvider');
+    throw new Error(
+      "useListingsState must be used within a ListingsStateProvider"
+    );
   }
   return context;
 };
@@ -161,7 +185,8 @@ export const ListingsStateProvider = ({ children }) => {
   // Helper function to handle API errors
   const handleError = useCallback((error, key) => {
     console.error(`Error in ${key}:`, error);
-    const errorMessage = error.response?.data?.message || error.message || `Failed to ${key}`;
+    const errorMessage =
+      error.response?.data?.message || error.message || `Failed to ${key}`;
     dispatch({
       type: ACTIONS.SET_ERROR,
       payload: { message: errorMessage, key },
@@ -169,27 +194,36 @@ export const ListingsStateProvider = ({ children }) => {
   }, []);
 
   // Fetch all listings
-  const fetchListings = useCallback(async (filters = {}) => {
-    dispatch({ type: ACTIONS.SET_LOADING, payload: { key: 'listings', value: true } });
-    dispatch({ type: ACTIONS.CLEAR_ERROR });
-
-    try {
-      const response = await listingsAPI.getAll(filters);
+  const fetchListings = useCallback(
+    async (filters = {}) => {
       dispatch({
-        type: ACTIONS.SET_LISTINGS,
-        payload: response.data.listings,
+        type: ACTIONS.SET_LOADING,
+        payload: { key: "listings", value: true },
       });
-      console.log('Fetched listings:', response.data.listings.length);
-    } catch (error) {
-      handleError(error, 'listings');
-    }
-  }, [handleError]);
+      dispatch({ type: ACTIONS.CLEAR_ERROR });
+
+      try {
+        const response = await listingsAPI.getAll(filters);
+        dispatch({
+          type: ACTIONS.SET_LISTINGS,
+          payload: response.data.listings,
+        });
+        console.log("Fetched listings:", response.data.listings.length);
+      } catch (error) {
+        handleError(error, "listings");
+      }
+    },
+    [handleError]
+  );
 
   // Fetch host listings
   const fetchHostListings = useCallback(async () => {
     if (!user?.isHost) return;
-    
-    dispatch({ type: ACTIONS.SET_LOADING, payload: { key: 'hostListings', value: true } });
+
+    dispatch({
+      type: ACTIONS.SET_LOADING,
+      payload: { key: "hostListings", value: true },
+    });
     dispatch({ type: ACTIONS.CLEAR_ERROR });
 
     try {
@@ -198,17 +232,20 @@ export const ListingsStateProvider = ({ children }) => {
         type: ACTIONS.SET_HOST_LISTINGS,
         payload: response.data.listings,
       });
-      console.log('Fetched host listings:', response.data.listings.length);
+      console.log("Fetched host listings:", response.data.listings.length);
     } catch (error) {
-      handleError(error, 'hostListings');
+      handleError(error, "hostListings");
     }
   }, [user?.isHost, handleError]);
 
   // Fetch dashboard data
   const fetchDashboard = useCallback(async () => {
     if (!user?.isHost) return;
-    
-    dispatch({ type: ACTIONS.SET_LOADING, payload: { key: 'dashboard', value: true } });
+
+    dispatch({
+      type: ACTIONS.SET_LOADING,
+      payload: { key: "dashboard", value: true },
+    });
     dispatch({ type: ACTIONS.CLEAR_ERROR });
 
     try {
@@ -217,73 +254,85 @@ export const ListingsStateProvider = ({ children }) => {
         type: ACTIONS.SET_HOST_DASHBOARD,
         payload: response.data,
       });
-      console.log('Fetched dashboard data:', response.data);
+      console.log("Fetched dashboard data:", response.data);
     } catch (error) {
-      handleError(error, 'dashboard');
+      handleError(error, "dashboard");
     }
   }, [user?.isHost, handleError]);
 
   // Create listing
-  const createListing = useCallback(async (listingData) => {
-    dispatch({ type: ACTIONS.SET_LOADING, payload: { key: 'create', value: true } });
-    dispatch({ type: ACTIONS.CLEAR_ERROR });
-
-    try {
-      const response = await listingsAPI.create(listingData);
+  const createListing = useCallback(
+    async (listingData) => {
       dispatch({
-        type: ACTIONS.ADD_LISTING,
-        payload: response.data.listing,
+        type: ACTIONS.SET_LOADING,
+        payload: { key: "create", value: true },
       });
-      console.log('Created listing:', response.data.listing);
-      return response.data.listing;
-    } catch (error) {
-      handleError(error, 'create');
-      throw error;
-    }
-  }, [handleError]);
+      dispatch({ type: ACTIONS.CLEAR_ERROR });
+
+      try {
+        const response = await listingsAPI.create(listingData);
+        dispatch({
+          type: ACTIONS.ADD_LISTING,
+          payload: response.data.listing,
+        });
+        console.log("Created listing:", response.data.listing);
+        return response.data.listing;
+      } catch (error) {
+        handleError(error, "create");
+        throw error;
+      }
+    },
+    [handleError]
+  );
 
   // Update listing
-  const updateListing = useCallback(async (listingId, updateData) => {
-    try {
-      const response = await listingsAPI.update(listingId, updateData);
-      dispatch({
-        type: ACTIONS.UPDATE_LISTING,
-        payload: response.data.listing,
-      });
-      console.log('Updated listing:', response.data.listing);
-      return response.data.listing;
-    } catch (error) {
-      handleError(error, 'update');
-      throw error;
-    }
-  }, [handleError]);
+  const updateListing = useCallback(
+    async (listingId, updateData) => {
+      try {
+        const response = await listingsAPI.update(listingId, updateData);
+        dispatch({
+          type: ACTIONS.UPDATE_LISTING,
+          payload: response.data.listing,
+        });
+        console.log("Updated listing:", response.data.listing);
+        return response.data.listing;
+      } catch (error) {
+        handleError(error, "update");
+        throw error;
+      }
+    },
+    [handleError]
+  );
 
   // Delete listing
-  const deleteListing = useCallback(async (listingId) => {
-    try {
-      await listingsAPI.delete(listingId);
-      dispatch({
-        type: ACTIONS.DELETE_LISTING,
-        payload: listingId,
-      });
-      console.log('Deleted listing:', listingId);
-    } catch (error) {
-      handleError(error, 'delete');
-      throw error;
-    }
-  }, [handleError]);
+  const deleteListing = useCallback(
+    async (listingId) => {
+      try {
+        await listingsAPI.delete(listingId);
+        dispatch({
+          type: ACTIONS.DELETE_LISTING,
+          payload: listingId,
+        });
+        console.log("Deleted listing:", listingId);
+      } catch (error) {
+        handleError(error, "delete");
+        throw error;
+      }
+    },
+    [handleError]
+  );
 
   // Refresh all data
   const refreshAll = useCallback(async () => {
-    console.log('Refreshing all listings data...');
+    console.log("Refreshing all listings data...");
     const promises = [fetchListings()];
-    
+
     if (user?.isHost) {
       promises.push(fetchHostListings(), fetchDashboard());
     }
-    
+
     await Promise.all(promises);
-    console.log('All data refreshed successfully');
+    console.log("All data refreshed successfully");
   }, [fetchListings, fetchHostListings, fetchDashboard, user?.isHost]);
 
   // Auto-fetch data when user changes
@@ -305,7 +354,7 @@ export const ListingsStateProvider = ({ children }) => {
   const value = {
     // State
     ...state,
-    
+
     // Actions
     fetchListings,
     fetchHostListings,

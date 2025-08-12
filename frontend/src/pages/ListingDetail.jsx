@@ -3,7 +3,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { listingsAPI, ordersAPI } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
-import { Calendar, MapPin, User, Package, Shield, Clock, Star, Tag } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  User,
+  Package,
+  Shield,
+  Clock,
+  Star,
+  Tag,
+} from "lucide-react";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
 
@@ -34,20 +43,24 @@ const ListingDetail = () => {
   const createOrderMutation = useMutation({
     mutationFn: ordersAPI.create,
     onSuccess: (response) => {
-      console.log('Order creation success:', response);
-      const orderId = response.data.data?.order?._id || response.data.order?._id;
+      console.log("Order creation success:", response);
+      const orderId =
+        response.data.data?.order?._id || response.data.order?._id;
       if (orderId) {
         navigate(`/checkout/${orderId}`);
       } else {
-        alert('Order created but no ID returned');
+        alert("Order created but no ID returned");
       }
     },
     onError: (error) => {
-      console.error('Order creation error:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error status:', error.response?.status);
-      console.error('Error headers:', error.response?.headers);
-      const errorMessage = error.response?.data?.message || error.message || "Failed to create order";
+      console.error("Order creation error:", error);
+      console.error("Error response:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      console.error("Error headers:", error.response?.headers);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create order";
       alert(`Order creation failed: ${errorMessage}`);
     },
   });
@@ -56,13 +69,13 @@ const ListingDetail = () => {
     mutationFn: ({ start, end, qty }) =>
       listingsAPI.checkAvailability(id, { start, end, qty }),
     onSuccess: (response) => {
-      console.log('Availability response:', response);
+      console.log("Availability response:", response);
       setAvailabilityData(response.data.data || response.data);
     },
     onError: (error) => {
-      console.error('Availability check error:', error);
+      console.error("Availability check error:", error);
       setAvailabilityData({ available: false });
-    }
+    },
   });
 
   const formatPrice = (price) => {
@@ -86,7 +99,7 @@ const ListingDetail = () => {
     if (!listing?.basePrice || duration <= 0) {
       return { subtotal: 0, deposit: 0, duration: 0 };
     }
-    
+
     const subtotal = listing.basePrice * duration * bookingData.quantity;
     const deposit =
       listing.depositType === "percent"
@@ -101,16 +114,16 @@ const ListingDetail = () => {
   };
 
   const handleBookingSubmit = () => {
-    console.log('Auth state:', { user, isAuthenticated });
-    
+    console.log("Auth state:", { user, isAuthenticated });
+
     if (!isAuthenticated) {
-      console.log('User not authenticated, redirecting to login');
+      console.log("User not authenticated, redirecting to login");
       navigate("/login");
       return;
     }
 
     if (!bookingData.startDate || !bookingData.endDate) {
-      alert('Please select start and end dates');
+      alert("Please select start and end dates");
       return;
     }
 
@@ -128,8 +141,8 @@ const ListingDetail = () => {
       paymentOption: bookingData.paymentOption,
     };
 
-    console.log('Creating order with data:', orderData);
-    console.log('User token exists:', !!localStorage.getItem('token'));
+    console.log("Creating order with data:", orderData);
+    console.log("User token exists:", !!localStorage.getItem("token"));
     createOrderMutation.mutate(orderData);
   };
 
@@ -177,11 +190,11 @@ const ListingDetail = () => {
   const priceInfo = calculateTotalPrice();
 
   // Debug auth state
-  console.log('Auth Debug:', {
+  console.log("Auth Debug:", {
     user,
     isAuthenticated,
-    token: !!localStorage.getItem('token'),
-    isOwner
+    token: !!localStorage.getItem("token"),
+    isOwner,
   });
 
   return (
@@ -303,16 +316,22 @@ const ListingDetail = () => {
             <Card.Content className="p-6">
               <div className="mb-4">
                 <div className="text-2xl font-bold text-gray-900">
-                  {listing?.basePrice ? formatPrice(listing.basePrice) : 'Price not available'}
+                  {listing?.basePrice
+                    ? formatPrice(listing.basePrice)
+                    : "Price not available"}
                   <span className="text-base font-normal text-gray-600">
-                    /{listing?.unitType || 'day'}
+                    /{listing?.unitType || "day"}
                   </span>
                 </div>
                 <div className="text-sm text-gray-600">
                   {listing?.depositType === "percent" &&
                     `${listing?.depositValue || 0}% security deposit required`}
                   {listing?.depositType === "flat" &&
-                    `${listing?.depositValue ? formatPrice(listing.depositValue) : 'No deposit'} security deposit required`}
+                    `${
+                      listing?.depositValue
+                        ? formatPrice(listing.depositValue)
+                        : "No deposit"
+                    } security deposit required`}
                 </div>
               </div>
 
@@ -382,29 +401,37 @@ const ListingDetail = () => {
                     </select>
                   </div>
 
-                  {bookingData.startDate && bookingData.endDate && priceInfo.duration > 0 && (
-                    <div className="bg-gray-50 p-3 rounded-md space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Duration:</span>
-                        <span>
-                          {priceInfo.duration} {listing?.unitType}(s)
-                        </span>
+                  {bookingData.startDate &&
+                    bookingData.endDate &&
+                    priceInfo.duration > 0 && (
+                      <div className="bg-gray-50 p-3 rounded-md space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Duration:</span>
+                          <span>
+                            {priceInfo.duration} {listing?.unitType}(s)
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Subtotal:</span>
+                          <span>{formatPrice(priceInfo.subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span>Deposit:</span>
+                          <span>{formatPrice(priceInfo.deposit)}</span>
+                        </div>
+                        <hr />
+                        <div className="flex justify-between font-semibold">
+                          <span>Total to pay now:</span>
+                          <span>
+                            {formatPrice(
+                              bookingData.paymentOption === "full"
+                                ? priceInfo.subtotal
+                                : priceInfo.deposit
+                            )}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Subtotal:</span>
-                        <span>{formatPrice(priceInfo.subtotal)}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Deposit:</span>
-                        <span>{formatPrice(priceInfo.deposit)}</span>
-                      </div>
-                      <hr />
-                      <div className="flex justify-between font-semibold">
-                        <span>Total to pay now:</span>
-                        <span>{formatPrice(bookingData.paymentOption === 'full' ? priceInfo.subtotal : priceInfo.deposit)}</span>
-                      </div>
-                    </div>
-                  )}
+                    )}
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -425,7 +452,9 @@ const ListingDetail = () => {
                           }
                           className="mr-2"
                         />
-                        <span className="text-sm">Pay security deposit now</span>
+                        <span className="text-sm">
+                          Pay security deposit now
+                        </span>
                       </label>
                       <label className="flex items-center">
                         <input
@@ -441,7 +470,9 @@ const ListingDetail = () => {
                           }
                           className="mr-2"
                         />
-                        <span className="text-sm">Pay full rental amount now</span>
+                        <span className="text-sm">
+                          Pay full rental amount now
+                        </span>
                       </label>
                     </div>
                   </div>

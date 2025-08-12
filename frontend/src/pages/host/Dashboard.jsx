@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { hostAPI, listingsAPI } from "../../lib/api";
 import { useAuth } from "../../contexts/AuthContext";
-import { Plus, Calendar, DollarSign, Package, Users, Eye, RefreshCw } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  DollarSign,
+  Package,
+  Users,
+  Eye,
+  RefreshCw,
+} from "lucide-react";
 import Button from "../../components/ui/Button";
 import Card from "../../components/ui/Card";
 
@@ -15,19 +23,23 @@ const HostDashboard = () => {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      console.log('Manual refresh triggered...');
+      console.log("Manual refresh triggered...");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['hostListings'] }),
-        queryClient.invalidateQueries({ queryKey: ['host-dashboard'] }),
-        queryClient.invalidateQueries({ queryKey: ['host-orders'] }),
+        queryClient.invalidateQueries({ queryKey: ["hostListings"] }),
+        queryClient.invalidateQueries({ queryKey: ["host-dashboard"] }),
+        queryClient.invalidateQueries({ queryKey: ["host-orders"] }),
       ]);
-      console.log('Manual refresh completed');
+      console.log("Manual refresh completed");
     } finally {
       setIsRefreshing(false);
     }
   };
 
-  const { data: dashboardData, isLoading: dashboardLoading, dataUpdatedAt: dashboardUpdatedAt } = useQuery({
+  const {
+    data: dashboardData,
+    isLoading: dashboardLoading,
+    dataUpdatedAt: dashboardUpdatedAt,
+  } = useQuery({
     queryKey: ["host-dashboard"],
     queryFn: hostAPI.getDashboard,
     enabled: !!user?.isHost,
@@ -35,7 +47,11 @@ const HostDashboard = () => {
     cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
-  const { data: hostListings, isLoading: listingsLoading, dataUpdatedAt: listingsUpdatedAt } = useQuery({
+  const {
+    data: hostListings,
+    isLoading: listingsLoading,
+    dataUpdatedAt: listingsUpdatedAt,
+  } = useQuery({
     queryKey: ["hostListings"],
     queryFn: () => hostAPI.getListings(),
     select: (response) => response?.data?.data?.listings || [],
@@ -44,9 +60,19 @@ const HostDashboard = () => {
     cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
   });
 
-  console.log('Dashboard render - hostListings:', hostListings?.length || 0, 'listings');
-  console.log('Dashboard render - listingsUpdatedAt:', new Date(listingsUpdatedAt).toLocaleTimeString());
-  console.log('Dashboard render - dashboardUpdatedAt:', new Date(dashboardUpdatedAt).toLocaleTimeString());
+  console.log(
+    "Dashboard render - hostListings:",
+    hostListings?.length || 0,
+    "listings"
+  );
+  console.log(
+    "Dashboard render - listingsUpdatedAt:",
+    new Date(listingsUpdatedAt).toLocaleTimeString()
+  );
+  console.log(
+    "Dashboard render - dashboardUpdatedAt:",
+    new Date(dashboardUpdatedAt).toLocaleTimeString()
+  );
 
   const { data: hostOrders, isLoading: ordersLoading } = useQuery({
     queryKey: ["host-orders"],
@@ -85,9 +111,7 @@ const HostDashboard = () => {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Loading...
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Loading...</h1>
         </div>
       </div>
     );
@@ -119,12 +143,14 @@ const HostDashboard = () => {
           <p className="text-gray-600">Welcome back, {user?.name}!</p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
           <Button onClick={() => (window.location.href = "/listings/new")}>
@@ -143,9 +169,7 @@ const HostDashboard = () => {
                 <Package className="h-6 w-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">
-                  Total Items
-                </p>
+                <p className="text-sm font-medium text-gray-600">Total Items</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
                     ? "..."
@@ -169,7 +193,9 @@ const HostDashboard = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
                     ? "..."
-                    : formatPrice(dashboardData?.data?.data?.stats?.monthlyRevenue || 0)}
+                    : formatPrice(
+                        dashboardData?.data?.data?.stats?.monthlyRevenue || 0
+                      )}
                 </p>
               </div>
             </div>
@@ -260,34 +286,37 @@ const HostDashboard = () => {
                   </div>
                 ) : dashboardData?.data?.data?.recentOrders?.length > 0 ? (
                   <div className="space-y-3">
-                    {dashboardData.data.data.recentOrders.slice(0, 5).map((order) => (
-                      <div
-                        key={order._id}
-                        className="flex items-center justify-between p-3 border rounded-lg"
-                      >
-                        <div>
-                          <p className="font-medium">
-                            {order.listingTitle || "Order"}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {order.renterName || "Customer"} •{" "}
-                            {formatDate(order.createdAt)}
-                          </p>
+                    {dashboardData.data.data.recentOrders
+                      .slice(0, 5)
+                      .map((order) => (
+                        <div
+                          key={order._id}
+                          className="flex items-center justify-between p-3 border rounded-lg"
+                        >
+                          <div>
+                            <p className="font-medium">
+                              {order.listingTitle || "Order"}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {order.renterName || "Customer"} •{" "}
+                              {formatDate(order.createdAt)}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
+                                order.orderStatus
+                              )}`}
+                            >
+                              {order.orderStatus?.replace("_", " ") ||
+                                "pending"}
+                            </span>
+                            <p className="text-sm font-medium mt-1">
+                              {formatPrice(order.totalAmount || 0)}
+                            </p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <span
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
-                              order.orderStatus
-                            )}`}
-                          >
-                            {order.orderStatus?.replace("_", " ") || "pending"}
-                          </span>
-                          <p className="text-sm font-medium mt-1">
-                            {formatPrice(order.totalAmount || 0)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 ) : (
                   <p className="text-gray-600">No orders yet.</p>
@@ -305,7 +334,9 @@ const HostDashboard = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Revenue</span>
                     <span className="font-medium">
-                      {formatPrice(dashboardData?.data?.data?.stats?.monthlyRevenue || 0)}
+                      {formatPrice(
+                        dashboardData?.data?.data?.stats?.monthlyRevenue || 0
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -323,7 +354,9 @@ const HostDashboard = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Wallet Balance</span>
                     <span className="font-medium">
-                      {formatPrice(dashboardData?.data?.data?.stats?.walletBalance || 0)}
+                      {formatPrice(
+                        dashboardData?.data?.data?.stats?.walletBalance || 0
+                      )}
                     </span>
                   </div>
                 </div>
@@ -505,7 +538,9 @@ const HostDashboard = () => {
                   <div className="flex justify-between py-2 border-b">
                     <span className="text-gray-600">Monthly Revenue</span>
                     <span className="font-semibold">
-                      {formatPrice(dashboardData?.data?.data?.stats?.monthlyRevenue || 0)}
+                      {formatPrice(
+                        dashboardData?.data?.data?.stats?.monthlyRevenue || 0
+                      )}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
@@ -521,11 +556,11 @@ const HostDashboard = () => {
                     </span>
                   </div>
                   <div className="flex justify-between py-2">
-                    <span className="text-gray-600">
-                      Wallet Balance
-                    </span>
+                    <span className="text-gray-600">Wallet Balance</span>
                     <span className="font-semibold text-green-600">
-                      {formatPrice(dashboardData?.data?.data?.stats?.walletBalance || 0)}
+                      {formatPrice(
+                        dashboardData?.data?.data?.stats?.walletBalance || 0
+                      )}
                     </span>
                   </div>
                 </div>
@@ -534,9 +569,7 @@ const HostDashboard = () => {
 
             <Card>
               <Card.Content className="p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Recent Activity
-                </h3>
+                <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
                 <div className="space-y-3">
                   <p className="text-gray-600">No recent activity.</p>
                 </div>
