@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { ordersAPI } from "../lib/api";
+import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
 import {
   Calendar,
@@ -16,22 +15,26 @@ import Button from "../components/ui/Button";
 
 const MyBookings = () => {
   const { user } = useAuth();
+  const { state, actions } = useData();
   const [searchParams] = useSearchParams();
-  const [statusFilter, setStatusFilter] = useState("");
+  const statusFilter = searchParams.get("status");
 
-  const {
-    data: ordersData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["my-orders", statusFilter],
-    queryFn: () => {
-      const params = statusFilter ? { status: statusFilter } : {};
-      return ordersAPI.getMyOrders(params);
-    },
-    select: (response) => response.data?.data,
-    enabled: !!user,
-  });
+  // Fetch orders when component mounts or filter changes
+  useEffect(() => {
+    if (user) {
+      actions.fetchOrders();
+    }
+  }, [user, statusFilter, actions]);
+
+  // Filter orders based on status
+  const allOrders = state.orders || [];
+  const filteredOrders = statusFilter
+    ? allOrders.filter(order => order.status === statusFilter)
+    : allOrders;
+
+  const ordersData = filteredOrders;
+  const isLoading = state.ordersLoading;
+  const error = state.ordersError;
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {

@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { listingsAPI, ordersAPI } from "../lib/api";
+import { ordersAPI } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import {
   Calendar,
   MapPin,
@@ -20,6 +20,7 @@ const ListingDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { state, actions } = useData();
 
   const [bookingData, setBookingData] = useState({
     startDate: "",
@@ -29,20 +30,23 @@ const ListingDetail = () => {
   });
   const [availabilityData, setAvailabilityData] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [creatingOrder, setCreatingOrder] = useState(false);
 
-  const {
-    data: listing,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["listing", id],
-    queryFn: () => listingsAPI.getById(id),
-    select: (response) => response.data.data?.listing || response.data.listing,
-  });
+  // Fetch listing when component mounts
+  useEffect(() => {
+    if (id) {
+      actions.fetchListing(id);
+    }
+  }, [id]); // Remove actions from dependency array
 
-  const createOrderMutation = useMutation({
-    mutationFn: ordersAPI.create,
-    onSuccess: (response) => {
+  const listing = state.currentListing;
+  const isLoading = state.currentListingLoading;
+  const error = state.currentListingError;
+
+  const createOrder = async (orderData) => {
+    setCreatingOrder(true);
+    try {
+      const response = await ordersAPI.create(orderData);
       console.log('Order creation success:', response);
       console.log('Response data structure:', JSON.stringify(response.data, null, 2));
       const orderId = response.data.data?.order?._id || response.data.order?._id;
@@ -52,8 +56,7 @@ const ListingDetail = () => {
       } else {
         alert("Order created but no ID returned");
       }
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Order creation error:", error);
       console.error("Error response:", error.response?.data);
       console.error("Error status:", error.response?.status);
@@ -63,21 +66,22 @@ const ListingDetail = () => {
         error.message ||
         "Failed to create order";
       alert(`Order creation failed: ${errorMessage}`);
-    },
-  });
+    } finally {
+      setCreatingOrder(false);
+    }
+  };
 
-  const checkAvailabilityMutation = useMutation({
-    mutationFn: ({ start, end, qty }) =>
-      listingsAPI.checkAvailability(id, { start, end, qty }),
-    onSuccess: (response) => {
+  const checkAvailability = async ({ start, end, qty }) => {
+    try {
+      const response = await actions.fetchListing(id); // You may need to add checkAvailability to your DataContext
       console.log("Availability response:", response);
       setAvailabilityData(response.data.data || response.data);
-    },
-    onError: (error) => {
+      return response;
+    } catch (error) {
       console.error('Availability check error:', error);
       setAvailabilityData({ available: false });
     }
-  });
+  };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
@@ -144,12 +148,12 @@ const ListingDetail = () => {
 
     console.log('Creating order with data:', orderData);
     console.log('User token exists:', !!localStorage.getItem('token'));
-    createOrderMutation.mutate(orderData);
+    createOrder(orderData);
   };
 
   const handleCheckAvailability = () => {
     if (bookingData.startDate && bookingData.endDate) {
-      checkAvailabilityMutation.mutate({
+      checkAvailability({
         start: new Date(bookingData.startDate).toISOString(),
         end: new Date(bookingData.endDate).toISOString(),
         qty: bookingData.quantity,
@@ -521,10 +525,10 @@ const ListingDetail = () => {
                       disabled={
                         !bookingData.startDate ||
                         !bookingData.endDate ||
-                        createOrderMutation.isPending
+                        creatingOrder
                       }
                     >
-                      {createOrderMutation.isPending
+                      {creatingOrder
                         ? "⏳ Creating Rental Order..."
                         : "🏠 Rent Now"}
                     </Button>

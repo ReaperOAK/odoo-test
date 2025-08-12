@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { queryClient } from "./lib/queryClient";
 import { AuthProvider } from "./contexts/AuthContext";
+import { DataProvider } from "./contexts/DataContext";
 import Header from "./components/layout/Header";
 
 // Pages
@@ -21,7 +20,7 @@ import AdminDashboard from "./pages/admin/Dashboard";
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
+    <DataProvider>
       <AuthProvider>
         <Router>
           <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100">
@@ -69,7 +68,7 @@ function App() {
           </div>
         </Router>
       </AuthProvider>
-    </QueryClientProvider>
+    </DataProvider>
   );
 }
 

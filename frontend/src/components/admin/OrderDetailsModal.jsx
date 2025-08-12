@@ -1,48 +1,54 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../lib/api";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
+import { useData } from "../../contexts/DataContext";
 
 const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
   const [notes, setNotes] = useState("");
   const [newStatus, setNewStatus] = useState(order?.orderStatus || "");
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [isResolving, setIsResolving] = useState(false);
 
-  const queryClient = useQueryClient();
+  const { dispatch } = useData();
 
-  const updateOrderMutation = useMutation({
-    mutationFn: (data) => adminAPI.updateOrderStatus(order._id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["admin", "orders"]);
+  const updateOrderStatus = async (data) => {
+    setIsUpdating(true);
+    try {
+      await adminAPI.updateOrderStatus(order._id, data);
+      dispatch({ type: 'FETCH_ORDERS_START' });
       onUpdate?.();
       onClose();
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Failed to update order:", error);
-    },
-  });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
-  const resolveDisputeMutation = useMutation({
-    mutationFn: (data) => adminAPI.resolveDispute(order._id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["admin", "orders"]);
+  const resolveDispute = async (data) => {
+    setIsResolving(true);
+    try {
+      await adminAPI.resolveDispute(order._id, data);
+      dispatch({ type: 'FETCH_ORDERS_START' });
       onUpdate?.();
       onClose();
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Failed to resolve dispute:", error);
-    },
-  });
+    } finally {
+      setIsResolving(false);
+    }
+  };
 
   const handleStatusUpdate = () => {
-    updateOrderMutation.mutate({
+    updateOrderStatus({
       status: newStatus,
       adminNotes: notes,
     });
   };
 
   const handleResolveDispute = (resolution) => {
-    resolveDisputeMutation.mutate({
+    resolveDispute({
       resolution,
       adminNotes: notes,
     });
@@ -245,11 +251,11 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                     <Button
                       onClick={handleStatusUpdate}
                       disabled={
-                        updateOrderMutation.isPending ||
+                        isUpdating ||
                         newStatus === order.orderStatus
                       }
                     >
-                      Update
+                      {isUpdating ? "Updating..." : "Update"}
                     </Button>
                   </div>
                 </div>
@@ -264,26 +270,26 @@ const OrderDetailsModal = ({ order, isOpen, onClose, onUpdate }) => {
                       <Button
                         variant="outline"
                         onClick={() => handleResolveDispute("favor_customer")}
-                        disabled={resolveDisputeMutation.isPending}
+                        disabled={isResolving}
                         className="bg-green-50 text-green-700 border-green-200"
                       >
-                        Favor Customer
+                        {isResolving ? "Resolving..." : "Favor Customer"}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => handleResolveDispute("favor_host")}
-                        disabled={resolveDisputeMutation.isPending}
+                        disabled={isResolving}
                         className="bg-blue-50 text-blue-700 border-blue-200"
                       >
-                        Favor Host
+                        {isResolving ? "Resolving..." : "Favor Host"}
                       </Button>
                       <Button
                         variant="outline"
                         onClick={() => handleResolveDispute("split_decision")}
-                        disabled={resolveDisputeMutation.isPending}
+                        disabled={isResolving}
                         className="bg-purple-50 text-purple-700 border-purple-200"
                       >
-                        Split Decision
+                        {isResolving ? "Resolving..." : "Split Decision"}
                       </Button>
                     </div>
                   </div>

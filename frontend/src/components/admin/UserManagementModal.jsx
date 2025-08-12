@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../lib/api";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
+import { useData } from "../../contexts/DataContext";
 
 const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -14,23 +14,26 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
     isActive: user?.isActive !== false,
   });
 
-  const queryClient = useQueryClient();
+  const { dispatch } = useData();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const updateUserMutation = useMutation({
-    mutationFn: (data) => adminAPI.updateUser(user._id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["admin", "users"]);
+  const updateUser = async (data) => {
+    setIsSubmitting(true);
+    try {
+      await adminAPI.updateUser(user._id, data);
+      dispatch({ type: 'FETCH_USERS_START' });
       onUpdate?.();
       onClose();
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Failed to update user:", error);
-    },
-  });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateUserMutation.mutate(formData);
+    updateUser(formData);
   };
 
   const handleChange = (e) => {
@@ -144,10 +147,10 @@ const UserManagementModal = ({ user, isOpen, onClose, onUpdate }) => {
             </Button>
             <Button
               type="submit"
-              disabled={updateUserMutation.isPending}
+              disabled={isSubmitting}
               className="flex-1"
             >
-              {updateUserMutation.isPending ? "Saving..." : "Save Changes"}
+              {isSubmitting ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </form>

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "../../lib/api";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
+import { useData } from "../../contexts/DataContext";
 
 const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
   const [notes, setNotes] = useState("");
@@ -11,23 +11,26 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
     transactionRef: "",
     processingFee: 0,
   });
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const queryClient = useQueryClient();
+  const { dispatch } = useData();
 
-  const processPayoutMutation = useMutation({
-    mutationFn: (data) => adminAPI.processPayout(payout._id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["admin", "payouts"]);
+  const processPayoutAction = async (data) => {
+    setIsProcessing(true);
+    try {
+      await adminAPI.processPayout(payout._id, data);
+      dispatch({ type: 'FETCH_PAYOUTS_START' });
       onUpdate?.();
       onClose();
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Failed to process payout:", error);
-    },
-  });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleProcessPayout = () => {
-    processPayoutMutation.mutate({
+    processPayoutAction({
       ...processingData,
       adminNotes: notes,
       status: "processing",
@@ -35,7 +38,7 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
   };
 
   const handleCompletePayout = () => {
-    processPayoutMutation.mutate({
+    processPayoutAction({
       ...processingData,
       adminNotes: notes,
       status: "completed",
@@ -43,7 +46,7 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
   };
 
   const handleRejectPayout = () => {
-    processPayoutMutation.mutate({
+    processPayoutAction({
       adminNotes: notes,
       status: "rejected",
     });
@@ -284,28 +287,28 @@ const PayoutManagementModal = ({ payout, isOpen, onClose, onUpdate }) => {
                   <div className="flex space-x-3">
                     <Button
                       onClick={handleProcessPayout}
-                      disabled={processPayoutMutation.isPending}
+                      disabled={isProcessing}
                       className="flex-1 bg-blue-600 hover:bg-blue-700"
                     >
-                      Mark as Processing
+                      {isProcessing ? "Processing..." : "Mark as Processing"}
                     </Button>
                     <Button
                       onClick={handleCompletePayout}
                       disabled={
-                        processPayoutMutation.isPending ||
+                        isProcessing ||
                         !processingData.transactionRef
                       }
                       className="flex-1 bg-green-600 hover:bg-green-700"
                     >
-                      Complete Payout
+                      {isProcessing ? "Processing..." : "Complete Payout"}
                     </Button>
                     <Button
                       onClick={handleRejectPayout}
-                      disabled={processPayoutMutation.isPending}
+                      disabled={isProcessing}
                       variant="outline"
                       className="flex-1 border-red-300 text-red-600 hover:bg-red-50"
                     >
-                      Reject
+                      {isProcessing ? "Processing..." : "Reject"}
                     </Button>
                   </div>
                 </div>

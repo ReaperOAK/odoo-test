@@ -1,39 +1,41 @@
 import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useMutation } from "@tanstack/react-query";
 import { ordersAPI } from "../lib/api";
 import { Check, Clock, AlertCircle } from "lucide-react";
 import Button from "../components/ui/Button";
+import { useData } from "../contexts/DataContext";
 
 const CheckoutSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState("processing"); // processing, success, error
   const [message, setMessage] = useState("");
+  const { dispatch } = useData();
 
   const orderId = searchParams.get("order_id");
   const sessionId = searchParams.get("session_id");
 
-  const confirmPaymentMutation = useMutation({
-    mutationFn: ({ orderId, sessionId }) =>
-      ordersAPI.confirmPayment(orderId, { sessionId }),
-    onSuccess: (data) => {
+  const confirmPayment = async (orderId, sessionId) => {
+    try {
+      setStatus("processing");
+      const data = await ordersAPI.confirmPayment(orderId, { sessionId });
       setStatus("success");
       setMessage("Your payment has been confirmed and booking is complete!");
-    },
-    onError: (error) => {
+      // Refresh orders data
+      dispatch({ type: 'FETCH_ORDERS_START' });
+    } catch (error) {
       setStatus("error");
       setMessage(
         error.response?.data?.message || "Failed to confirm payment"
       );
-    },
-  });
+    }
+  };
 
   useEffect(() => {
     if (orderId && sessionId) {
       // Only confirm if using real Polar payment
       if (!sessionId.includes("mock")) {
-        confirmPaymentMutation.mutate({ orderId, sessionId });
+        confirmPayment(orderId, sessionId);
       } else {
         // For mock payments, just show success
         setStatus("success");

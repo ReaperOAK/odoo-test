@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import { listingsAPI } from "../lib/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -10,7 +10,7 @@ import Card from "../components/ui/Card";
 const CreateListing = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
+  const { dispatch } = useData();
 
   // Debug user info
   console.log("Current user in CreateListing:", user);
@@ -32,39 +32,28 @@ const CreateListing = () => {
   });
 
   const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const createListingMutation = useMutation({
-    mutationFn: listingsAPI.create,
-    onSuccess: async (response) => {
+  const createListing = async (data) => {
+    setIsSubmitting(true);
+    try {
+      console.log("Creating listing...", data);
+      const response = await listingsAPI.create(data);
       console.log("Listing created successfully:", response);
-      console.log("Invalidating queries...");
-
-      // Invalidate all related queries to force fresh data
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["hostListings"] }),
-        queryClient.invalidateQueries({ queryKey: ["host-dashboard"] }),
-        queryClient.invalidateQueries({ queryKey: ["host-orders"] }),
-        queryClient.invalidateQueries({ queryKey: ["listings"] }),
-      ]);
-
-      console.log("Queries invalidated, navigating to dashboard...");
-
-      // Navigate to dashboard
+      
+      // Refresh data using context actions
+      dispatch({ type: 'FETCH_LISTINGS_START' });
+      dispatch({ type: 'FETCH_HOST_LISTINGS_START' });
+      
+      console.log("Data refreshed, navigating to dashboard...");
       navigate("/host/dashboard");
-    },
-    onError: (error) => {
+    } catch (error) {
       console.error("Error creating listing:", error);
-      console.error("Error response data:", error.response?.data);
-      console.error("Error status:", error.response?.status);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        "Failed to create listing";
-      const validationErrors = error.response?.data?.errors || [];
-      console.error("Validation errors:", validationErrors);
-      setErrors({ submit: errorMessage });
-    },
-  });
+      throw error;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -81,7 +70,7 @@ const CreateListing = () => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setErrors({});
 
@@ -155,7 +144,21 @@ const CreateListing = () => {
     };
 
     console.log("Submitting listing data:", submitData);
-    createListingMutation.mutate(submitData);
+    
+    try {
+      await createListing(submitData);
+    } catch (error) {
+      console.error("Error creating listing:", error);
+      console.error("Error response data:", error.response?.data);
+      console.error("Error status:", error.response?.status);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Failed to create listing";
+      const validationErrors = error.response?.data?.errors || [];
+      console.error("Validation errors:", validationErrors);
+      setErrors({ submit: errorMessage });
+    }
   };
 
   // Redirect if not a host
@@ -468,10 +471,10 @@ const CreateListing = () => {
               </Button>
               <Button
                 type="submit"
-                disabled={createListingMutation.isPending}
+                disabled={isSubmitting}
                 className="flex-1"
               >
-                {createListingMutation.isPending
+                {isSubmitting
                   ? "Creating Listing..."
                   : "Create Listing"}
               </Button>

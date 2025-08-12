@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { listingsAPI } from "../lib/api";
 import ListingCard from "../components/listings/ListingCard";
 import SearchFilters from "../components/listings/SearchFilters";
 import { Search, Filter } from "lucide-react";
 import { useDebounce } from "../hooks/useDebounce";
 import { filterListings } from "../utils/searchUtils";
+import { useData } from "../contexts/DataContext";
 
 const Home = () => {
+  const { state, actions } = useData();
   const [filters, setFilters] = useState({
     search: "",
     category: "",
@@ -30,32 +30,23 @@ const Home = () => {
     to: filters.endDate,
   };
 
-  const {
-    data: listingsData,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["listings", apiFilters],
-    queryFn: () => listingsAPI.getAll(apiFilters),
-    select: (response) => response.data,
-  });
+  // Fetch listings when component mounts or filters change
+  useEffect(() => {
+    actions.fetchListings(apiFilters);
+  }, [filters.category, filters.priceMin, filters.priceMax, filters.startDate, filters.endDate]);
 
-  const allListings = listingsData?.data?.listings || [];
-  const pagination = listingsData?.data?.pagination || {};
+  const allListings = state.listings || [];
+  const isLoading = state.listingsLoading;
+  const error = state.listingsError;
 
   // Frontend filtering for real-time search
   const filteredListings = useMemo(() => {
     // Start with all listings
     let result = allListings;
     
-    // Debug logging
-    console.log('Search term:', filters.search);
-    console.log('All listings count:', result.length);
-    
     // Apply search filter using utility function
     if (filters.search && filters.search.trim()) {
       result = filterListings(result, filters.search);
-      console.log('After search filter:', result.length, 'results for:', filters.search);
     }
     
     // Apply other filters if needed
@@ -63,21 +54,18 @@ const Home = () => {
       result = result.filter(listing => 
         listing.category?.toLowerCase() === filters.category.toLowerCase()
       );
-      console.log('After category filter:', result.length);
     }
     
     if (filters.priceMin) {
       result = result.filter(listing => 
         listing.basePrice >= parseFloat(filters.priceMin)
       );
-      console.log('After min price filter:', result.length);
     }
     
     if (filters.priceMax) {
       result = result.filter(listing => 
         listing.basePrice <= parseFloat(filters.priceMax)
       );
-      console.log('After max price filter:', result.length);
     }
     
     return result;

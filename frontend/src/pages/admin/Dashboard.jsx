@@ -1,16 +1,17 @@
 import { useState, useEffect } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { adminAPI } from "../../lib/api";
+import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import Card from "../../components/ui/Card";
 import Button from "../../components/ui/Button";
 import UserManagementModal from "../../components/admin/UserManagementModal";
 import OrderDetailsModal from "../../components/admin/OrderDetailsModal";
 import PayoutManagementModal from "../../components/admin/PayoutManagementModal";
+import ExportModal from "../../components/admin/ExportModal";
+import { exportData, generateAdminReport } from "../../utils/exportUtils";
 
 const AdminDashboard = () => {
   const { user, isAdmin } = useAuth();
-  const queryClient = useQueryClient();
+  const { state, actions } = useData();
   const [selectedTab, setSelectedTab] = useState("overview");
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -18,9 +19,25 @@ const AdminDashboard = () => {
   const [showUserModal, setShowUserModal] = useState(false);
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [showPayoutModal, setShowPayoutModal] = useState(false);
+  
+  // Export modal states
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [exportType, setExportType] = useState('');
+  const [exportData, setExportData] = useState(null);
 
   const refreshData = () => {
-    queryClient.invalidateQueries(["admin"]);
+    // Refresh data based on current tab
+    if (selectedTab === "overview") {
+      actions.fetchAdminStats();
+    } else if (selectedTab === "users") {
+      actions.fetchAdminUsers();
+    } else if (selectedTab === "orders") {
+      actions.fetchAdminOrders();
+    } else if (selectedTab === "payouts") {
+      actions.fetchAdminPayouts();
+    } else if (selectedTab === "reports") {
+      actions.fetchAdminAnalytics();
+    }
   };
 
   const handleGenerateReport = async () => {
@@ -33,9 +50,6 @@ const AdminDashboard = () => {
         return;
       }
 
-      // Get current date for filename
-      const date = new Date().toISOString().split("T")[0];
-
       // Create comprehensive report data
       const reportData = {
         generatedAt: new Date().toISOString(),
@@ -46,69 +60,101 @@ const AdminDashboard = () => {
         analytics: analyticsData?.data?.data || {},
       };
 
-      // Convert to CSV format for easy viewing
-      const csvContent = generateCSVReport(reportData);
-
-      // Create and download file
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      const url = URL.createObjectURL(blob);
-      link.setAttribute("href", url);
-      link.setAttribute("download", `admin-report-${date}.csv`);
-      link.style.visibility = "hidden";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      alert("Report generated and downloaded successfully!");
+      setExportData(reportData);
+      setExportType('report');
+      setShowExportModal(true);
     } catch (error) {
-      console.error("Error generating report:", error);
-      alert("Failed to generate report. Please try again.");
+      console.error("Error preparing report:", error);
+      alert("Failed to prepare report. Please try again.");
     }
   };
 
-  const generateCSVReport = (data) => {
-    let csv = "Admin Dashboard Report\n";
-    csv += `Generated at: ${new Date(data.generatedAt).toLocaleString()}\n\n`;
-
-    // Platform Statistics
-    csv += "PLATFORM STATISTICS\n";
-    csv += "Metric,Value\n";
-    csv += `Total Users,${data.stats.users?.total || 0}\n`;
-    csv += `Active Hosts,${data.stats.users?.hosts || 0}\n`;
-    csv += `Customer Users,${data.stats.users?.customers || 0}\n`;
-    csv += `Total Listings,${data.stats.listings?.total || 0}\n`;
-    csv += `Active Listings,${data.stats.listings?.active || 0}\n`;
-    csv += `Total Orders,${data.stats.orders?.total || 0}\n`;
-    csv += `Completed Orders,${data.stats.orders?.completed || 0}\n`;
-    csv += `Platform Revenue,₹${data.stats.revenue?.total || 0}\n`;
-    csv += `Pending Payouts,₹${data.stats.payouts?.pending || 0}\n\n`;
-
-    // Recent Orders
-    csv += "RECENT ORDERS\n";
-    csv += "Order ID,Customer,Amount,Status,Date\n";
-    data.recentOrders.forEach((order) => {
-      csv += `${order._id?.slice(-6) || "N/A"},`;
-      csv += `${order.renterId?.name || "Unknown"},`;
-      csv += `₹${order.totalAmount || 0},`;
-      csv += `${order.orderStatus || "Unknown"},`;
-      csv += `${new Date(order.createdAt).toLocaleDateString()}\n`;
-    });
-    csv += "\n";
-
-    // Top Listings
-    csv += "TOP PERFORMING LISTINGS\n";
-    csv += "Listing,Category,Bookings,Revenue,Base Price\n";
-    data.topListings.forEach((item) => {
-      csv += `${item.listing?.title || "Unknown"},`;
-      csv += `${item.listing?.category || "Unknown"},`;
-      csv += `${item.totalBookings || 0},`;
-      csv += `₹${item.totalRevenue?.toFixed(0) || 0},`;
-      csv += `₹${item.listing?.basePrice || 0}\n`;
-    });
-
-    return csv;
+  const handleExportData = async (format) => {
+    try {
+      if (exportType === 'report') {
+        generateAdminReport(exportData, format);
+      } else if (exportType === 'users') {
+        const users = usersData?.data?.data || [];
+        const headers = ['name', 'email', 'role', 'isHost', 'isVerified', 'createdAt'];
+        const processedUsers = users.map(user => ({
+          name: user.name,
+          email: user.email,
+          role: user.role === 'admin' ? 'Admin' : user.isHost ? 'Host' : 'Customer',
+          isHost: user.isHost ? 'Yes' : 'No',
+          isVerified: user.isVerified ? 'Verified' : 'Pending',
+          createdAt: new Date(user.createdAt).toLocaleDateString()
+        }));
+        const date = new Date().toISOString().split('T')[0];
+        exportData(processedUsers, headers, `users-export-${date}`, format, 'User Data Export');
+      } else if (exportType === 'orders') {
+        const orders = ordersData?.data?.data || [];
+        const headers = ['orderId', 'customer', 'total', 'status', 'paymentStatus', 'createdAt'];
+        const processedOrders = orders.map(order => ({
+          orderId: order._id,
+          customer: order.customer?.name || 'N/A',
+          total: `₹${order.total || 0}`,
+          status: order.orderStatus,
+          paymentStatus: order.paymentStatus,
+          createdAt: new Date(order.createdAt).toLocaleDateString()
+        }));
+        const date = new Date().toISOString().split('T')[0];
+        exportData(processedOrders, headers, `orders-export-${date}`, format, 'Orders Data Export');
+      } else if (exportType === 'payouts') {
+        const payouts = payoutsData?.data?.data?.payouts || [];
+        const headers = ['payoutId', 'host', 'amount', 'status', 'createdAt'];
+        const processedPayouts = payouts.map(payout => ({
+          payoutId: payout._id,
+          host: payout.host?.name || 'N/A',
+          amount: `₹${payout.amount || 0}`,
+          status: payout.status,
+          createdAt: new Date(payout.createdAt).toLocaleDateString()
+        }));
+        const date = new Date().toISOString().split('T')[0];
+        exportData(processedPayouts, headers, `payouts-export-${date}`, format, 'Payouts Data Export');
+      }
+      
+      alert(`${format.toUpperCase()} file downloaded successfully!`);
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      throw error;
+    }
   };
+
+  // Simplified export trigger functions
+  const exportUserData = () => {
+    const users = usersData?.data?.data || [];
+    if (users.length === 0) {
+      alert("No user data available to export.");
+      return;
+    }
+    setExportData(users);
+    setExportType('users');
+    setShowExportModal(true);
+  };
+
+  const exportOrderData = () => {
+    const orders = ordersData?.data?.data || [];
+    if (orders.length === 0) {
+      alert("No order data available to export.");
+      return;
+    }
+    setExportData(orders);
+    setExportType('orders');
+    setShowExportModal(true);
+  };
+
+  const exportPayoutData = () => {
+    const payouts = payoutsData?.data?.data?.payouts || [];
+    if (payouts.length === 0) {
+      alert("No payout data available to export.");
+      return;
+    }
+    setExportData(payouts);
+    setExportType('payouts');
+    setShowExportModal(true);
+  };
+
+  // Old generateCSVReport function removed - now using exportUtils
 
   const exportUserData = async () => {
     try {
@@ -363,48 +409,39 @@ const AdminDashboard = () => {
   };
 
   // Fetch admin dashboard data
-  const {
-    data: dashboardData,
-    isLoading: dashboardLoading,
-    error: dashboardError,
-  } = useQuery({
-    queryKey: ["admin", "dashboard"],
-    queryFn: () => adminAPI.getDashboard(),
-    enabled: isAdmin,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  // Fetch data based on selected tab
+  useEffect(() => {
+    if (!isAdmin) return;
+    
+    if (selectedTab === "overview") {
+      actions.fetchAdminStats();
+    } else if (selectedTab === "users") {
+      actions.fetchAdminUsers();
+    } else if (selectedTab === "orders") {
+      actions.fetchAdminOrders();
+    } else if (selectedTab === "payouts") {
+      actions.fetchAdminPayouts();
+    } else if (selectedTab === "reports") {
+      actions.fetchAdminAnalytics();
+    }
+  }, [selectedTab, isAdmin]); // Remove actions from dependency array
 
-  // Fetch users data
-  const { data: usersData, isLoading: usersLoading } = useQuery({
-    queryKey: ["admin", "users"],
-    queryFn: () => adminAPI.getUsers(),
-    enabled: isAdmin && selectedTab === "users",
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Fetch orders data
-  const { data: ordersData, isLoading: ordersLoading } = useQuery({
-    queryKey: ["admin", "orders"],
-    queryFn: () => adminAPI.getOrders(),
-    enabled: isAdmin && selectedTab === "orders",
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Fetch payouts data
-  const { data: payoutsData, isLoading: payoutsLoading } = useQuery({
-    queryKey: ["admin", "payouts"],
-    queryFn: () => adminAPI.getPayouts(),
-    enabled: isAdmin && selectedTab === "payouts",
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // Fetch analytics data
-  const { data: analyticsData, isLoading: analyticsLoading } = useQuery({
-    queryKey: ["admin", "analytics"],
-    queryFn: () => adminAPI.getAnalytics(),
-    enabled: isAdmin && selectedTab === "reports",
-    staleTime: 5 * 60 * 1000,
-  });
+  // Extract data from state
+  const dashboardData = { data: { data: state.adminStats } };
+  const dashboardLoading = state.adminLoading;
+  const dashboardError = state.adminError;
+  
+  const usersData = { data: { data: state.adminUsers } };
+  const usersLoading = state.adminLoading;
+  
+  const ordersData = { data: { data: state.adminOrders } };
+  const ordersLoading = state.adminLoading;
+  
+  const payoutsData = { data: { data: state.adminPayouts } };
+  const payoutsLoading = state.adminLoading;
+  
+  const analyticsData = { data: { data: state.adminAnalytics } };
+  const analyticsLoading = state.adminLoading;
 
   const handleEditUser = (user) => {
     setSelectedUser(user);
@@ -1212,6 +1249,26 @@ const AdminDashboard = () => {
         }}
         onUpdate={() => {
           // Refresh payouts data
+        }}
+      />
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => {
+          setShowExportModal(false);
+          setExportType('');
+          setExportData(null);
+        }}
+        onExport={handleExportData}
+        title={`Export ${exportType.charAt(0).toUpperCase() + exportType.slice(1)} Data`}
+        description={`Choose your preferred format to export ${exportType} data`}
+        dataPreview={{
+          count: Array.isArray(exportData) ? exportData.length : 1,
+          sample: exportType === 'users' ? 'Users with name, email, role...' :
+                   exportType === 'orders' ? 'Orders with customer, amount, status...' :
+                   exportType === 'payouts' ? 'Payouts with host, amount, status...' :
+                   exportType === 'report' ? 'Comprehensive admin report with all statistics' : 'Data export'
         }}
       />
     </div>

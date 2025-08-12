@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useMutation } from "@tanstack/react-query";
 import { ordersAPI, paymentsAPI } from "../lib/api";
 import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import { CreditCard, Check, Clock, AlertCircle } from "lucide-react";
 import Button from "../components/ui/Button";
 import Card from "../components/ui/Card";
@@ -11,51 +11,59 @@ const Checkout = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { state, dispatch } = useData();
   const [paymentMethod, setPaymentMethod] = useState("polar");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   console.log('Checkout component loaded with orderId:', orderId);
 
-  const {
-    data: order,
-    isLoading,
-    error,
-  } = useQuery({
-    queryKey: ["order", orderId],
-    queryFn: () => {
-      console.log('Fetching order with ID:', orderId);
-      return ordersAPI.getById(orderId);
-    },
-    select: (data) => {
-      console.log('Order API response:', data);
-      console.log('data.data:', data.data);
-      console.log('data.data.data:', data.data.data);
-      console.log('data.data.data.order:', data.data.data.order);
-      const order = data.data.data.order;
-      console.log('Selected order:', order);
-      return order;
-    },
-    onError: (error) => {
-      console.error('Order fetch error:', error);
-      console.error('Error response:', error.response?.data);
-    },
-  });
+  useEffect(() => {
+    const fetchOrder = async () => {
+      if (!orderId) return;
+      
+      setLoading(true);
+      setError(null);
+      
+      try {
+        console.log('Fetching order with ID:', orderId);
+        const response = await ordersAPI.getById(orderId);
+        console.log('Order API response:', response);
+        console.log('response.data:', response.data);
+        console.log('response.data.data:', response.data.data);
+        console.log('response.data.data.order:', response.data.data.order);
+        const orderData = response.data.data.order;
+        console.log('Selected order:', orderData);
+        setOrder(orderData);
+      } catch (err) {
+        console.error('Order fetch error:', err);
+        console.error('Error response:', err.response?.data);
+        setError(err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  console.log('Query state:', { isLoading, error, order });
+    fetchOrder();
+  }, [orderId]);
+
+  console.log('Query state:', { loading, error, order });
   console.log('Order exists?', !!order);
 
-  const mockPaymentMutation = useMutation({
-    mutationFn: () => paymentsAPI.mockPaymentSuccess(orderId),
-    onSuccess: () => {
+  const handleMockPayment = async () => {
+    try {
+      setIsProcessing(true);
+      await paymentsAPI.mockPaymentSuccess(orderId);
       setIsProcessing(false);
       // Redirect to success page or my bookings
       navigate("/my-bookings?status=success");
-    },
-    onError: (error) => {
+    } catch (error) {
       setIsProcessing(false);
       alert(error.response?.data?.message || "Payment failed");
-    },
-  });
+    }
+  };
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-US", {
@@ -78,7 +86,7 @@ const Checkout = () => {
     if (paymentMethod === "mock") {
       // Simulate payment processing delay
       setTimeout(() => {
-        mockPaymentMutation.mutate();
+        handleMockPayment();
       }, 2000);
     } else if (paymentMethod === "polar") {
       try {
@@ -100,7 +108,7 @@ const Checkout = () => {
     }
   };
 
-  if (isLoading) {
+  if (loading) {
     return (
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="animate-pulse">

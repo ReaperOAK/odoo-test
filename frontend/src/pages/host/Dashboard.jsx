@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
 import { hostAPI, listingsAPI } from "../../lib/api";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 import {
   Plus,
   Calendar,
@@ -16,18 +16,72 @@ import Card from "../../components/ui/Card";
 
 const HostDashboard = () => {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
+  const { state, dispatch } = useData();
   const [activeTab, setActiveTab] = useState("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [dashboardLoading, setDashboardLoading] = useState(true);
+  const [hostListings, setHostListings] = useState([]);
+  const [listingsLoading, setListingsLoading] = useState(true);
+  const [hostOrders, setHostOrders] = useState([]);
+  const [ordersLoading, setOrdersLoading] = useState(true);
+
+  const fetchDashboardData = async () => {
+    if (!user?.isHost) return;
+    
+    setDashboardLoading(true);
+    try {
+      const response = await hostAPI.getDashboard();
+      setDashboardData(response);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setDashboardLoading(false);
+    }
+  };
+
+  const fetchHostListings = async () => {
+    setListingsLoading(true);
+    try {
+      const response = await listingsAPI.getHost();
+      const listings = response?.data?.data?.listings || [];
+      setHostListings(listings);
+    } catch (error) {
+      console.error('Error fetching host listings:', error);
+    } finally {
+      setListingsLoading(false);
+    }
+  };
+
+  const fetchHostOrders = async () => {
+    setOrdersLoading(true);
+    try {
+      const response = await hostAPI.getOrders();
+      const orders = response?.data?.data?.orders || [];
+      setHostOrders(orders);
+    } catch (error) {
+      console.error('Error fetching host orders:', error);
+    } finally {
+      setOrdersLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?.isHost) {
+      fetchDashboardData();
+      fetchHostListings();
+      fetchHostOrders();
+    }
+  }, [user?.isHost]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       console.log("Manual refresh triggered...");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ["hostListings"] }),
-        queryClient.invalidateQueries({ queryKey: ["host-dashboard"] }),
-        queryClient.invalidateQueries({ queryKey: ["host-orders"] }),
+        fetchHostListings(),
+        fetchDashboardData(),
+        fetchHostOrders(),
       ]);
       console.log("Manual refresh completed");
     } finally {
@@ -35,51 +89,15 @@ const HostDashboard = () => {
     }
   };
 
-  const {
-    data: dashboardData,
-    isLoading: dashboardLoading,
-    dataUpdatedAt: dashboardUpdatedAt,
-  } = useQuery({
-    queryKey: ["host-dashboard"],
-    queryFn: hostAPI.getDashboard,
-    enabled: !!user?.isHost,
-    staleTime: 0, // Always consider data stale
-    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
-  });
-
-  const {
-    data: hostListings,
-    isLoading: listingsLoading,
-    dataUpdatedAt: listingsUpdatedAt,
-  } = useQuery({
-    queryKey: ["hostListings"],
-    queryFn: () => hostAPI.getListings(),
-    select: (response) => response?.data?.data?.listings || [],
-    enabled: !!user?.isHost,
-    staleTime: 0, // Always consider data stale
-    cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
-  });
-
   console.log(
     "Dashboard render - hostListings:",
     hostListings?.length || 0,
     "listings"
   );
   console.log(
-    "Dashboard render - listingsUpdatedAt:",
-    new Date(listingsUpdatedAt).toLocaleTimeString()
+    "Dashboard render - dashboard loading:",
+    dashboardLoading
   );
-  console.log(
-    "Dashboard render - dashboardUpdatedAt:",
-    new Date(dashboardUpdatedAt).toLocaleTimeString()
-  );
-
-  const { data: hostOrders, isLoading: ordersLoading } = useQuery({
-    queryKey: ["host-orders"],
-    queryFn: () => hostAPI.getOrders(),
-    select: (response) => response?.data?.data?.orders || [],
-    enabled: !!user?.isHost,
-  });
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {

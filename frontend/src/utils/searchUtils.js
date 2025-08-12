@@ -45,14 +45,9 @@ export const searchListing = (listing, searchTerm) => {
     .filter(field => field) // Remove null/undefined fields
     .map(field => normalizeText(field))
     .join(' ');
-
-  console.log('Searching for:', normalizedSearchTerm, 'in:', searchableText.substring(0, 100) + '...');
   
   // For partial matching, check if searchable text includes the search term
-  const matches = searchableText.includes(normalizedSearchTerm);
-  console.log('Match result:', matches);
-  
-  return matches;
+  return searchableText.includes(normalizedSearchTerm);
 };
 
 /**
@@ -63,22 +58,10 @@ export const searchListing = (listing, searchTerm) => {
  */
 export const filterListings = (listings, searchTerm) => {
   if (!searchTerm || !Array.isArray(listings)) {
-    console.log('No search term or invalid listings array');
     return listings;
   }
   
-  console.log('Filtering', listings.length, 'listings with term:', searchTerm);
-  
-  const filtered = listings.filter(listing => {
-    const matches = searchListing(listing, searchTerm);
-    if (matches) {
-      console.log('Match found:', listing.title);
-    }
-    return matches;
-  });
-  
-  console.log('Filtered results:', filtered.length);
-  return filtered;
+  return listings.filter(listing => searchListing(listing, searchTerm));
 };
 
 /**
