@@ -30,7 +30,6 @@ const HostDashboard = () => {
   const { data: dashboardData, isLoading: dashboardLoading, dataUpdatedAt: dashboardUpdatedAt } = useQuery({
     queryKey: ["host-dashboard"],
     queryFn: hostAPI.getDashboard,
-    select: (data) => data.data,
     enabled: !!user?.isHost,
     staleTime: 0, // Always consider data stale
     cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
@@ -39,7 +38,7 @@ const HostDashboard = () => {
   const { data: hostListings, isLoading: listingsLoading, dataUpdatedAt: listingsUpdatedAt } = useQuery({
     queryKey: ["hostListings"],
     queryFn: () => hostAPI.getListings(),
-    select: (data) => data.data.listings,
+    select: (response) => response?.data?.data?.listings || [],
     enabled: !!user?.isHost,
     staleTime: 0, // Always consider data stale
     cacheTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
@@ -52,7 +51,7 @@ const HostDashboard = () => {
   const { data: hostOrders, isLoading: ordersLoading } = useQuery({
     queryKey: ["host-orders"],
     queryFn: () => hostAPI.getOrders(),
-    select: (data) => data.data.orders,
+    select: (response) => response?.data?.data?.orders || [],
     enabled: !!user?.isHost,
   });
 
@@ -81,6 +80,18 @@ const HostDashboard = () => {
     };
     return colors[status] || "bg-gray-100 text-gray-800";
   };
+
+  if (!user) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Loading...
+          </h1>
+        </div>
+      </div>
+    );
+  }
 
   if (!user?.isHost) {
     return (
@@ -138,7 +149,7 @@ const HostDashboard = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
                     ? "..."
-                    : dashboardData?.stats?.totalListings || 0}
+                    : dashboardData?.data?.data?.stats?.totalListings || 0}
                 </p>
               </div>
             </div>
@@ -158,7 +169,7 @@ const HostDashboard = () => {
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
                     ? "..."
-                    : formatPrice(dashboardData?.stats?.totalEarnings || 0)}
+                    : formatPrice(dashboardData?.data?.data?.stats?.monthlyRevenue || 0)}
                 </p>
               </div>
             </div>
@@ -173,12 +184,12 @@ const HostDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Active Bookings
+                  Active Rentals
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
                     ? "..."
-                    : dashboardData?.stats?.activeBookings || 0}
+                    : dashboardData?.data?.data?.stats?.activeRentals || 0}
                 </p>
               </div>
             </div>
@@ -193,12 +204,12 @@ const HostDashboard = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">
-                  Total Customers
+                  Total Orders
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
                   {dashboardLoading
                     ? "..."
-                    : dashboardData?.stats?.totalCustomers || 0}
+                    : dashboardData?.data?.data?.stats?.totalOrders || 0}
                 </p>
               </div>
             </div>
@@ -237,8 +248,8 @@ const HostDashboard = () => {
             {/* Recent Bookings */}
             <Card>
               <Card.Content className="p-6">
-                <h3 className="text-lg font-semibold mb-4">Recent Bookings</h3>
-                {ordersLoading ? (
+                <h3 className="text-lg font-semibold mb-4">Recent Orders</h3>
+                {dashboardLoading ? (
                   <div className="space-y-3">
                     {[...Array(3)].map((_, i) => (
                       <div
@@ -247,19 +258,19 @@ const HostDashboard = () => {
                       ></div>
                     ))}
                   </div>
-                ) : hostOrders?.length > 0 ? (
+                ) : dashboardData?.data?.data?.recentOrders?.length > 0 ? (
                   <div className="space-y-3">
-                    {hostOrders.slice(0, 5).map((order) => (
+                    {dashboardData.data.data.recentOrders.slice(0, 5).map((order) => (
                       <div
                         key={order._id}
                         className="flex items-center justify-between p-3 border rounded-lg"
                       >
                         <div>
                           <p className="font-medium">
-                            {order.lines[0]?.listingId?.title}
+                            {order.listingTitle || "Order"}
                           </p>
                           <p className="text-sm text-gray-600">
-                            {order.renterId?.name} •{" "}
+                            {order.renterName || "Customer"} •{" "}
                             {formatDate(order.createdAt)}
                           </p>
                         </div>
@@ -269,17 +280,17 @@ const HostDashboard = () => {
                               order.orderStatus
                             )}`}
                           >
-                            {order.orderStatus.replace("_", " ")}
+                            {order.orderStatus?.replace("_", " ") || "pending"}
                           </span>
                           <p className="text-sm font-medium mt-1">
-                            {formatPrice(order.totalAmount)}
+                            {formatPrice(order.totalAmount || 0)}
                           </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-600">No bookings yet.</p>
+                  <p className="text-gray-600">No orders yet.</p>
                 )}
               </Card.Content>
             </Card>
@@ -294,27 +305,25 @@ const HostDashboard = () => {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Revenue</span>
                     <span className="font-medium">
-                      {formatPrice(dashboardData?.monthlyStats?.revenue || 0)}
+                      {formatPrice(dashboardData?.data?.data?.stats?.monthlyRevenue || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Bookings</span>
+                    <span className="text-gray-600">Orders</span>
                     <span className="font-medium">
-                      {dashboardData?.monthlyStats?.bookings || 0}
+                      {dashboardData?.data?.data?.stats?.weeklyOrders || 0}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Average Rating</span>
+                    <span className="text-gray-600">Utilization Rate</span>
                     <span className="font-medium">
-                      {dashboardData?.stats?.averageRating
-                        ? `${dashboardData.stats.averageRating.toFixed(1)} ⭐`
-                        : "No ratings yet"}
+                      {dashboardData?.data?.data?.stats?.utilizationRate || 0}%
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Response Rate</span>
+                    <span className="text-gray-600">Wallet Balance</span>
                     <span className="font-medium">
-                      {dashboardData?.stats?.responseRate || "100"}%
+                      {formatPrice(dashboardData?.data?.data?.stats?.walletBalance || 0)}
                     </span>
                   </div>
                 </div>
@@ -412,9 +421,6 @@ const HostDashboard = () => {
               ))
             ) : hostOrders?.length > 0 ? (
               hostOrders.map((order) => {
-                const orderLine = order.lines[0];
-                const listing = orderLine?.listingId;
-
                 return (
                   <Card key={order._id}>
                     <Card.Content className="p-6">
@@ -425,10 +431,10 @@ const HostDashboard = () => {
                               order.orderStatus
                             )}`}
                           >
-                            {order.orderStatus.replace("_", " ")}
+                            {order.orderStatus?.replace("_", " ") || "pending"}
                           </span>
                           <span className="text-sm text-gray-500">
-                            Order #{order.orderNumber || order._id.slice(-8)}
+                            Order #{order.orderNumber || order._id?.slice(-8)}
                           </span>
                         </div>
                         <div className="text-sm text-gray-500">
@@ -438,31 +444,31 @@ const HostDashboard = () => {
 
                       <div className="flex space-x-4">
                         <img
-                          src={listing?.images?.[0] || "/placeholder-image.jpg"}
-                          alt={listing?.title}
+                          src="/placeholder-image.jpg"
+                          alt="Order"
                           className="w-20 h-20 object-cover rounded-lg"
                         />
                         <div className="flex-1">
                           <h3 className="font-medium text-gray-900 mb-1">
-                            {listing?.title}
+                            Order Details
                           </h3>
                           <p className="text-sm text-gray-600">
-                            Customer: {order.renterId?.name}
+                            Customer: {order.renterName || "N/A"}
                           </p>
                           <div className="grid grid-cols-2 gap-4 mt-2 text-sm">
                             <div>
-                              <span className="text-gray-600">Check-in:</span>
-                              <div>{formatDate(orderLine.start)}</div>
+                              <span className="text-gray-600">Created:</span>
+                              <div>{formatDate(order.createdAt)}</div>
                             </div>
                             <div>
-                              <span className="text-gray-600">Check-out:</span>
-                              <div>{formatDate(orderLine.end)}</div>
+                              <span className="text-gray-600">Status:</span>
+                              <div>{order.orderStatus || "pending"}</div>
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-lg font-semibold">
-                            {formatPrice(order.totalAmount)}
+                            {formatPrice(order.totalAmount || 0)}
                           </div>
                           <div className="text-sm text-gray-600">
                             {order.paymentStatus === "paid"
@@ -497,29 +503,29 @@ const HostDashboard = () => {
                 <h3 className="text-lg font-semibold mb-4">Earnings Summary</h3>
                 <div className="space-y-4">
                   <div className="flex justify-between py-2 border-b">
-                    <span className="text-gray-600">Total Earnings</span>
+                    <span className="text-gray-600">Monthly Revenue</span>
                     <span className="font-semibold">
-                      {formatPrice(dashboardData?.stats?.totalEarnings || 0)}
+                      {formatPrice(dashboardData?.data?.data?.stats?.monthlyRevenue || 0)}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
-                    <span className="text-gray-600">This Month</span>
+                    <span className="text-gray-600">Total Orders</span>
                     <span className="font-semibold">
-                      {formatPrice(dashboardData?.monthlyStats?.revenue || 0)}
+                      {dashboardData?.data?.data?.stats?.totalOrders || 0}
                     </span>
                   </div>
                   <div className="flex justify-between py-2 border-b">
-                    <span className="text-gray-600">Pending Payouts</span>
+                    <span className="text-gray-600">Pending Pickups</span>
                     <span className="font-semibold">
-                      {formatPrice(dashboardData?.stats?.pendingPayouts || 0)}
+                      {dashboardData?.data?.data?.stats?.pendingPickups || 0}
                     </span>
                   </div>
                   <div className="flex justify-between py-2">
                     <span className="text-gray-600">
-                      Available for Withdrawal
+                      Wallet Balance
                     </span>
                     <span className="font-semibold text-green-600">
-                      {formatPrice(dashboardData?.stats?.availableBalance || 0)}
+                      {formatPrice(dashboardData?.data?.data?.stats?.walletBalance || 0)}
                     </span>
                   </div>
                 </div>
@@ -529,40 +535,10 @@ const HostDashboard = () => {
             <Card>
               <Card.Content className="p-6">
                 <h3 className="text-lg font-semibold mb-4">
-                  Recent Transactions
+                  Recent Activity
                 </h3>
                 <div className="space-y-3">
-                  {dashboardData?.recentTransactions?.length > 0 ? (
-                    dashboardData.recentTransactions.map(
-                      (transaction, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center py-2"
-                        >
-                          <div>
-                            <p className="font-medium">
-                              {transaction.description}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {formatDate(transaction.date)}
-                            </p>
-                          </div>
-                          <span
-                            className={`font-semibold ${
-                              transaction.type === "credit"
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            {transaction.type === "credit" ? "+" : "-"}
-                            {formatPrice(transaction.amount)}
-                          </span>
-                        </div>
-                      )
-                    )
-                  ) : (
-                    <p className="text-gray-600">No transactions yet.</p>
-                  )}
+                  <p className="text-gray-600">No recent activity.</p>
                 </div>
               </Card.Content>
             </Card>
