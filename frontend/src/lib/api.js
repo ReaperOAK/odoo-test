@@ -100,6 +100,7 @@ export const hostAPI = {
 export const adminAPI = {
   getDashboard: () => api.get('/admin/dashboard'),
   getAnalytics: () => api.get('/admin/analytics'),
+  getSystemHealth: () => api.get('/admin/system-health'),
   getUsers: (params) => api.get('/admin/users', { params }),
   updateUser: (id, data) => api.patch(`/admin/users/${id}`, data),
   getOrders: (params) => api.get('/admin/orders', { params }),

@@ -879,6 +879,65 @@ const getAnalytics = async (req, res, next) => {
   }
 };
 
+/**
+ * Get system health metrics
+ */
+const getSystemHealth = async (req, res, next) => {
+  try {
+    const startTime = Date.now();
+    
+    // Test database connection
+    const dbStatus = await mongoose.connection.db.admin().ping();
+    const dbResponseTime = Date.now() - startTime;
+    
+    // Get system stats
+    const totalCollections = await mongoose.connection.db.listCollections().toArray();
+    const dbStats = await mongoose.connection.db.stats();
+    
+    // Calculate storage usage percentage (assuming 1GB limit for demo)
+    const storageLimit = 1024 * 1024 * 1024; // 1GB in bytes
+    const storageUsed = dbStats.dataSize || 0;
+    const storagePercentage = Math.round((storageUsed / storageLimit) * 100);
+    
+    // Mock payment gateway status (would be real in production)
+    const paymentGatewayStatus = 'connected';
+    
+    res.json({
+      success: true,
+      data: {
+        database: {
+          status: dbStatus.ok === 1 ? 'healthy' : 'unhealthy',
+          responseTime: `${dbResponseTime}ms`,
+          collections: totalCollections.length,
+          size: Math.round(storageUsed / (1024 * 1024)) // MB
+        },
+        storage: {
+          used: storagePercentage,
+          status: storagePercentage > 80 ? 'warning' : 'healthy'
+        },
+        paymentGateway: {
+          status: paymentGatewayStatus
+        },
+        api: {
+          responseTime: `${dbResponseTime}ms`,
+          status: 'healthy'
+        }
+      }
+    });
+  } catch (error) {
+    logger.error('Error fetching system health:', error);
+    res.json({
+      success: true,
+      data: {
+        database: { status: 'unhealthy', responseTime: 'timeout' },
+        storage: { used: 0, status: 'unknown' },
+        paymentGateway: { status: 'disconnected' },
+        api: { responseTime: 'timeout', status: 'unhealthy' }
+      }
+    });
+  }
+};
+
 module.exports = {
   getAdminDashboard,
   getUsers,
@@ -888,5 +947,6 @@ module.exports = {
   createPayout,
   updateUser,
   resolveDispute,
-  getAnalytics
+  getAnalytics,
+  getSystemHealth
 };

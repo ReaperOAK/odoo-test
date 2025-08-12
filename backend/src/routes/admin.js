@@ -13,6 +13,7 @@ router.use(requireAdmin);
 // Dashboard and analytics
 router.get('/dashboard', adminController.getAdminDashboard);
 router.get('/analytics', adminController.getAnalytics);
+router.get('/system-health', adminController.getSystemHealth);
 
 // User management
 router.get('/users', adminController.getUsers);
